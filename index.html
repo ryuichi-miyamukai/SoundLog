@@ -2,7 +2,14 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="SoundLog" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23111111'/%3E%3Ccircle cx='32' cy='32' r='19' fill='none' stroke='%23ffffff' stroke-width='4'/%3E%3Ccircle cx='32' cy='32' r='6' fill='%23ffffff'/%3E%3C/svg%3E" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23111111'/%3E%3Ccircle cx='90' cy='90' r='52' fill='none' stroke='%23ffffff' stroke-width='11'/%3E%3Ccircle cx='90' cy='90' r='16' fill='%23ffffff'/%3E%3C/svg%3E" />
   <title>SoundLog — 聴いたアルバムの記録</title>
   <style>
     /* =========================================================================
@@ -66,6 +73,8 @@
       border: none;
       background: transparent;
       padding: 0;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
 
     img {
@@ -98,6 +107,7 @@
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       border-bottom: 1px solid var(--border-light);
+      padding-top: env(safe-area-inset-top);
     }
 
     .header-inner {
@@ -421,7 +431,6 @@
       gap: 6px;
     }
 
-    /* はみ出し防止のカレンダーセル */
     .calendar-cell {
       position: relative;
       min-width: 0;
@@ -575,6 +584,7 @@
     .day-panel {
       padding: 20px;
       min-width: 0;
+      scroll-margin-top: 72px;
     }
 
     @media (min-width: 901px) {
@@ -1393,7 +1403,7 @@
       cursor: not-allowed;
     }
 
-    /* 点数スライダー */
+    /* 点数スライダー（0.5〜5.0） */
     .score-box {
       padding: 12px 14px;
       border-radius: var(--radius-md);
@@ -1472,7 +1482,7 @@
     }
 
     /* =========================================================================
-       レスポンシブ調整
+       レスポンシブ調整（タブレット・デスクトップ）
        ========================================================================= */
     @media (min-width: 640px) {
       .brand-sub {
@@ -1529,6 +1539,214 @@
         min-width: 18px;
         height: 18px;
         font-size: 10px;
+      }
+    }
+
+    /* =========================================================================
+       モバイルWebアプリ強化（<= 768px のみ適用・デスクトップ非影響）
+       ========================================================================= */
+    .mobile-bottom-nav {
+      display: none;
+    }
+
+    @keyframes slideUpSheet {
+      from {
+        transform: translateY(28px);
+        opacity: 0.6;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .header-inner {
+        height: 56px;
+        padding: 0 14px;
+      }
+
+      .view-tabs,
+      #btn-open-add-header {
+        display: none;
+      }
+
+      .main-container {
+        padding: 14px 12px calc(92px + env(safe-area-inset-bottom));
+      }
+
+      .calendar-card {
+        padding: 14px 10px;
+      }
+
+      .calendar-top {
+        gap: 10px;
+        padding-bottom: 12px;
+      }
+
+      .month-label {
+        font-size: 17px;
+        min-width: 98px;
+      }
+
+      .calendar-summary {
+        width: 100%;
+        gap: 6px;
+      }
+
+      .summary-chip {
+        padding: 4px 9px;
+        font-size: 11px;
+      }
+
+      .weekday-row,
+      .calendar-grid {
+        gap: 4px;
+      }
+
+      .calendar-cell {
+        min-height: 74px;
+        padding: 4px;
+        border-radius: 10px;
+      }
+
+      .cell-thumb-container {
+        max-width: 44px;
+        margin-top: 4px;
+      }
+
+      .cell-thumb-img,
+      .cell-thumb-placeholder {
+        max-width: 44px;
+        border-radius: 5px;
+      }
+
+      .day-panel {
+        padding: 16px 14px;
+      }
+
+      .day-entries {
+        max-height: none;
+        overflow-y: visible;
+      }
+
+      .mobile-bottom-nav {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 40;
+        background: rgba(255, 255, 255, 0.94);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border-top: 1px solid var(--border-light);
+        padding: 6px 12px calc(6px + env(safe-area-inset-bottom));
+        box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.04);
+      }
+
+      .mobile-nav-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        padding: 6px 8px;
+        border-radius: 10px;
+        color: var(--ink-muted);
+        font-size: 11px;
+        font-weight: 600;
+        transition: color 0.15s ease, background-color 0.15s ease;
+      }
+
+      .mobile-nav-btn.active {
+        color: var(--ink-primary);
+      }
+
+      .mobile-nav-btn:active {
+        background: var(--bg-subtle);
+      }
+
+      .mobile-nav-add {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        height: 44px;
+        padding: 0 18px;
+        border-radius: 999px;
+        background: var(--accent);
+        color: #ffffff;
+        font-size: 13px;
+        font-weight: 700;
+        box-shadow: 0 6px 16px rgba(17, 17, 17, 0.22);
+        transition: transform 0.12s ease, background-color 0.15s ease;
+      }
+
+      .mobile-nav-add:active {
+        transform: scale(0.96);
+        background: var(--accent-hover);
+      }
+
+      .modal-backdrop {
+        align-items: flex-end;
+        padding: 0;
+      }
+
+      .modal-dialog,
+      .modal-dialog.modal-sm {
+        max-width: 100%;
+        max-height: 92dvh;
+        border-radius: 20px 20px 0 0;
+        border-left: none;
+        border-right: none;
+        border-bottom: none;
+        animation: slideUpSheet 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .modal-header {
+        position: relative;
+        padding: 20px 18px 14px;
+      }
+
+      .modal-header::before {
+        content: "";
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 36px;
+        height: 4px;
+        border-radius: 999px;
+        background: #d4d4d8;
+      }
+
+      .modal-body {
+        padding: 16px;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .modal-footer {
+        padding: 12px 16px calc(14px + env(safe-area-inset-bottom));
+      }
+
+      .dialog-simple-body {
+        padding: 20px 18px calc(20px + env(safe-area-inset-bottom));
+      }
+
+      .input-field,
+      .select-field,
+      .textarea-field {
+        font-size: 16px;
+      }
+
+      .toast-container {
+        left: 16px;
+        right: 16px;
+        bottom: calc(78px + env(safe-area-inset-bottom));
+        align-items: center;
       }
     }
   </style>
@@ -1638,7 +1856,7 @@
       </div>
 
       <!-- 右側：選択日の詳細パネル -->
-      <aside class="card day-panel">
+      <aside id="day-panel" class="card day-panel">
         <div class="day-panel-header">
           <div>
             <p class="day-panel-kicker">SELECTED DATE</p>
@@ -1695,7 +1913,7 @@
   <!-- =========================================================================
        記録の追加・編集モーダル
        ========================================================================= -->
-  <div id="entry-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div id="entry-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-header">
         <h3 id="modal-title" class="modal-title">アルバム記録を追加</h3>
@@ -1741,22 +1959,24 @@
             <div class="form-fields-col">
               <div>
                 <label for="field-album" class="form-label">アルバム名 <span class="required-mark">*</span></label>
-          <!-- 点数スライダー（0.5〜5.0 / 0.5刻み） -->
-          <div class="score-box">
-            <div class="score-header">
-              <label for="field-score" class="form-label" style="margin: 0;">点数（0.5 〜 5.0）</label>
-              <div class="score-value-wrap">
-                <span id="score-display" class="score-value tabular-nums">4.0</span>
-                <span class="score-max">/ 5.0</span>
+                <input id="field-album" type="text" required class="input-field" placeholder="例: Pet Sounds" />
               </div>
-            </div>
-            <input id="field-score" type="range" min="0.5" max="5.0" step="0.5" value="4.0" />
-            <div class="score-ticks tabular-nums">
-              <span>0.5</span>
-              <span>1.5</span>
-              <span>2.5</span>
-              <span>3.5</span>
-              <span>5.0</span>
+
+              <div>
+                <label for="field-artist" class="form-label">アーティスト名 <span class="required-mark">*</span></label>
+                <input id="field-artist" type="text" required class="input-field" placeholder="例: The Beach Boys" />
+              </div>
+
+              <div class="form-grid-2">
+                <div>
+                  <label for="field-year" class="form-label">リリース年</label>
+                  <input id="field-year" type="text" inputmode="numeric" maxlength="4" class="input-field" placeholder="例: 1966" />
+                </div>
+                <div>
+                  <label for="field-track-count" class="form-label">収録曲数</label>
+                  <input id="field-track-count" type="number" min="1" max="999" class="input-field" placeholder="例: 13" />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1783,7 +2003,7 @@
           <div class="genre-editor">
             <div class="genre-editor-head">
               <label for="genre-input" class="form-label" style="margin: 0;">ジャンル（English）</label>
-              <span id="genre-count-label" class="genre-count tabular-nums">0/3</span>
+              <span id="genre-count-label" class="genre-count tabular-nums">(0/3)</span>
             </div>
             <div id="genre-chips" class="genre-chips">
               <span class="genre-chips-empty">ジャンルが未選択です</span>
@@ -1795,22 +2015,22 @@
             <div id="genre-presets" class="genre-presets" aria-label="英語ジャンル候補"></div>
           </div>
 
-          <!-- 点数スライダー（0.0〜10.0 / 0.5刻み） -->
+          <!-- 点数スライダー（0.5〜5.0 / 0.5刻み） -->
           <div class="score-box">
             <div class="score-header">
-              <label for="field-score" class="form-label" style="margin: 0;">点数（0.0 〜 10.0）</label>
+              <label for="field-score" class="form-label" style="margin: 0;">点数（0.5 〜 5.0）</label>
               <div class="score-value-wrap">
-                <span id="score-display" class="score-value tabular-nums">8.0</span>
-                <span class="score-max">/ 10</span>
+                <span id="score-display" class="score-value tabular-nums">4.0</span>
+                <span class="score-max">/ 5.0</span>
               </div>
             </div>
-            <input id="field-score" type="range" min="0.0" max="10.0" step="0.5" value="8.0" />
+            <input id="field-score" type="range" min="0.5" max="5.0" step="0.5" value="4.0" />
             <div class="score-ticks tabular-nums">
-              <span>0.0</span>
+              <span>0.5</span>
+              <span>1.5</span>
               <span>2.5</span>
+              <span>3.5</span>
               <span>5.0</span>
-              <span>7.5</span>
-              <span>10.0</span>
             </div>
           </div>
 
@@ -1841,7 +2061,7 @@
   <!-- =========================================================================
        削除確認モーダル
        ========================================================================= -->
-  <div id="confirm-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+  <div id="confirm-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title" aria-hidden="true">
     <div class="modal-dialog modal-sm">
       <div class="dialog-simple-body">
         <h3 id="confirm-modal-title" class="dialog-simple-title">記録を削除しますか？</h3>
@@ -1855,27 +2075,56 @@
   </div>
 
   <!-- =========================================================================
-       インポート確認モーダル
+       JSONインポート確認モーダル
        ========================================================================= -->
-  <div id="import-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="import-modal-title">
+  <div id="import-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="import-modal-title" aria-hidden="true">
     <div class="modal-dialog modal-sm">
       <div class="dialog-simple-body">
-        <h3 id="import-modal-title" class="dialog-simple-title">データのインポート</h3>
-        <p id="import-modal-desc" class="dialog-simple-desc">読み込んだ記録をどのように反映しますか？</p>
+        <h3 id="import-modal-title" class="dialog-simple-title">バックアップを読み込む</h3>
+        <p id="import-modal-desc" class="dialog-simple-desc">読み込み方法を選択してください。</p>
         <div class="dialog-stack-actions">
-          <button id="btn-import-merge" type="button" class="btn-primary" style="width: 100%; padding: 10px 14px;">
-            既存の記録に追加する（重複IDはスキップ）
-          </button>
-          <button id="btn-import-replace" type="button" class="btn-secondary" style="width: 100%; padding: 10px 14px;">
-            既存の記録をすべて置き換える
-          </button>
-          <button id="btn-import-cancel" type="button" class="btn-ghost" style="width: 100%;">
-            キャンセル
-          </button>
+          <button id="btn-import-merge" type="button" class="btn-primary">既存の記録に追加（マージ）</button>
+          <button id="btn-import-replace" type="button" class="btn-secondary">既存の記録をすべて置き換える</button>
+          <button id="btn-import-cancel" type="button" class="btn-ghost">キャンセル</button>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- =========================================================================
+       モバイル専用ボトムナビゲーション（<= 768px で表示）
+       ========================================================================= -->
+  <nav id="mobile-bottom-nav" class="mobile-bottom-nav" aria-label="モバイルナビゲーション">
+    <button id="btn-mobile-tab-calendar" type="button" class="mobile-nav-btn active">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+        <line x1="16" y1="2" x2="16" y2="6"></line>
+        <line x1="8" y1="2" x2="8" y2="6"></line>
+        <line x1="3" y1="10" x2="21" y2="10"></line>
+      </svg>
+      <span>カレンダー</span>
+    </button>
+
+    <button id="btn-mobile-add" type="button" class="mobile-nav-add" aria-label="記録を追加">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      <span>追加</span>
+    </button>
+
+    <button id="btn-mobile-tab-list" type="button" class="mobile-nav-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="8" y1="6" x2="21" y2="6"></line>
+        <line x1="8" y1="12" x2="21" y2="12"></line>
+        <line x1="8" y1="18" x2="21" y2="18"></line>
+        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+      </svg>
+      <span>一覧</span>
+    </button>
+  </nav>
 
   <!-- トースト通知 -->
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
@@ -1888,11 +2137,11 @@
         // =====================================================================
         // 定数・英語ジャンル辞書・状態管理
         // =====================================================================
-        const STORAGE_KEY = 'soundlog_records_v1';
+        const STORAGE_KEY = 'soundlog_entries_v1';
+        const LEGACY_STORAGE_KEY = 'soundlog_records_v1';
         const WEEKDAYS_JA = ['日', '月', '火', '水', '木', '金', '土'];
         const MAX_GENRES = 3;
 
-        // 英語ジャンルプリセット候補
         const GENRE_PRESETS = [
           'Rock',
           'Pop',
@@ -1917,7 +2166,6 @@
           'Soundtrack',
         ];
 
-        // 日本語ジャンル名を英語へ正規化するための辞書（iTunes返却値や旧データ対策）
         const JA_TO_EN_GENRE_MAP = {
           'ロック': 'Rock',
           'ポップ': 'Pop',
@@ -1988,9 +2236,9 @@
         const nowInit = new Date();
         const state = {
           entries: [],
-          activeView: 'calendar', // 'calendar' | 'list'
+          activeView: 'calendar',
           currentYear: nowInit.getFullYear(),
-          currentMonth: nowInit.getMonth(), // 0-11
+          currentMonth: nowInit.getMonth(),
           selectedDate: formatDateKey(
             nowInit.getFullYear(),
             nowInit.getMonth() + 1,
@@ -2011,12 +2259,16 @@
         const els = {
           tabCalendar: document.getElementById('tab-calendar'),
           tabList: document.getElementById('tab-list'),
+          mobileTabCalendar: document.getElementById('btn-mobile-tab-calendar'),
+          mobileTabList: document.getElementById('btn-mobile-tab-list'),
+          btnMobileAdd: document.getElementById('btn-mobile-add'),
           btnExport: document.getElementById('btn-export'),
           btnImport: document.getElementById('btn-import'),
           inputImportFile: document.getElementById('input-import-file'),
           btnOpenAddHeader: document.getElementById('btn-open-add-header'),
 
           viewCalendar: document.getElementById('view-calendar'),
+          dayPanel: document.getElementById('day-panel'),
           btnPrevMonth: document.getElementById('btn-prev-month'),
           btnNextMonth: document.getElementById('btn-next-month'),
           btnToday: document.getElementById('btn-today'),
@@ -2082,6 +2334,10 @@
           toastContainer: document.getElementById('toast-container'),
         };
 
+        function on(el, eventName, handler) {
+          if (el) el.addEventListener(eventName, handler);
+        }
+
         // =====================================================================
         // ユーティリティ関数
         // =====================================================================
@@ -2122,7 +2378,7 @@
           return Math.min(5.0, Math.max(0.5, rounded));
         }
 
-        /** 再聴を除いたユニークなアルバム枚数をカウント */
+        /** 再聴を除いたユニークなアルバム枚数をカウント（アルバム名＋アーティスト名で重複除外） */
         function countUniqueAlbums(list) {
           const unique = new Set();
           if (!Array.isArray(list)) return 0;
@@ -2168,7 +2424,6 @@
           if (Object.prototype.hasOwnProperty.call(JA_TO_EN_GENRE_MAP, lower)) {
             return JA_TO_EN_GENRE_MAP[lower];
           }
-          // iTunesの英語表記揺れをきれいに統一
           if (lower === 'hip-hop/rap' || lower === 'hip hop/rap' || lower === 'hip hop') {
             return 'Hip-Hop';
           }
@@ -2246,7 +2501,18 @@
 
         function loadEntries() {
           try {
-            const raw = localStorage.getItem(STORAGE_KEY);
+            let raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) {
+              const legacyRaw = localStorage.getItem(LEGACY_STORAGE_KEY);
+              if (legacyRaw) {
+                raw = legacyRaw;
+                try {
+                  localStorage.setItem(STORAGE_KEY, legacyRaw);
+                } catch (_) {
+                  // 移行保存失敗時は読み込みのみ継続
+                }
+              }
+            }
             if (!raw) {
               state.entries = [];
               return;
@@ -2312,7 +2578,7 @@
                   <div class="entry-title-row">
                     <h4 class="entry-title">${escapeHtml(albumName)}</h4>
                     <span class="entry-score-pill tabular-nums">
-                      ${escapeHtml(formatScore(entry.score))}<span class="entry-score-max">/5.0</span>
+                      ${escapeHtml(formatScore(entry.score))}<span class="entry-score-max"> / 5.0</span>
                     </span>
                   </div>
                   <p class="entry-artist truncate">${escapeHtml(entry.artist)}</p>
@@ -2340,10 +2606,12 @@
         function renderCurrentView() {
           const isCalendar = state.activeView === 'calendar';
 
-          els.tabCalendar.classList.toggle('active', isCalendar);
-          els.tabList.classList.toggle('active', !isCalendar);
-          els.viewCalendar.classList.toggle('hidden', !isCalendar);
-          els.viewList.classList.toggle('hidden', isCalendar);
+          if (els.tabCalendar) els.tabCalendar.classList.toggle('active', isCalendar);
+          if (els.tabList) els.tabList.classList.toggle('active', !isCalendar);
+          if (els.mobileTabCalendar) els.mobileTabCalendar.classList.toggle('active', isCalendar);
+          if (els.mobileTabList) els.mobileTabList.classList.toggle('active', !isCalendar);
+          if (els.viewCalendar) els.viewCalendar.classList.toggle('hidden', !isCalendar);
+          if (els.viewList) els.viewList.classList.toggle('hidden', isCalendar);
 
           if (isCalendar) {
             renderCalendarView();
@@ -2469,7 +2737,7 @@
 
           const avg =
             dayEntries.reduce((sum, cur) => sum + (Number(cur.score) || 0), 0) / dayEntries.length;
-          els.selectedDateMeta.textContent = `${dayEntries.length}件の記録 ・ 平均 ${avg.toFixed(1)}点`;
+          els.selectedDateMeta.textContent = `${dayEntries.length}件の記録 ・ 平均 ${avg.toFixed(1)} / 5.0`;
 
           els.dayEntriesContainer.innerHTML = dayEntries
             .map((entry) => renderEntryCard(entry, { showDate: false }))
@@ -2547,7 +2815,7 @@
               <div class="list-empty">
                 ${
                   state.entries.length === 0
-                    ? 'まだ記録がありません。右上の「記録を追加」から最初の1枚を登録しましょう。'
+                    ? 'まだ記録がありません。「記録を追加」から最初の1枚を登録しましょう。'
                     : '条件に一致する記録が見つかりませんでした。'
                 }
               </div>
@@ -2567,7 +2835,7 @@
           const genres = state.modalGenres;
           const isFull = genres.length >= MAX_GENRES;
 
-          els.genreCountLabel.textContent = `${genres.length}/${MAX_GENRES}`;
+          els.genreCountLabel.textContent = `(${genres.length}/${MAX_GENRES})`;
 
           if (genres.length === 0) {
             els.genreChips.innerHTML =
@@ -2638,7 +2906,6 @@
           }
         }
 
-        /** マークダウンコードフェンス等が含まれていても安全にJSONを抽出・パース */
         function safeParseAiJson(rawText) {
           const cleaned = String(rawText || '')
             .trim()
@@ -2656,7 +2923,6 @@
           }
         }
 
-        /** タイムアウト付きfetchヘルパー */
         async function fetchWithTimeout(url, options, timeoutMs) {
           const controller =
             typeof AbortController !== 'undefined' ? new AbortController() : null;
@@ -2678,21 +2944,18 @@
           }
         }
 
-        /** 英語タグをジャンル表記（Title Case）に整形 */
         function formatEnglishTag(tag) {
           const raw = String(tag || '').trim();
           if (!raw) return '';
           const converted = toEnglishGenre(raw);
           if (converted !== raw) return converted;
-          // 既に大文字混じり（例: R&B, J-Pop）ならそのまま、小文字のみならタイトルケース化
           if (/[A-Z]/.test(raw)) return raw;
           return raw.replace(/(^|[\s\-\/])([a-z])/g, (_, sep, ch) => sep + ch.toUpperCase());
         }
 
-        /** Gemini API（gemini-2.5-flash-preview-09-2025）呼び出し */
         async function requestGeminiAlbumInfo(albumName, artistName, yearStr, fallbackGenre) {
           const apiKey = '';
-          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
 
           const promptLines = [
             'あなたは音楽データベースの編集者です。以下のアルバムについて、JSONオブジェクトのみを返してください。余計な説明文やマークダウン装飾は一切不要です。',
@@ -2776,7 +3039,6 @@
           throw lastErr || new Error('Gemini API request failed');
         }
 
-        /** 日本語Wikipedia API からアルバム概要文（2〜3文）を取得 */
         async function fetchWikipediaSummary(albumName, artistName) {
           const searchQueries = [`${albumName} ${artistName}`, `${albumName} アルバム`, albumName];
           let pageTitle = '';
@@ -2788,7 +3050,6 @@
             const data = await res.json();
             const hits = (data && data.query && data.query.search) || [];
             if (hits.length > 0) {
-              // アルバム名を含む記事を優先
               const albumLower = albumName.toLowerCase();
               const matched =
                 hits.find((h) => String(h.title || '').toLowerCase().includes(albumLower)) ||
@@ -2812,7 +3073,6 @@
           const rawExtract = String((firstPage && firstPage.extract) || '').trim();
           if (!rawExtract) return '';
 
-          // 改行を整理し、最初の2〜3文に整形
           const flat = rawExtract.replace(/\s+/g, ' ').trim();
           const sentences = flat.match(/[^。]+。/g);
           if (sentences && sentences.length > 0) {
@@ -2822,7 +3082,6 @@
           return flat.slice(0, 180);
         }
 
-        /** MusicBrainz API から英語ジャンル・タグを取得 */
         async function fetchMusicBrainzGenres(albumName, artistName) {
           const safeAlbum = albumName.replace(/"/g, '');
           const safeArtist = artistName.replace(/"/g, '');
@@ -2849,14 +3108,14 @@
             const tags = Array.isArray(g && g.tags) ? g.tags : [];
             for (const t of tags) {
               const name = String((t && t.name) || '').trim();
-              // 英語表記のタグのみ採用（日本語やノイズ的な年号・評価語を除外）
               if (!name || !/^[a-zA-Z0-9\s\-\/&']+$/.test(name)) continue;
               if (/^\d{4}s?$/.test(name)) continue;
               const count = Number(t.count) || 1;
               const key = name.toLowerCase();
+              const prev = tagScoreMap.get(key);
               tagScoreMap.set(key, {
                 name: formatEnglishTag(name),
-                count: (tagScoreMap.get(key)?.count || 0) + count,
+                count: (prev ? prev.count : 0) + count,
               });
             }
           }
@@ -2896,7 +3155,6 @@
           };
 
           try {
-            // 1. まず Gemini API から取得を試行
             const aiResult = await requestGeminiAlbumInfo(
               albumName,
               artistName,
@@ -2927,7 +3185,6 @@
               return;
             }
 
-            // 2. Gemini API 失敗時は 日本語Wikipedia API + MusicBrainz API へ自動フォールバック
             setAiStatus('Wikipedia・MusicBrainzからアルバム情報を補完しています...', {
               isLoading: true,
             });
@@ -2975,7 +3232,7 @@
         }
 
         // =====================================================================
-        // iTunes Search API アルバム検索（英語ジャンル取得・JSONP + fetch）
+        // iTunes Search API アルバム検索（JSONP + 8秒タイムアウト + fetchフォールバック）
         // =====================================================================
         function fetchItunesJsonp(baseUrl, timeoutMs) {
           return new Promise((resolve, reject) => {
@@ -3040,13 +3297,13 @@
           els.itunesSearchResults.classList.add('hidden');
           els.itunesSearchResults.innerHTML = '';
 
-          const baseUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&entity=album&country=JP&lang=en_us&limit=10`;
+          const baseUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(q)}&entity=album&country=JP&lang=en_us&limit=10`;
 
           try {
             let data = null;
             try {
               data = await fetchItunesJsonp(baseUrl, 8000);
-            } catch (jsonpErr) {
+            } catch (_) {
               const res = await fetch(baseUrl);
               if (!res.ok) throw new Error(`HTTP ${res.status}`);
               data = await res.json();
@@ -3096,10 +3353,10 @@
                 if (!item) return;
 
                 const highResArtwork = item.artworkUrl100
-                  ? item.artworkUrl100.replace(/100x100bb/i, '600x600bb').replace(/100x100/i, '600x600')
+                  ? item.artworkUrl100.replace(/100x100bb/i, '600x600bb').replace(/100x100/i, '600x600bb')
                   : '';
                 const releaseYear = item.releaseDate ? String(item.releaseDate).slice(0, 4) : '';
-                const primaryGenreEn = toEnglishGenre(item.primaryGenreName || '');
+                const primaryGenreEn = toEnglishGenre(item.primaryGenreName || '') || 'Music';
 
                 els.fieldAlbum.value = item.collectionName || '';
                 els.fieldArtist.value = item.artistName || '';
@@ -3109,13 +3366,11 @@
                 els.fieldDescription.value = '';
                 updateArtworkPreview(highResArtwork);
 
-                // まずiTunesの英語ジャンルを1つ目として確実にセット
-                setModalGenres(primaryGenreEn ? [primaryGenreEn] : []);
+                setModalGenres([primaryGenreEn]);
 
                 els.itunesSearchResults.classList.add('hidden');
                 els.itunesSearchStatus.textContent = `「${els.fieldAlbum.value}」の情報を反映しました。AIで紹介文と英語ジャンルを取得しています...`;
 
-                // 続けてGemini APIから紹介文と英語ジャンル（1〜3つ）を自動取得
                 fetchAlbumAiMetadata({
                   album: els.fieldAlbum.value,
                   artist: els.fieldArtist.value,
@@ -3124,7 +3379,7 @@
                 });
               });
             });
-          } catch (err) {
+          } catch (_) {
             els.itunesSearchStatus.textContent =
               '通信エラーが発生しました。時間をおいて再度お試しいただくか、下のフォームへ手動で入力してください。';
           } finally {
@@ -3149,7 +3404,7 @@
           els.artworkPreviewFallback.classList.add('hidden');
         }
 
-        els.artworkPreviewImg.addEventListener('error', () => {
+        on(els.artworkPreviewImg, 'error', () => {
           els.artworkPreviewImg.classList.add('hidden');
           els.artworkPreviewFallback.classList.remove('hidden');
         });
@@ -3203,8 +3458,9 @@
           }
 
           els.entryModal.classList.remove('hidden');
+          els.entryModal.setAttribute('aria-hidden', 'false');
           setTimeout(() => {
-            els.itunesSearchInput.focus();
+            if (els.itunesSearchInput) els.itunesSearchInput.focus();
           }, 40);
         }
 
@@ -3212,6 +3468,7 @@
           state.aiFetchToken += 1;
           els.btnAiFetch.disabled = false;
           els.entryModal.classList.add('hidden');
+          els.entryModal.setAttribute('aria-hidden', 'true');
         }
 
         function openDeleteConfirm(entryId) {
@@ -3221,17 +3478,20 @@
           const albumName = entry.album || entry.title || '';
           els.confirmModalDesc.textContent = `「${albumName} / ${entry.artist}」の記録を削除します。この操作は取り消せません。`;
           els.confirmModal.classList.remove('hidden');
+          els.confirmModal.setAttribute('aria-hidden', 'false');
         }
 
         function closeDeleteConfirm() {
           state.pendingDeleteId = null;
           els.confirmModal.classList.add('hidden');
+          els.confirmModal.setAttribute('aria-hidden', 'true');
         }
 
         function closeImportModal() {
           state.pendingImportEntries = null;
-          els.inputImportFile.value = '';
+          if (els.inputImportFile) els.inputImportFile.value = '';
           els.importModal.classList.add('hidden');
+          els.importModal.setAttribute('aria-hidden', 'true');
         }
 
         // =====================================================================
@@ -3291,7 +3551,8 @@
               state.pendingImportEntries = validEntries;
               els.importModalDesc.textContent = `${validEntries.length}件の記録を読み込みました。どのように反映しますか？`;
               els.importModal.classList.remove('hidden');
-            } catch (err) {
+              els.importModal.setAttribute('aria-hidden', 'false');
+            } catch (_) {
               showToast('JSONファイルの読み込みに失敗しました', 'error');
             }
           };
@@ -3303,17 +3564,27 @@
         // =====================================================================
         function bindEvents() {
           // ビュー切替
-          els.tabCalendar.addEventListener('click', () => {
+          on(els.tabCalendar, 'click', () => {
             state.activeView = 'calendar';
             renderCurrentView();
           });
-          els.tabList.addEventListener('click', () => {
+          on(els.tabList, 'click', () => {
             state.activeView = 'list';
             renderCurrentView();
           });
+          on(els.mobileTabCalendar, 'click', () => {
+            state.activeView = 'calendar';
+            renderCurrentView();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          });
+          on(els.mobileTabList, 'click', () => {
+            state.activeView = 'list';
+            renderCurrentView();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          });
 
           // カレンダー月移動・今月
-          els.btnPrevMonth.addEventListener('click', () => {
+          on(els.btnPrevMonth, 'click', () => {
             state.currentMonth -= 1;
             if (state.currentMonth < 0) {
               state.currentMonth = 11;
@@ -3322,7 +3593,7 @@
             renderCalendarView();
           });
 
-          els.btnNextMonth.addEventListener('click', () => {
+          on(els.btnNextMonth, 'click', () => {
             state.currentMonth += 1;
             if (state.currentMonth > 11) {
               state.currentMonth = 0;
@@ -3331,7 +3602,7 @@
             renderCalendarView();
           });
 
-          els.btnToday.addEventListener('click', () => {
+          on(els.btnToday, 'click', () => {
             const now = new Date();
             state.currentYear = now.getFullYear();
             state.currentMonth = now.getMonth();
@@ -3340,41 +3611,49 @@
           });
 
           // カレンダー日付クリック
-          els.calendarGrid.addEventListener('click', (e) => {
+          on(els.calendarGrid, 'click', (e) => {
             const cell = e.target.closest('.calendar-cell[data-date]');
             if (!cell) return;
             const dateStr = cell.getAttribute('data-date');
             if (!dateStr) return;
             state.selectedDate = dateStr;
             renderCalendarView();
+
+            if (window.innerWidth <= 768 && els.dayPanel) {
+              els.dayPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
           });
 
-          // 追加ボタン
-          els.btnOpenAddHeader.addEventListener('click', () => {
+          // 追加ボタン（ヘッダー・モバイル下部ナビ・選択日パネル）
+          on(els.btnOpenAddHeader, 'click', () => {
             openEntryModal({
               date: state.activeView === 'calendar' ? state.selectedDate : getTodayStr(),
             });
           });
-
-          els.btnAddForSelectedDate.addEventListener('click', () => {
+          on(els.btnMobileAdd, 'click', () => {
+            openEntryModal({
+              date: state.activeView === 'calendar' ? state.selectedDate : getTodayStr(),
+            });
+          });
+          on(els.btnAddForSelectedDate, 'click', () => {
             openEntryModal({ date: state.selectedDate });
           });
 
           // 記録モーダル閉じる
-          els.btnCloseModal.addEventListener('click', closeEntryModal);
-          els.btnCancelModal.addEventListener('click', closeEntryModal);
-          els.entryModal.addEventListener('click', (e) => {
+          on(els.btnCloseModal, 'click', closeEntryModal);
+          on(els.btnCancelModal, 'click', closeEntryModal);
+          on(els.entryModal, 'click', (e) => {
             if (e.target === els.entryModal) closeEntryModal();
           });
 
           // iTunes検索
-          els.itunesSearchForm.addEventListener('submit', (e) => {
+          on(els.itunesSearchForm, 'submit', (e) => {
             e.preventDefault();
             searchItunes(els.itunesSearchInput.value);
           });
 
           // AI自動取得ボタン
-          els.btnAiFetch.addEventListener('click', () => {
+          on(els.btnAiFetch, 'click', () => {
             fetchAlbumAiMetadata({
               album: els.fieldAlbum.value,
               artist: els.fieldArtist.value,
@@ -3384,14 +3663,14 @@
           });
 
           // ジャンル操作
-          els.btnAddGenre.addEventListener('click', () => {
+          on(els.btnAddGenre, 'click', () => {
             if (addModalGenre(els.genreInput.value)) {
               els.genreInput.value = '';
             }
             els.genreInput.focus();
           });
 
-          els.genreInput.addEventListener('keydown', (e) => {
+          on(els.genreInput, 'keydown', (e) => {
             if (e.key === 'Enter') {
               e.preventDefault();
               if (addModalGenre(els.genreInput.value)) {
@@ -3400,13 +3679,13 @@
             }
           });
 
-          els.genreChips.addEventListener('click', (e) => {
+          on(els.genreChips, 'click', (e) => {
             const btn = e.target.closest('[data-remove-genre]');
             if (!btn) return;
             removeModalGenre(btn.getAttribute('data-remove-genre'));
           });
 
-          els.genrePresets.addEventListener('click', (e) => {
+          on(els.genrePresets, 'click', (e) => {
             const btn = e.target.closest('[data-preset-genre]');
             if (!btn || btn.disabled) return;
             const preset = btn.getAttribute('data-preset-genre');
@@ -3422,16 +3701,16 @@
           });
 
           // 点数スライダー・ジャケットプレビュー
-          els.fieldScore.addEventListener('input', () => {
+          on(els.fieldScore, 'input', () => {
             els.scoreDisplay.textContent = formatScore(els.fieldScore.value);
           });
 
-          els.fieldArtworkUrl.addEventListener('input', () => {
+          on(els.fieldArtworkUrl, 'input', () => {
             updateArtworkPreview(els.fieldArtworkUrl.value);
           });
 
           // フォーム保存
-          els.entryForm.addEventListener('submit', (e) => {
+          on(els.entryForm, 'submit', (e) => {
             e.preventDefault();
             const album = els.fieldAlbum.value.trim();
             const artist = els.fieldArtist.value.trim();
@@ -3513,15 +3792,15 @@
             }
           }
 
-          els.dayEntriesContainer.addEventListener('click', handleCardActionClick);
-          els.listEntriesContainer.addEventListener('click', handleCardActionClick);
+          on(els.dayEntriesContainer, 'click', handleCardActionClick);
+          on(els.listEntriesContainer, 'click', handleCardActionClick);
 
           // 削除確認モーダル
-          els.btnConfirmCancel.addEventListener('click', closeDeleteConfirm);
-          els.confirmModal.addEventListener('click', (e) => {
+          on(els.btnConfirmCancel, 'click', closeDeleteConfirm);
+          on(els.confirmModal, 'click', (e) => {
             if (e.target === els.confirmModal) closeDeleteConfirm();
           });
-          els.btnConfirmOk.addEventListener('click', () => {
+          on(els.btnConfirmOk, 'click', () => {
             if (!state.pendingDeleteId) return;
             state.entries = state.entries.filter((item) => item.id !== state.pendingDeleteId);
             saveEntries();
@@ -3531,35 +3810,35 @@
           });
 
           // 一覧ビューの検索・絞り込み・並び替え
-          els.listSearchInput.addEventListener('input', (e) => {
+          on(els.listSearchInput, 'input', (e) => {
             state.listQuery = e.target.value;
             renderListView();
           });
-          els.listGenreSelect.addEventListener('change', (e) => {
+          on(els.listGenreSelect, 'change', (e) => {
             state.listGenre = e.target.value;
             renderListView();
           });
-          els.listSortSelect.addEventListener('change', (e) => {
+          on(els.listSortSelect, 'change', (e) => {
             state.listSort = e.target.value;
             renderListView();
           });
 
           // JSONエクスポート・インポート
-          els.btnExport.addEventListener('click', exportJson);
-          els.btnImport.addEventListener('click', () => {
-            els.inputImportFile.click();
+          on(els.btnExport, 'click', exportJson);
+          on(els.btnImport, 'click', () => {
+            if (els.inputImportFile) els.inputImportFile.click();
           });
-          els.inputImportFile.addEventListener('change', (e) => {
+          on(els.inputImportFile, 'change', (e) => {
             const file = e.target.files && e.target.files[0];
             handleImportFile(file);
           });
 
-          els.btnImportCancel.addEventListener('click', closeImportModal);
-          els.importModal.addEventListener('click', (e) => {
+          on(els.btnImportCancel, 'click', closeImportModal);
+          on(els.importModal, 'click', (e) => {
             if (e.target === els.importModal) closeImportModal();
           });
 
-          els.btnImportMerge.addEventListener('click', () => {
+          on(els.btnImportMerge, 'click', () => {
             if (!state.pendingImportEntries) return;
             const existingIds = new Set(state.entries.map((e) => e.id));
             let addedCount = 0;
@@ -3576,7 +3855,7 @@
             showToast(`${addedCount}件の記録を追加しました`);
           });
 
-          els.btnImportReplace.addEventListener('click', () => {
+          on(els.btnImportReplace, 'click', () => {
             if (!state.pendingImportEntries) return;
             state.entries = state.pendingImportEntries.slice();
             saveEntries();
@@ -3588,9 +3867,9 @@
           // Escapeキーで開いているモーダルを閉じる
           document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-              if (!els.entryModal.classList.contains('hidden')) closeEntryModal();
-              if (!els.confirmModal.classList.contains('hidden')) closeDeleteConfirm();
-              if (!els.importModal.classList.contains('hidden')) closeImportModal();
+              if (els.entryModal && !els.entryModal.classList.contains('hidden')) closeEntryModal();
+              if (els.confirmModal && !els.confirmModal.classList.contains('hidden')) closeDeleteConfirm();
+              if (els.importModal && !els.importModal.classList.contains('hidden')) closeImportModal();
             }
           });
         }
