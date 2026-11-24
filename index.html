@@ -29,6 +29,9 @@
       --danger-border: #fecaca;
       --sunday: #dc2626;
       --saturday: #2563eb;
+      --relisten-bg: #eef2ff;
+      --relisten-border: #c7d2fe;
+      --relisten-text: #3730a3;
       --status-idle: #a3a3a3;
       --status-ok: #16a34a;
       --status-busy: #d97706;
@@ -52,6 +55,8 @@
     html {
       font-size: 16px;
       -webkit-text-size-adjust: 100%;
+      overflow-x: hidden;
+      max-width: 100%;
     }
 
     body {
@@ -63,28 +68,43 @@
       line-height: 1.5;
       min-height: 100vh;
       overflow-x: hidden;
+      max-width: 100%;
     }
 
-    button, input, select, textarea {
+    button {
+      background: none;
+      border: none;
+      padding: 0;
+      margin: 0;
+      cursor: pointer;
       font-family: inherit;
       color: inherit;
     }
 
-    button {
-      cursor: pointer;
-      border: none;
-      background: transparent;
-      padding: 0;
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
     }
 
-    button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
+    input, select, textarea {
+      font-family: inherit;
+      color: inherit;
+      box-sizing: border-box;
+      min-width: 0;
+      max-width: 100%;
     }
 
     img {
       display: block;
       max-width: 100%;
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.85em;
+      background: var(--surface-subtle);
+      padding: 1px 5px;
+      border-radius: 4px;
     }
 
     .tabular-nums {
@@ -93,18 +113,6 @@
 
     .hidden {
       display: none !important;
-    }
-
-    .sr-only {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
     }
 
     /* =========================================================================
@@ -215,11 +223,16 @@
       font-weight: 600;
       color: var(--text);
       transition: background 0.15s ease, border-color 0.15s ease;
+      white-space: nowrap;
     }
 
     .btn-sync:hover {
       background: var(--surface-hover);
       border-color: var(--border-strong);
+    }
+
+    .sync-label-short {
+      display: none;
     }
 
     .status-dot {
@@ -277,11 +290,11 @@
       white-space: nowrap;
     }
 
-    .btn-primary:hover {
+    .btn-primary:hover:not(:disabled) {
       background: var(--accent-hover);
     }
 
-    .btn-primary:active {
+    .btn-primary:active:not(:disabled) {
       transform: scale(0.98);
     }
 
@@ -302,7 +315,7 @@
       white-space: nowrap;
     }
 
-    .btn-secondary:hover {
+    .btn-secondary:hover:not(:disabled) {
       background: var(--surface-subtle);
     }
 
@@ -347,7 +360,7 @@
     }
 
     /* =========================================================================
-       Main Container & Responsive Layout
+       Main Container & Layout
        ========================================================================= */
     .app-main {
       max-width: 1200px;
@@ -554,19 +567,6 @@
       background: var(--accent);
       color: var(--accent-fg);
       font-weight: 700;
-    }
-
-    .day-score-badge {
-      font-size: 0.6875rem;
-      font-weight: 700;
-      color: var(--text);
-      background: var(--surface-subtle);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-pill);
-      padding: 1px 5px;
-      line-height: 1.3;
-      white-space: nowrap;
-      flex-shrink: 0;
     }
 
     .day-art-wrap {
@@ -824,6 +824,12 @@
       color: var(--text);
     }
 
+    .tag-pill.relisten-tag {
+      background: var(--relisten-bg);
+      border-color: var(--relisten-border);
+      color: var(--relisten-text);
+    }
+
     .entry-description {
       margin-top: 12px;
       padding: 10px 12px;
@@ -863,7 +869,56 @@
       padding-top: 10px;
       border-top: 1px solid #f0f0f0;
       display: flex;
-      justify-content: flex-end;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .entry-streaming-links {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-stream-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+    }
+
+    .btn-stream-link:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-stream-link.apple-music {
+      color: #fa233b;
+    }
+
+    .btn-stream-link.apple-music:hover {
+      background: #fff1f2;
+      border-color: #fecdd3;
+    }
+
+    .btn-stream-link.spotify {
+      color: #1db954;
+    }
+
+    .btn-stream-link.spotify:hover {
+      background: #f0fdf4;
+      border-color: #bbf7d0;
+    }
+
+    .entry-edit-actions {
+      display: inline-flex;
+      align-items: center;
       gap: 6px;
     }
 
@@ -895,13 +950,53 @@
 
     .list-toolbar {
       display: grid;
-      grid-template-columns: minmax(0, 1.5fr) minmax(160px, 0.8fr) minmax(170px, 0.8fr);
+      grid-template-columns: minmax(0, 1.6fr) minmax(180px, 0.7fr);
       gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .genre-filter-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
       margin-bottom: 14px;
+    }
+
+    .filter-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+      font-weight: 600;
+      transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .filter-chip:hover {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    .filter-chip.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--accent-fg);
+    }
+
+    .filter-chip-count {
+      font-size: 0.6875rem;
+      opacity: 0.72;
     }
 
     .input-control, .select-control, .textarea-control {
       width: 100%;
+      min-width: 0;
+      max-width: 100%;
+      box-sizing: border-box;
       border: 1px solid var(--border-strong);
       border-radius: var(--radius-md);
       background: var(--surface);
@@ -913,6 +1008,24 @@
     .input-control, .select-control {
       height: 42px;
       padding: 0 12px;
+    }
+
+    /* Fix iOS Safari <input type="date"> horizontal overflow */
+    input[type="date"] {
+      -webkit-appearance: none;
+      appearance: none;
+      display: block;
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+      box-sizing: border-box;
+      text-align: left;
+      background-color: #ffffff;
+    }
+
+    input[type="date"]::-webkit-date-and-time-value {
+      text-align: left;
+      min-height: 1.4em;
     }
 
     .textarea-control {
@@ -954,7 +1067,7 @@
     }
 
     /* =========================================================================
-       Modals (Entry Modal, Sync Modal, Confirm Modal)
+       Modals (Entry Modal, Sync Modal, Confirm / Import Modals)
        ========================================================================= */
     .modal-backdrop {
       position: fixed;
@@ -968,11 +1081,13 @@
       justify-content: center;
       padding: 16px;
       overflow-y: auto;
+      overflow-x: hidden;
     }
 
     .modal-dialog {
       width: 100%;
-      max-width: 640px;
+      min-width: 0;
+      max-width: 660px;
       max-height: calc(100vh - 32px);
       background: var(--surface);
       border-radius: var(--radius-xl);
@@ -980,6 +1095,7 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      box-sizing: border-box;
       animation: modal-in 0.16s ease-out;
     }
 
@@ -1027,7 +1143,13 @@
     .modal-body {
       padding: 18px 20px;
       overflow-y: auto;
+      overflow-x: hidden;
+      overscroll-behavior-x: none;
+      touch-action: pan-y;
       -webkit-overflow-scrolling: touch;
+      min-width: 0;
+      max-width: 100%;
+      box-sizing: border-box;
       display: flex;
       flex-direction: column;
       gap: 16px;
@@ -1054,6 +1176,9 @@
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       padding: 14px;
+      min-width: 0;
+      max-width: 100%;
+      box-sizing: border-box;
     }
 
     .section-box-header {
@@ -1063,6 +1188,7 @@
       gap: 8px;
       margin-bottom: 10px;
       flex-wrap: wrap;
+      min-width: 0;
     }
 
     .section-box-title {
@@ -1076,16 +1202,125 @@
       color: var(--text-muted);
     }
 
+    .search-header-tools {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .store-select {
+      height: 28px;
+      padding: 0 8px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-strong);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .search-mode-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 4px;
+      background: #e9e9ec;
+      padding: 3px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      width: 100%;
+      min-width: 0;
+    }
+
+    .search-mode-tab {
+      padding: 7px 8px;
+      border-radius: 9px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-align: center;
+      line-height: 1.25;
+      min-width: 0;
+      overflow-wrap: anywhere;
+      transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .search-mode-tab:hover:not(.active) {
+      color: var(--text);
+    }
+
+    .search-mode-tab.active {
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.09);
+    }
+
+    .search-mode-hint {
+      margin: 0 0 10px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
     .inline-row {
       display: flex;
       gap: 8px;
       align-items: center;
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    .inline-row > .input-control {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+
+    .artist-drill-bar {
+      margin-top: 10px;
+      padding: 8px 10px;
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-back-artists {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text);
+      transition: background 0.15s ease;
+    }
+
+    .btn-back-artists:hover {
+      background: var(--border);
+    }
+
+    .artist-drill-info {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .search-status {
       margin-top: 8px;
       font-size: 0.75rem;
-      color: var(--text-muted);
+      color: var(--text-secondary);
+      line-height: 1.45;
     }
 
     .search-status.error {
@@ -1097,15 +1332,36 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
-      max-height: 240px;
+      max-height: 300px;
       overflow-y: auto;
+      padding-right: 2px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .btn-search-more {
+      width: 100%;
+      margin-top: 4px;
+      padding: 9px 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-strong);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      text-align: center;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .btn-search-more:hover {
+      background: var(--surface-hover);
+      border-color: var(--accent);
     }
 
     .search-item {
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 8px;
+      padding: 8px 10px;
       border-radius: var(--radius-md);
       background: var(--surface);
       border: 1px solid var(--border);
@@ -1119,17 +1375,35 @@
       background: var(--surface-hover);
     }
 
-    .search-item-cover {
+    .search-item-thumb {
       width: 46px;
       height: 46px;
       border-radius: 6px;
-      object-fit: cover;
+      overflow: hidden;
       background: var(--surface-subtle);
+      border: 1px solid rgba(0, 0, 0, 0.06);
       flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+    }
+
+    .search-item-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
     .search-item-info {
       flex: 1;
+      min-width: 0;
+    }
+
+    .search-item-title-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
       min-width: 0;
     }
 
@@ -1154,6 +1428,39 @@
       font-size: 0.6875rem;
       color: var(--text-muted);
       margin-top: 2px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .type-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 1px 6px;
+      border-radius: var(--radius-pill);
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      font-size: 0.625rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+
+    .artist-arrow-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      flex-shrink: 0;
+      padding: 4px 8px;
+      border-radius: var(--radius-pill);
+      background: var(--surface-subtle);
+    }
+
+    .search-item:hover .artist-arrow-label {
+      background: var(--accent);
+      color: var(--accent-fg);
     }
 
     .autofetch-row {
@@ -1178,12 +1485,16 @@
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 12px;
+      min-width: 0;
+      max-width: 100%;
     }
 
     .form-field {
       display: flex;
       flex-direction: column;
       gap: 6px;
+      min-width: 0;
+      max-width: 100%;
     }
 
     .form-field.full {
@@ -1212,6 +1523,44 @@
       margin: 0;
     }
 
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .checkbox-row input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .checkbox-text {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      min-width: 0;
+    }
+
+    .checkbox-title {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .checkbox-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
     /* Score Selector (0.5 - 5.0) */
     .score-box {
       background: var(--surface-subtle);
@@ -1221,6 +1570,9 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
+      min-width: 0;
+      max-width: 100%;
+      box-sizing: border-box;
     }
 
     .score-top {
@@ -1255,6 +1607,8 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      min-width: 0;
+      max-width: 100%;
     }
 
     .btn-step {
@@ -1278,6 +1632,8 @@
 
     .score-slider {
       flex: 1;
+      min-width: 0;
+      width: 100%;
       accent-color: var(--accent);
       height: 6px;
       cursor: pointer;
@@ -1348,6 +1704,13 @@
       display: flex;
       align-items: center;
       gap: 12px;
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    .cover-preview-row > .input-control {
+      flex: 1 1 0;
+      min-width: 0;
     }
 
     .cover-preview-box {
@@ -1370,11 +1733,19 @@
       object-fit: cover;
     }
 
+    .cover-fetch-note {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
     /* Password field toggle */
     .input-with-toggle {
       position: relative;
       display: flex;
       align-items: center;
+      min-width: 0;
+      max-width: 100%;
     }
 
     .input-with-toggle .input-control {
@@ -1418,10 +1789,29 @@
     }
 
     /* =========================================================================
-       Mobile Bottom Navigation Bar
+       Mobile Bottom Navigation Bar (<= 768px)
        ========================================================================= */
     .mobile-bottom-bar {
       display: none;
+    }
+
+    .mobile-nav-btn {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      padding: 6px 10px;
+      border-radius: var(--radius-md);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      transition: color 0.15s ease, background 0.15s ease;
+    }
+
+    .mobile-nav-btn.active {
+      color: var(--text);
+      background: var(--surface-subtle);
     }
 
     /* =========================================================================
@@ -1470,7 +1860,7 @@
        ========================================================================= */
     @media (max-width: 960px) {
       .calendar-layout {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
       }
 
       .detail-panel {
@@ -1478,11 +1868,11 @@
       }
 
       .list-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
       }
     }
 
-    @media (max-width: 720px) {
+    @media (max-width: 768px) {
       .header-inner {
         padding: 10px 14px;
       }
@@ -1497,6 +1887,14 @@
 
       #btn-open-add-header {
         display: none;
+      }
+
+      .sync-label-full {
+        display: none;
+      }
+
+      .sync-label-short {
+        display: inline;
       }
 
       .app-main {
@@ -1534,11 +1932,6 @@
         font-size: 0.6875rem;
       }
 
-      .day-score-badge {
-        font-size: 0.625rem;
-        padding: 1px 4px;
-      }
-
       .day-art-wrap {
         max-width: 100%;
         margin-top: 4px;
@@ -1546,11 +1939,11 @@
       }
 
       .list-toolbar {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
       }
 
       .form-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
       }
 
       .modal-backdrop {
@@ -1559,15 +1952,21 @@
       }
 
       .modal-dialog {
+        width: 100%;
         max-width: 100%;
         max-height: 92vh;
         border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+        overflow-x: hidden;
       }
 
       .modal-dialog.compact {
         margin: auto 16px;
         max-width: calc(100% - 32px);
         border-radius: var(--radius-xl);
+      }
+
+      .modal-body {
+        padding: 14px 14px;
       }
 
       .modal-footer {
@@ -1580,30 +1979,97 @@
         right: 0;
         bottom: 0;
         z-index: 40;
-        display: flex;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
         align-items: center;
-        justify-content: space-between;
         gap: 10px;
-        padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+        padding: 8px 14px calc(8px + env(safe-area-inset-bottom));
         background: rgba(255, 255, 255, 0.96);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         border-top: 1px solid var(--border);
       }
 
-      .mobile-bottom-bar .segmented-nav {
-        flex: 1;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-      }
-
-      .mobile-bottom-bar .seg-btn {
-        text-align: center;
-        padding: 8px 10px;
-      }
-
       .toast-container {
         bottom: calc(82px + env(safe-area-inset-bottom));
+      }
+    }
+
+    /* Compact Mobile Calendar & Narrow Viewport Polish (<= 640px) */
+    @media (max-width: 640px) {
+      .app-main {
+        padding: 12px 10px calc(92px + env(safe-area-inset-bottom));
+      }
+
+      .calendar-card {
+        padding: 12px 8px;
+      }
+
+      .calendar-grid, .weekdays-row {
+        gap: 3px;
+      }
+
+      .day-cell {
+        min-height: 72px;
+        padding: 3px 2px;
+        min-width: 0;
+        overflow: hidden;
+        border-radius: 8px;
+      }
+
+      .day-cell-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1px;
+        width: 100%;
+        min-width: 0;
+      }
+
+      .day-num {
+        min-width: 0;
+        height: 16px;
+        padding: 0 1px;
+        font-size: 10px;
+        line-height: 1;
+        letter-spacing: -0.02em;
+        font-variant-numeric: tabular-nums;
+        flex-shrink: 0;
+      }
+
+      .day-cell.today .day-num {
+        width: 17px;
+        min-width: 17px;
+        height: 17px;
+        padding: 0;
+        font-size: 10px;
+      }
+
+      .day-art-wrap {
+        width: 100%;
+        max-width: 100%;
+        aspect-ratio: 1 / 1;
+        margin-top: 4px;
+        border-radius: 4px;
+      }
+
+      .day-art-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .day-more-badge {
+        right: 2px;
+        bottom: 2px;
+        font-size: 9px;
+        padding: 1px 3px;
+        border-radius: 3px;
+      }
+
+      .search-mode-tab {
+        font-size: 0.6875rem;
+        padding: 6px 4px;
       }
     }
   </style>
@@ -1636,7 +2102,8 @@
       <div class="header-actions">
         <button type="button" id="btn-open-sync" class="btn-sync" title="GitHub Gist同期・AI設定">
           <span id="header-sync-dot" class="status-dot"></span>
-          <span>同期</span>
+          <span class="sync-label-full">同期・AI設定</span>
+          <span class="sync-label-short">同期</span>
         </button>
 
         <button type="button" id="btn-export-json" class="btn-icon" title="JSONバックアップを書き出す" aria-label="JSONバックアップを書き出す">
@@ -1744,9 +2211,6 @@
           placeholder="アルバム・アーティスト・ジャンル・感想で検索..."
           autocomplete="off"
         />
-        <select id="list-genre-filter" class="select-control" aria-label="ジャンルで絞り込み">
-          <option value="">すべてのジャンル</option>
-        </select>
         <select id="list-sort-select" class="select-control" aria-label="並び替え">
           <option value="date-desc">聴いた日（新しい順）</option>
           <option value="date-asc">聴いた日（古い順）</option>
@@ -1755,19 +2219,26 @@
         </select>
       </div>
 
+      <div id="list-genre-chips" class="genre-filter-chips" role="group" aria-label="英語ジャンル絞り込み"></div>
       <div id="list-summary-banner" class="list-summary-banner tabular-nums"></div>
       <div id="list-entries-container" class="list-grid"></div>
     </section>
   </main>
 
   <!-- =========================================================================
-       Mobile Bottom Navigation Bar
+       Mobile Bottom Navigation Bar (<= 768px)
        ========================================================================= -->
-  <div class="mobile-bottom-bar" aria-label="モバイルナビゲーション">
-    <nav class="segmented-nav">
-      <button type="button" class="seg-btn active" data-view-target="calendar">カレンダー</button>
-      <button type="button" class="seg-btn" data-view-target="list">一覧</button>
-    </nav>
+  <nav class="mobile-bottom-bar" aria-label="モバイルナビゲーション">
+    <button type="button" class="mobile-nav-btn active" data-view-target="calendar">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+        <line x1="16" y1="2" x2="16" y2="6"></line>
+        <line x1="8" y1="2" x2="8" y2="6"></line>
+        <line x1="3" y1="10" x2="21" y2="10"></line>
+      </svg>
+      <span>カレンダー</span>
+    </button>
+
     <button type="button" id="btn-open-add-mobile" class="btn-primary">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -1775,7 +2246,19 @@
       </svg>
       <span>記録を追加</span>
     </button>
-  </div>
+
+    <button type="button" class="mobile-nav-btn" data-view-target="list">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="8" y1="6" x2="21" y2="6"></line>
+        <line x1="8" y1="12" x2="21" y2="12"></line>
+        <line x1="8" y1="18" x2="21" y2="18"></line>
+        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+      </svg>
+      <span>一覧</span>
+    </button>
+  </nav>
 
   <!-- =========================================================================
        Add / Edit Album Modal
@@ -1792,37 +2275,69 @@
         </button>
       </div>
 
-      <form id="entry-form" novalidate style="display:flex;flex-direction:column;min-height:0;flex:1;">
+      <form id="entry-form" novalidate style="display:flex;flex-direction:column;min-height:0;min-width:0;max-width:100%;overflow-x:hidden;flex:1;">
         <div class="modal-body">
           <input type="hidden" id="field-entry-id" />
+          <input type="hidden" id="field-apple-music-url" />
 
-          <!-- Section A: iTunes Album Search -->
+          <!-- Section A: 3-Mode Album Search -->
           <div class="section-box">
             <div class="section-box-header">
-              <span class="section-box-title">アルバムを検索して自動入力（iTunes Search API）</span>
-              <span class="section-box-hint">見つからない場合は手動入力可</span>
+              <span class="section-box-title">アルバムを検索して自動入力</span>
+              <div class="search-header-tools">
+                <select id="itunes-country-select" class="store-select" aria-label="検索ストア切替">
+                  <option value="JP" selected>日本ストア (JP)</option>
+                  <option value="US">米国ストア (US)</option>
+                </select>
+                <span class="section-box-hint">手動入力可</span>
+              </div>
             </div>
+
+            <!-- 3-Mode Segmented Tabs -->
+            <div class="search-mode-tabs" role="tablist" aria-label="検索モード切替">
+              <button type="button" class="search-mode-tab active" data-search-mode="itunes-album" role="tab" aria-selected="true">
+                iTunes アルバム
+              </button>
+              <button type="button" class="search-mode-tab" data-search-mode="itunes-artist" role="tab" aria-selected="false">
+                iTunes アーティスト逆引き
+              </button>
+              <button type="button" class="search-mode-tab" data-search-mode="musicbrainz" role="tab" aria-selected="false">
+                MusicBrainz
+              </button>
+            </div>
+
+            <p id="search-mode-hint" class="search-mode-hint hidden"></p>
+
             <div class="inline-row">
               <input
                 type="search"
-                id="itunes-search-input"
+                id="album-search-input"
                 class="input-control"
                 placeholder="例: Pet Sounds / Off The Wall / 宇多田ヒカル"
                 autocomplete="off"
               />
-              <button type="button" id="btn-itunes-search" class="btn-primary" style="flex-shrink:0;">検索</button>
+              <button type="button" id="btn-album-search" class="btn-primary" style="flex-shrink:0;">検索</button>
             </div>
-            <div id="itunes-search-status" class="search-status hidden"></div>
-            <div id="itunes-search-results" class="search-results hidden"></div>
+
+            <!-- Artist Drill-Down Header Bar (for Mode 2 Step B) -->
+            <div id="artist-drill-bar" class="artist-drill-bar hidden">
+              <button type="button" id="btn-back-to-artists" class="btn-back-artists">
+                ← アーティスト一覧に戻る
+              </button>
+              <span id="artist-drill-info" class="artist-drill-info tabular-nums"></span>
+            </div>
+
+            <div id="album-search-status" class="search-status hidden"></div>
+            <div id="album-search-results" class="search-results hidden"></div>
           </div>
 
-          <!-- Section B: Auto-fetch Panel -->
+          <!-- Section B: AI / Wikipedia / MusicBrainz Auto-Fetch Panel -->
           <div class="section-box">
             <div class="autofetch-row">
-              <div style="flex:1;min-width:200px;">
-                <div class="section-box-title">アルバム紹介・英語ジャンル自動取得</div>
+              <div style="flex:1 1 180px;min-width:0;max-width:100%;">
+                <div class="section-box-title">AI自動補完（日本語アルバム紹介・英語ジャンル）</div>
                 <div id="autofetch-status" class="autofetch-status">
-                  アルバム選択時に自動取得します（Gemini / Wikipediaアルバム記事 / MusicBrainz）
+                  アルバム選択時に日本語の紹介文と英語ジャンルを自動取得します
                 </div>
               </div>
               <button type="button" id="btn-refetch-meta" class="btn-secondary" style="height:34px;font-size:0.8125rem;">
@@ -1867,6 +2382,17 @@
               </div>
             </div>
 
+            <!-- Re-listen Toggle -->
+            <div class="form-field full">
+              <label class="checkbox-row" for="field-relisten">
+                <input type="checkbox" id="field-relisten" />
+                <span class="checkbox-text">
+                  <span class="checkbox-title">再聴として記録する</span>
+                  <span class="checkbox-desc">「再聴」バッジを表示し、累計アルバム枚数の新規カウントから除外します（同じアルバムの2回目以降は自動判定されます）</span>
+                </span>
+              </label>
+            </div>
+
             <!-- 0.5-Step 5-Point Rating -->
             <div class="form-field full">
               <label class="field-label" for="field-score">
@@ -1907,14 +2433,14 @@
               <div id="preset-genres-container" class="preset-genres"></div>
             </div>
 
-            <!-- Album Description -->
+            <!-- Album Description (Always Japanese) -->
             <div class="form-field full">
-              <label class="field-label" for="field-description">アルバム紹介文（編集可）</label>
+              <label class="field-label" for="field-description">アルバム紹介（日本語）</label>
               <textarea
                 id="field-description"
                 class="textarea-control"
                 rows="3"
-                placeholder="アルバムの音楽性や背景などの紹介文（自動取得後に編集・削除できます）"
+                placeholder="アルバムの音楽性や背景などの日本語紹介文（自動取得後に編集・削除できます）"
               ></textarea>
             </div>
 
@@ -1941,6 +2467,7 @@
                   placeholder="https://..."
                 />
               </div>
+              <div id="cover-fetch-note" class="cover-fetch-note hidden"></div>
             </div>
           </div>
         </div>
@@ -2007,24 +2534,24 @@
             <button type="button" id="btn-copy-gist-id" class="btn-secondary" style="flex-shrink:0;">コピー</button>
           </div>
           <p class="field-help">
-            初回は空欄のまま「保存して同期」を押すと非公開Gistを自動作成します。2台目の端末では同じトークンとGist IDを入力してください。
+            初回は空欄のまま「保存して同期」を押すと非公開Gist（<code>soundlog_data.json</code>）を自動作成します。2台目の端末では同じトークンとGist IDを入力してください。
           </p>
         </div>
 
         <div class="form-field">
-          <label class="field-label" for="field-gemini-key">Gemini API キー（任意・アルバム紹介/英語ジャンル自動生成）</label>
+          <label class="field-label" for="field-gemini-key">Gemini API キー（任意・日本語アルバム紹介/英語ジャンル自動生成）</label>
           <div class="input-with-toggle">
             <input
               type="password"
               id="field-gemini-key"
               class="input-control"
-              placeholder="AIza...（未設定時はWikipedia・MusicBrainzを使用）"
+              placeholder="AIza...（未設定時はWikipedia日本語取得・自動翻訳を使用）"
               autocomplete="off"
             />
             <button type="button" class="btn-toggle-secret" data-toggle-target="field-gemini-key">表示</button>
           </div>
           <p class="field-help">
-            設定すると Gemini 2.5 Flash で日本語のアルバム紹介文と英語ジャンルを生成します。未設定またはエラー時は自動でWikipedia（アルバム記事限定）とMusicBrainzへフォールバックします。
+            設定すると Gemini 2.5 Flash で自然な日本語のアルバム紹介文と英語ジャンルを生成します。未設定またはエラー時は自動でWikipedia（アルバム記事限定・英語記事は日本語へ自動翻訳）とMusicBrainzへフォールバックします。
           </p>
         </div>
       </div>
@@ -2040,7 +2567,7 @@
   </div>
 
   <!-- =========================================================================
-       Custom Confirmation Modal (Replaces window.confirm)
+       Custom Confirmation Modal (Replaces window.confirm / window.alert)
        ========================================================================= -->
   <div id="confirm-modal-backdrop" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
     <div class="modal-dialog compact">
@@ -2058,6 +2585,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" id="btn-confirm-cancel" class="btn-secondary">キャンセル</button>
+        <button type="button" id="btn-confirm-alt" class="btn-secondary hidden">統合する</button>
         <button type="button" id="btn-confirm-ok" class="btn-danger-solid">実行する</button>
       </div>
     </div>
@@ -2083,11 +2611,12 @@
       const GIST_FILENAME = 'soundlog_data.json';
 
       const PRESET_GENRES = [
-        'Rock', 'Pop', 'Alternative', 'Indie', 'Jazz', 'Soul', 'R&B',
-        'Hip-Hop', 'Electronic', 'Ambient', 'Folk', 'Classical', 'Punk',
-        'Metal', 'Funk', 'Bossa Nova', 'Shoegaze', 'Post-Rock',
-        'Experimental', 'City Pop', 'Soundtrack', 'Disco', 'House',
-        'Techno', 'Blues', 'Reggae', 'Dream Pop', 'Neo-Soul'
+        'Rock', 'Pop', 'Alternative', 'Indie Rock', 'Shoegaze', 'Dream Pop',
+        'Slowcore', 'Post-Rock', 'Jazz', 'Neo-Soul', 'R&B', 'Soul', 'Funk',
+        'Hip-Hop', 'Electronic', 'House', 'Techno', 'Ambient', 'Experimental',
+        'Noise', 'Folk', 'Singer-Songwriter', 'Classical', 'Jazz Fusion',
+        'Bossa Nova', 'City Pop', 'J-Pop', 'Synth-Pop', 'Punk', 'Metal',
+        'Lo-Fi', 'Blues', 'Country', 'Reggae', 'Dub', 'Soundtrack'
       ];
 
       // Comprehensive Japanese -> English genre mapping dictionary
@@ -2105,13 +2634,21 @@
         'オルタナティヴ': 'Alternative',
         'オルタナティブ・ロック': 'Alternative Rock',
         'オルタナティヴ・ロック': 'Alternative Rock',
-        'インディー': 'Indie',
-        'インディ': 'Indie',
+        'インディー': 'Indie Rock',
+        'インディ': 'Indie Rock',
         'インディー・ロック': 'Indie Rock',
+        'インディ・ロック': 'Indie Rock',
         'インディー・ポップ': 'Indie Pop',
+        'インディ・ポップ': 'Indie Pop',
+        'インディー・フォーク': 'Indie Folk',
+        'スロウコア': 'Slowcore',
+        'スローコア': 'Slowcore',
         'ジャズ': 'Jazz',
         'フュージョン': 'Jazz Fusion',
         'ジャズ・フュージョン': 'Jazz Fusion',
+        'フリー・ジャズ': 'Free Jazz',
+        'ビバップ': 'Bebop',
+        'ハード・バップ': 'Hard Bop',
         'ソウル': 'Soul',
         'ソウル・ミュージック': 'Soul',
         'ネオ・ソウル': 'Neo-Soul',
@@ -2123,16 +2660,22 @@
         'リズム&ブルース': 'R&B',
         'コンテンポラリー・r&b': 'R&B',
         'ヒップホップ': 'Hip-Hop',
+        'ヒップホップ・ミュージック': 'Hip-Hop',
         'ヒップホップ/ラップ': 'Hip-Hop',
         'ラップ': 'Hip-Hop',
         'エレクトロニック': 'Electronic',
         'エレクトロニカ': 'Electronic',
+        '電子音楽': 'Electronic',
         'エレクトロ': 'Electronic',
+        'エレクトロポップ': 'Electropop',
+        'エレクトロ・ポップ': 'Electropop',
         'ダンス': 'Dance',
         'ダンス・ミュージック': 'Dance',
         'ダンス・ポップ': 'Dance-Pop',
         'アンビエント': 'Ambient',
+        'アンビエント・ミュージック': 'Ambient',
         'フォーク': 'Folk',
+        'フォーク・ミュージック': 'Folk',
         'フォーク・ロック': 'Folk Rock',
         'シンガーソングライター': 'Singer-Songwriter',
         'クラシック': 'Classical',
@@ -2148,9 +2691,11 @@
         'ハードロック': 'Hard Rock',
         'ハード・ロック': 'Hard Rock',
         'プログレッシブ・ロック': 'Progressive Rock',
+        'プログレッシヴ・ロック': 'Progressive Rock',
         'プログレ': 'Progressive Rock',
         'サイケデリック・ロック': 'Psychedelic Rock',
         'サイケデリック・ポップ': 'Psychedelic Pop',
+        'サイケデリック・ソウル': 'Psychedelic Soul',
         'サイケ': 'Psychedelic',
         'ファンク': 'Funk',
         'ボサノヴァ': 'Bossa Nova',
@@ -2160,6 +2705,7 @@
         'ポストロック': 'Post-Rock',
         'ポスト・ロック': 'Post-Rock',
         'エクスペリメンタル': 'Experimental',
+        'エクスペリメンタル・ロック': 'Experimental Rock',
         '実験音楽': 'Experimental',
         'シティ・ポップ': 'City Pop',
         'シティポップ': 'City Pop',
@@ -2167,6 +2713,7 @@
         '映画音楽': 'Soundtrack',
         'アニメ': 'Anime',
         'ディスコ': 'Disco',
+        'ポスト・ディスコ': 'Post-Disco',
         'ハウス': 'House',
         'テクノ': 'Techno',
         'ドラムンベース': 'Drum and Bass',
@@ -2179,6 +2726,7 @@
         'ドリームポップ': 'Dream Pop',
         'ニュー・ウェイヴ': 'New Wave',
         'ニューウェイヴ': 'New Wave',
+        'ニュー・ウェーブ': 'New Wave',
         'シンセポップ': 'Synth-Pop',
         'シンセ・ポップ': 'Synth-Pop',
         'アート・ロック': 'Art Rock',
@@ -2192,6 +2740,7 @@
         'ワールドミュージック': 'World',
         'ノイズ': 'Noise',
         'ノイズ・ロック': 'Noise Rock',
+        'ノイズ・ポップ': 'Noise Pop',
         'エモ': 'Emo',
         'マスロック': 'Math Rock',
         'マス・ロック': 'Math Rock',
@@ -2214,6 +2763,7 @@
         'j-pop': 'J-Pop',
         'k-pop': 'K-Pop',
         'lo-fi': 'Lo-Fi',
+        'lofi': 'Lo-Fi',
         'post-rock': 'Post-Rock',
         'post-punk': 'Post-Punk',
         'neo-soul': 'Neo-Soul',
@@ -2223,9 +2773,14 @@
         'bossa nova': 'Bossa Nova',
         'synth-pop': 'Synth-Pop',
         'synthpop': 'Synth-Pop',
+        'slowcore': 'Slowcore',
+        'sadcore': 'Slowcore',
+        'singer-songwriter': 'Singer-Songwriter',
+        'singer/songwriter': 'Singer-Songwriter',
+        'jazz fusion': 'Jazz Fusion',
         'alternative': 'Alternative',
         'alternative rock': 'Alternative Rock',
-        'indie': 'Indie',
+        'indie': 'Indie Rock',
         'indie rock': 'Indie Rock',
         'indie pop': 'Indie Pop',
         'shoegaze': 'Shoegaze',
@@ -2248,7 +2803,10 @@
         'house': 'House',
         'techno': 'Techno',
         'blues': 'Blues',
+        'country': 'Country',
         'reggae': 'Reggae',
+        'dub': 'Dub',
+        'noise': 'Noise',
         'experimental': 'Experimental'
       };
 
@@ -2289,8 +2847,21 @@
         listGenre: '',
         listSort: 'date-desc',
         formGenres: [],
+        // 3-Mode Album Search State
+        searchMode: 'itunes-album', // 'itunes-album' | 'itunes-artist' | 'musicbrainz'
+        searchResults: [],
+        searchVisibleCount: 15,
+        artistStep: 'artists', // 'artists' | 'albums'
+        artistCandidates: [],
+        artistVisibleCount: 15,
+        selectedArtistInfo: null, // { id, name }
+        artistAlbums: [],
+        artistAlbumsVisibleCount: 15,
+        searchRequestToken: 0,
         metaFetchToken: 0,
-        confirmCallback: null
+        coverCheckToken: 0,
+        confirmCallback: null,
+        confirmAltCallback: null
       };
 
       // =======================================================================
@@ -2313,6 +2884,10 @@
           .replace(/>/g, '&gt;')
           .replace(/"/g, '&quot;')
           .replace(/'/g, '&#39;');
+      }
+
+      function containsJapanese(str) {
+        return /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]/.test(String(str || ''));
       }
 
       function formatDateKey(dateObj) {
@@ -2396,7 +2971,7 @@
 
       function mapGenreToEnglish(raw) {
         if (!raw) return '';
-        let cleaned = String(raw)
+        const cleaned = String(raw)
           .replace(/（[^）]*）/g, '')
           .replace(/\([^)]*\)/g, '')
           .replace(/\[[^\]]*\]/g, '')
@@ -2413,17 +2988,26 @@
           return CANONICAL_ENGLISH_GENRES[lower];
         }
 
-        // Substring check for Japanese genre labels
-        for (const key in JA_TO_EN_GENRE_MAP) {
-          if (Object.prototype.hasOwnProperty.call(JA_TO_EN_GENRE_MAP, key)) {
-            if (/[ぁ-んァ-ヶ一-龯]/.test(key) && lower.includes(key)) {
-              return JA_TO_EN_GENRE_MAP[key];
-            }
+        // Check preset exact match (case-insensitive)
+        for (let i = 0; i < PRESET_GENRES.length; i++) {
+          if (PRESET_GENRES[i].toLowerCase() === lower) {
+            return PRESET_GENRES[i];
           }
         }
 
-        // If still contains Japanese characters and wasn't matched, skip non-English label
-        if (/[ぁ-んァ-ヶ一-龯]/.test(cleaned)) {
+        // Substring check for Japanese genre labels (prefer longer keys first)
+        const jaKeys = Object.keys(JA_TO_EN_GENRE_MAP).sort(function (a, b) {
+          return b.length - a.length;
+        });
+        for (let i = 0; i < jaKeys.length; i++) {
+          const key = jaKeys[i];
+          if (containsJapanese(key) && lower.includes(key)) {
+            return JA_TO_EN_GENRE_MAP[key];
+          }
+        }
+
+        // Reject unmatched Japanese text so genres remain strictly English
+        if (containsJapanese(cleaned)) {
           return '';
         }
 
@@ -2472,8 +3056,10 @@
             : (obj.genre ? [obj.genre] : [])
         );
         const coverUrl = String(obj.coverUrl || obj.artworkUrl || '').trim();
+        const appleMusicUrl = String(obj.appleMusicUrl || '').trim();
         const description = String(obj.description || '').trim();
         const notes = String(obj.notes !== undefined ? obj.notes : (obj.comment || '')).trim();
+        const relisten = Boolean(obj.relisten);
         const updatedAtNum = Number(obj.updatedAt);
         const updatedAt = isFinite(updatedAtNum) && updatedAtNum > 0 ? updatedAtNum : Date.now();
 
@@ -2487,17 +3073,48 @@
           score: normalizeScore(obj.score),
           genres: genres,
           coverUrl: coverUrl,
+          appleMusicUrl: appleMusicUrl,
           description: description,
           notes: notes,
+          relisten: relisten,
           updatedAt: updatedAt
         };
       }
 
+      function albumIdentityKey(entry) {
+        return `${String(entry.album || '').toLowerCase().trim()}::${String(entry.artist || '').toLowerCase().trim()}`;
+      }
+
+      function getRelistenIdSet(entries) {
+        const sorted = entries.slice().sort(function (a, b) {
+          return a.date.localeCompare(b.date) || (a.updatedAt - b.updatedAt) || a.id.localeCompare(b.id);
+        });
+        const seen = new Set();
+        const relistens = new Set();
+        for (let i = 0; i < sorted.length; i++) {
+          const e = sorted[i];
+          const key = albumIdentityKey(e);
+          if (e.relisten) {
+            relistens.add(e.id);
+            continue;
+          }
+          if (key === '::') continue;
+          if (seen.has(key)) {
+            relistens.add(e.id);
+          } else {
+            seen.add(key);
+          }
+        }
+        return relistens;
+      }
+
       function countUniqueAlbums(entries) {
+        const relistenIds = getRelistenIdSet(entries);
         const set = new Set();
         for (let i = 0; i < entries.length; i++) {
           const e = entries[i];
-          const key = `${String(e.album || '').toLowerCase().trim()}::${String(e.artist || '').toLowerCase().trim()}`;
+          if (relistenIds.has(e.id)) continue;
+          const key = albumIdentityKey(e);
           if (key !== '::') set.add(key);
         }
         return set.size;
@@ -2546,19 +3163,63 @@
         return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="2.5"></circle></svg>`;
       }
 
+      function getMusicNotePlaceholderSvg(size) {
+        const s = size || 20;
+        return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>`;
+      }
+
+      function getAppleMusicIconSvg() {
+        return `<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 5.5c0-.5.35-.92.85-1.03l9.1-1.92c.58-.12 1.05.32 1.05.91v12.74h-1.8V7.18L10.8 8.74v9.46H9V5.5z"></path><ellipse cx="7.4" cy="18.2" rx="3.4" ry="2.4" transform="rotate(-14 7.4 18.2)"></ellipse><ellipse cx="16.6" cy="16.2" rx="3.4" ry="2.4" transform="rotate(-14 16.6 16.2)"></ellipse></svg>`;
+      }
+
+      function getSpotifyIconSvg() {
+        return `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424a.622.622 0 0 1-.857.207c-2.348-1.435-5.304-1.76-8.785-.964a.623.623 0 0 1-.277-1.215c3.809-.87 7.076-.496 9.712 1.115a.624.624 0 0 1 .207.857zm1.224-2.723a.78.78 0 0 1-1.072.257c-2.687-1.652-6.785-2.131-9.965-1.166a.78.78 0 0 1-.452-1.492c3.632-1.102 8.147-.568 11.232 1.329a.78.78 0 0 1 .257 1.072zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71a.935.935 0 1 1-.543-1.79c3.533-1.072 9.404-.865 13.115 1.338a.936.936 0 0 1-.954 1.608z"></path></svg>`;
+      }
+
+      function buildAppleMusicUrl(entry) {
+        if (entry && typeof entry.appleMusicUrl === 'string' && /^https?:\/\//i.test(entry.appleMusicUrl.trim())) {
+          return entry.appleMusicUrl.trim();
+        }
+        const query = [entry && entry.album, entry && entry.artist].filter(Boolean).join(' ').trim();
+        if (!query) return 'https://music.apple.com/jp';
+        return 'https://music.apple.com/jp/search?term=' + encodeURIComponent(query);
+      }
+
+      function buildSpotifyUrl(entry) {
+        const query = [entry && entry.album, entry && entry.artist].filter(Boolean).join(' ').trim();
+        if (!query) return 'https://open.spotify.com/';
+        return 'https://open.spotify.com/search/' + encodeURIComponent(query);
+      }
+
       // =======================================================================
-      // Custom Confirm Modal (No window.confirm / window.alert)
+      // Custom Confirmation Modal (No window.confirm / window.alert)
       // =======================================================================
-      function openConfirmModal(title, message, okLabel, onConfirm) {
+      function openConfirmModal(title, message, okLabel, onConfirm, altOption) {
         const backdrop = $('confirm-modal-backdrop');
         const titleEl = $('confirm-modal-title');
         const msgEl = $('confirm-modal-message');
         const okBtn = $('btn-confirm-ok');
+        const altBtn = $('btn-confirm-alt');
         if (!backdrop) return;
 
         if (titleEl) titleEl.textContent = title || '確認';
         if (msgEl) msgEl.textContent = message || '';
-        if (okBtn) okBtn.textContent = okLabel || '実行する';
+        if (okBtn) {
+          okBtn.textContent = okLabel || '実行する';
+          okBtn.className = (altOption && altOption.okIsPrimary) ? 'btn-primary' : 'btn-danger-solid';
+        }
+
+        if (altBtn) {
+          if (altOption && altOption.label && typeof altOption.onClick === 'function') {
+            altBtn.textContent = altOption.label;
+            altBtn.classList.remove('hidden');
+            state.confirmAltCallback = altOption.onClick;
+          } else {
+            altBtn.classList.add('hidden');
+            state.confirmAltCallback = null;
+          }
+        }
+
         state.confirmCallback = typeof onConfirm === 'function' ? onConfirm : null;
         backdrop.classList.remove('hidden');
       }
@@ -2567,6 +3228,7 @@
         const backdrop = $('confirm-modal-backdrop');
         if (backdrop) backdrop.classList.add('hidden');
         state.confirmCallback = null;
+        state.confirmAltCallback = null;
       }
 
       // =======================================================================
@@ -2580,7 +3242,6 @@
             const parsed = JSON.parse(raw);
             if (Array.isArray(parsed)) loaded = parsed;
           }
-          // Migrate legacy storage key if v2 is empty
           if (!loaded) {
             for (let i = 0; i < STORAGE_KEYS.legacyEntries.length; i++) {
               const legacyRaw = localStorage.getItem(STORAGE_KEYS.legacyEntries[i]);
@@ -2678,6 +3339,7 @@
         const opts = options && typeof options === 'object' ? options : {};
         const showDate = Boolean(opts.showDate);
         const e = normalizeEntry(entry);
+        const isRelisten = Boolean(opts.isRelisten || e.relisten);
 
         const coverHtml = e.coverUrl
           ? `<img src="${escapeHtml(e.coverUrl)}" alt="${escapeHtml(e.album)}" loading="lazy" onerror="this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='flex';" /><span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;">${getVinylPlaceholderSvg(24)}</span>`
@@ -2686,6 +3348,9 @@
         const tags = [];
         if (showDate && e.date) {
           tags.push(`<span class="tag-pill date-tag tabular-nums">${escapeHtml(e.date)}</span>`);
+        }
+        if (isRelisten) {
+          tags.push('<span class="tag-pill relisten-tag">再聴</span>');
         }
         for (let i = 0; i < e.genres.length; i++) {
           tags.push(`<span class="tag-pill">${escapeHtml(e.genres[i])}</span>`);
@@ -2705,6 +3370,9 @@
           ? `<p class="entry-notes">${escapeHtml(e.notes)}</p>`
           : '';
 
+        const appleMusicUrl = buildAppleMusicUrl(e);
+        const spotifyUrl = buildSpotifyUrl(e);
+
         return `
           <article class="entry-card" data-entry-id="${escapeHtml(e.id)}">
             <div class="entry-top">
@@ -2712,7 +3380,7 @@
               <div class="entry-info">
                 <div class="entry-title-row">
                   <h4 class="entry-title">${escapeHtml(e.album || 'Untitled Album')}</h4>
-                  <span class="entry-score-pill tabular-nums">${escapeHtml(formatScore(e.score))}<span class="entry-score-max">/5.0</span></span>
+                  <span class="entry-score-pill tabular-nums">${escapeHtml(formatScore(e.score))}<span class="entry-score-max">/ 5.0</span></span>
                 </div>
                 <p class="entry-artist">${escapeHtml(e.artist || 'Unknown Artist')}</p>
                 ${tags.length ? `<div class="entry-tags">${tags.join('')}</div>` : ''}
@@ -2721,8 +3389,14 @@
             ${descHtml}
             ${notesHtml}
             <div class="entry-actions">
-              <button type="button" class="btn-card-action" data-action="edit" data-id="${escapeHtml(e.id)}">編集</button>
-              <button type="button" class="btn-card-action delete" data-action="delete" data-id="${escapeHtml(e.id)}">削除</button>
+              <div class="entry-streaming-links">
+                <a href="${escapeHtml(appleMusicUrl)}" target="_blank" rel="noopener noreferrer" class="btn-stream-link apple-music" title="Apple Musicで開く" aria-label="Apple Musicで開く">${getAppleMusicIconSvg()}</a>
+                <a href="${escapeHtml(spotifyUrl)}" target="_blank" rel="noopener noreferrer" class="btn-stream-link spotify" title="Spotifyで開く" aria-label="Spotifyで開く">${getSpotifyIconSvg()}</a>
+              </div>
+              <div class="entry-edit-actions">
+                <button type="button" class="btn-card-action" data-action="edit" data-id="${escapeHtml(e.id)}">編集</button>
+                <button type="button" class="btn-card-action delete" data-action="delete" data-id="${escapeHtml(e.id)}">削除</button>
+              </div>
             </div>
           </article>
         `;
@@ -2736,14 +3410,13 @@
         if (!gridEl) return;
 
         const year = state.calYear;
-        const month = state.calMonth; // 0-indexed
+        const month = state.calMonth;
         const monthPrefix = `${year}-${String(month + 1).padStart(2, '0')}-`;
 
         if (monthLabel) {
           monthLabel.textContent = `${year}年 ${month + 1}月`;
         }
 
-        // Group entries by date
         const byDate = {};
         let monthEntryCount = 0;
         for (let i = 0; i < state.entries.length; i++) {
@@ -2782,19 +3455,12 @@
           if (!isToday && dow === 0) numClasses += ' sun';
           if (!isToday && dow === 6) numClasses += ' sat';
 
-          let scoreHtml = '';
           let artHtml = '';
 
           if (dayEntries.length > 0) {
-            // Sort newest updated first for representative cover
             const sorted = dayEntries.slice().sort(function (a, b) {
               return (b.updatedAt || 0) - (a.updatedAt || 0);
             });
-            const sum = sorted.reduce(function (acc, item) {
-              return acc + normalizeScore(item.score);
-            }, 0);
-            const avg = (sum / sorted.length).toFixed(1);
-            scoreHtml = `<span class="day-score-badge tabular-nums">${escapeHtml(avg)}</span>`;
 
             const rep = sorted[0];
             const moreBadge = sorted.length > 1
@@ -2812,7 +3478,6 @@
             <button type="button" class="${cellClasses}" data-date="${dateKey}" aria-label="${formatDisplayDate(dateKey)}">
               <div class="day-cell-top">
                 <span class="${numClasses}">${day}</span>
-                ${scoreHtml}
               </div>
               ${artHtml}
             </button>
@@ -2832,6 +3497,7 @@
           titleEl.textContent = formatDisplayDate(state.selectedDate);
         }
 
+        const relistenIds = getRelistenIdSet(state.entries);
         const dayEntries = state.entries
           .filter(function (e) { return e.date === state.selectedDate; })
           .sort(function (a, b) { return (b.updatedAt || 0) - (a.updatedAt || 0); });
@@ -2849,55 +3515,57 @@
           return;
         }
 
-        const avg = (
-          dayEntries.reduce(function (acc, item) { return acc + normalizeScore(item.score); }, 0) /
-          dayEntries.length
-        ).toFixed(1);
-
         if (metaEl) {
-          metaEl.textContent = `${dayEntries.length}件の記録 ・ 平均 ${avg} / 5.0`;
+          metaEl.textContent = `${dayEntries.length}件の記録`;
         }
 
         listEl.innerHTML = dayEntries.map(function (entry) {
-          return renderEntryCard(entry, { showDate: false });
+          return renderEntryCard(entry, {
+            showDate: false,
+            isRelisten: relistenIds.has(entry.id)
+          });
         }).join('');
       }
 
-      function renderListView() {
-        const genreSelect = $('list-genre-filter');
+      function renderList() {
+        const chipsContainer = $('list-genre-chips');
         const summaryEl = $('list-summary-banner');
         const containerEl = $('list-entries-container');
         if (!containerEl) return;
 
-        // Populate English genre dropdown dynamically
-        const genreSet = new Set();
+        // Count genres across all entries
+        const genreCounts = {};
         for (let i = 0; i < state.entries.length; i++) {
           const gs = state.entries[i].genres || [];
           for (let j = 0; j < gs.length; j++) {
-            if (gs[j]) genreSet.add(gs[j]);
+            const g = gs[j];
+            if (!g) continue;
+            genreCounts[g] = (genreCounts[g] || 0) + 1;
           }
         }
-        const sortedGenres = Array.from(genreSet).sort(function (a, b) {
+        const sortedGenres = Object.keys(genreCounts).sort(function (a, b) {
           return a.localeCompare(b, 'en', { sensitivity: 'base' });
         });
 
-        if (genreSelect) {
-          const prevVal = state.listGenre;
-          const opts = ['<option value="">すべてのジャンル</option>'];
-          for (let i = 0; i < sortedGenres.length; i++) {
-            const g = sortedGenres[i];
-            opts.push(`<option value="${escapeHtml(g)}">${escapeHtml(g)}</option>`);
-          }
-          genreSelect.innerHTML = opts.join('');
-          if (prevVal && genreSet.has(prevVal)) {
-            genreSelect.value = prevVal;
-          } else {
-            state.listGenre = '';
-            genreSelect.value = '';
-          }
+        if (state.listGenre && !Object.prototype.hasOwnProperty.call(genreCounts, state.listGenre)) {
+          state.listGenre = '';
         }
 
-        // Filter entries
+        if (chipsContainer) {
+          const chipButtons = [
+            `<button type="button" class="filter-chip${state.listGenre === '' ? ' active' : ''}" data-filter-genre="">すべて <span class="filter-chip-count tabular-nums">${state.entries.length}</span></button>`
+          ];
+          for (let i = 0; i < sortedGenres.length; i++) {
+            const g = sortedGenres[i];
+            const isActive = state.listGenre.toLowerCase() === g.toLowerCase();
+            chipButtons.push(
+              `<button type="button" class="filter-chip${isActive ? ' active' : ''}" data-filter-genre="${escapeHtml(g)}">${escapeHtml(g)} <span class="filter-chip-count tabular-nums">${genreCounts[g]}</span></button>`
+            );
+          }
+          chipsContainer.innerHTML = chipButtons.join('');
+        }
+
+        const relistenIds = getRelistenIdSet(state.entries);
         const query = state.listSearch.trim().toLowerCase();
         const selectedGenre = state.listGenre;
 
@@ -2922,7 +3590,6 @@
           return true;
         });
 
-        // Sort entries
         filtered.sort(function (a, b) {
           switch (state.listSort) {
             case 'date-asc':
@@ -2937,11 +3604,17 @@
           }
         });
 
-        const uniqueAlbumsCount = countUniqueAlbums(filtered);
+        const uniqueInFiltered = new Set();
+        for (let i = 0; i < filtered.length; i++) {
+          if (relistenIds.has(filtered[i].id)) continue;
+          const k = albumIdentityKey(filtered[i]);
+          if (k !== '::') uniqueInFiltered.add(k);
+        }
+
         if (summaryEl) {
           const filterLabel = selectedGenre ? `ジャンル: <strong>${escapeHtml(selectedGenre)}</strong>` : 'すべて表示中';
           summaryEl.innerHTML = `
-            <span>聴いた枚数: <strong>${uniqueAlbumsCount}枚</strong>（${filtered.length}件の記録）</span>
+            <span>表示中: <strong>${filtered.length}件</strong>（うち新規アルバム <strong>${uniqueInFiltered.size}枚</strong>）</span>
             <span>${filterLabel}</span>
           `;
         }
@@ -2958,7 +3631,10 @@
         }
 
         containerEl.innerHTML = filtered.map(function (entry) {
-          return renderEntryCard(entry, { showDate: true });
+          return renderEntryCard(entry, {
+            showDate: true,
+            isRelisten: relistenIds.has(entry.id)
+          });
         }).join('');
       }
 
@@ -2966,7 +3642,7 @@
         renderSyncStatus();
         renderCalendar();
         renderSelectedDatePanel();
-        renderListView();
+        renderList();
       }
 
       function switchView(viewName) {
@@ -2999,10 +3675,8 @@
           const starsHtml = [];
           for (let i = 1; i <= 5; i++) {
             if (val >= i) {
-              // Full star
               starsHtml.push('<svg width="18" height="18" viewBox="0 0 24 24" fill="#111111" stroke="#111111" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>');
             } else if (val >= i - 0.5) {
-              // Half star
               const clipId = 'half-star-' + i;
               starsHtml.push(`
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="1.5">
@@ -3012,7 +3686,6 @@
                 </svg>
               `);
             } else {
-              // Empty star
               starsHtml.push('<svg width="18" height="18" viewBox="0 0 24 24" fill="#e5e5e5" stroke="#a3a3a3" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>');
             }
           }
@@ -3093,6 +3766,18 @@
         box.innerHTML = `<img src="${escapeHtml(cleanUrl)}" alt="ジャケットプレビュー" onerror="this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='flex';" /><span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;">${getVinylPlaceholderSvg(22)}</span>`;
       }
 
+      function setCoverFetchNote(message) {
+        const el = $('cover-fetch-note');
+        if (!el) return;
+        if (!message) {
+          el.textContent = '';
+          el.classList.add('hidden');
+        } else {
+          el.textContent = message;
+          el.classList.remove('hidden');
+        }
+      }
+
       function setAutoFetchStatus(message, type) {
         const el = $('autofetch-status');
         if (!el) return;
@@ -3103,57 +3788,128 @@
       // =======================================================================
       // Entry Modal: Open / Close / Submit / Delete
       // =======================================================================
+      function clearSearchUI() {
+        state.searchRequestToken++;
+        state.searchResults = [];
+        state.searchVisibleCount = 15;
+        state.artistStep = 'artists';
+        state.artistCandidates = [];
+        state.artistVisibleCount = 15;
+        state.selectedArtistInfo = null;
+        state.artistAlbums = [];
+        state.artistAlbumsVisibleCount = 15;
+
+        const statusEl = $('album-search-status');
+        const resultsEl = $('album-search-results');
+        const drillBar = $('artist-drill-bar');
+        if (statusEl) {
+          statusEl.textContent = '';
+          statusEl.className = 'search-status hidden';
+        }
+        if (resultsEl) {
+          resultsEl.innerHTML = '';
+          resultsEl.classList.add('hidden');
+        }
+        if (drillBar) {
+          drillBar.classList.add('hidden');
+        }
+      }
+
+      function setSearchMode(mode, shouldAutoSearch) {
+        const validModes = ['itunes-album', 'itunes-artist', 'musicbrainz'];
+        state.searchMode = validModes.includes(mode) ? mode : 'itunes-album';
+
+        const tabs = document.querySelectorAll('[data-search-mode]');
+        for (let i = 0; i < tabs.length; i++) {
+          const tab = tabs[i];
+          const isActive = tab.getAttribute('data-search-mode') === state.searchMode;
+          tab.classList.toggle('active', isActive);
+          tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        }
+
+        const countrySelect = $('itunes-country-select');
+        if (countrySelect) {
+          countrySelect.classList.toggle('hidden', state.searchMode === 'musicbrainz');
+        }
+
+        const input = $('album-search-input');
+        const hintEl = $('search-mode-hint');
+
+        if (state.searchMode === 'itunes-album') {
+          if (input) input.placeholder = '例: Pet Sounds / Off The Wall / 宇多田ヒカル';
+          if (hintEl) {
+            hintEl.textContent = '';
+            hintEl.classList.add('hidden');
+          }
+        } else if (state.searchMode === 'itunes-artist') {
+          if (input) input.placeholder = 'アーティスト名で検索（例: Birth Day / Radiohead）';
+          if (hintEl) {
+            hintEl.textContent = '先にアーティストを選び、そのアーティストの全アルバム一覧から探せます。';
+            hintEl.classList.remove('hidden');
+          }
+        } else {
+          if (input) input.placeholder = '例: Birth Day Boyhood / アーティスト - アルバム';
+          if (hintEl) {
+            hintEl.textContent = 'iTunesに載っていないインディー盤や廃盤も検索できます（ジャケットはCover Art Archiveから自動取得）';
+            hintEl.classList.remove('hidden');
+          }
+        }
+
+        clearSearchUI();
+
+        if (shouldAutoSearch && input && input.value.trim()) {
+          executeAlbumSearch();
+        }
+      }
+
       function openEntryModal(options) {
         const opts = options && typeof options === 'object' ? options : {};
         const backdrop = $('entry-modal-backdrop');
         const titleEl = $('entry-modal-title');
-        const searchInput = $('itunes-search-input');
-        const searchStatus = $('itunes-search-status');
-        const searchResults = $('itunes-search-results');
+        const searchInput = $('album-search-input');
 
         state.metaFetchToken++;
+        state.coverCheckToken++;
         if (searchInput) searchInput.value = '';
-        if (searchStatus) {
-          searchStatus.textContent = '';
-          searchStatus.className = 'search-status hidden';
-        }
-        if (searchResults) {
-          searchResults.innerHTML = '';
-          searchResults.classList.add('hidden');
-        }
+        setSearchMode('itunes-album', false);
+        setCoverFetchNote('');
 
         if (opts.entryId) {
           const existing = state.entries.find(function (e) { return e.id === opts.entryId; });
           if (!existing) return;
           if (titleEl) titleEl.textContent = 'アルバムの記録を編集';
           $('field-entry-id').value = existing.id;
+          $('field-apple-music-url').value = existing.appleMusicUrl || '';
           $('field-album').value = existing.album;
           $('field-artist').value = existing.artist;
           $('field-date').value = existing.date;
           $('field-year').value = existing.year || '';
           $('field-track-count').value = existing.trackCount || '';
+          $('field-relisten').checked = Boolean(existing.relisten);
           $('field-description').value = existing.description || '';
           $('field-notes').value = existing.notes || '';
           $('field-cover-url').value = existing.coverUrl || '';
           state.formGenres = existing.genres.slice(0, 3);
           updateScoreUI(existing.score);
           updateCoverPreview(existing.coverUrl);
-          setAutoFetchStatus('必要に応じて「紹介文・ジャンルを再取得」で自動補完できます', '');
+          setAutoFetchStatus('必要に応じて「紹介文・ジャンルを再取得」で日本語の紹介文・英語ジャンルを補完できます', '');
         } else {
           if (titleEl) titleEl.textContent = 'アルバムの記録を追加';
           $('field-entry-id').value = '';
+          $('field-apple-music-url').value = '';
           $('field-album').value = '';
           $('field-artist').value = '';
           $('field-date').value = opts.date || state.selectedDate || formatDateKey(new Date());
           $('field-year').value = '';
           $('field-track-count').value = '';
+          $('field-relisten').checked = false;
           $('field-description').value = '';
           $('field-notes').value = '';
           $('field-cover-url').value = '';
           state.formGenres = [];
           updateScoreUI(4.0);
           updateCoverPreview('');
-          setAutoFetchStatus('アルバム選択時に自動取得します（Gemini / Wikipediaアルバム記事 / MusicBrainz）', '');
+          setAutoFetchStatus('アルバム選択時に日本語の紹介文と英語ジャンルを自動取得します', '');
         }
 
         const customGenreInput = $('genre-custom-input');
@@ -3164,7 +3920,9 @@
       }
 
       function closeEntryModal() {
+        state.searchRequestToken++;
         state.metaFetchToken++;
+        state.coverCheckToken++;
         const backdrop = $('entry-modal-backdrop');
         if (backdrop) backdrop.classList.add('hidden');
       }
@@ -3201,11 +3959,13 @@
           date: date,
           year: $('field-year').value.trim(),
           trackCount: $('field-track-count').value.trim(),
+          relisten: Boolean($('field-relisten').checked),
           score: $('field-score').value,
           genres: genresToSave,
           description: $('field-description').value.trim(),
           notes: $('field-notes').value.trim(),
           coverUrl: $('field-cover-url').value.trim(),
+          appleMusicUrl: $('field-apple-music-url').value.trim(),
           updatedAt: Date.now()
         });
 
@@ -3220,12 +3980,10 @@
           state.entries.push(entry);
         }
 
-        // If this ID had been deleted previously, clear deletion marker
         if (state.deletedIds[entry.id]) {
           delete state.deletedIds[entry.id];
         }
 
-        // Navigate calendar selection to the saved date
         state.selectedDate = entry.date;
         const parsedDate = parseDateKey(entry.date);
         state.calYear = parsedDate.getFullYear();
@@ -3236,7 +3994,6 @@
         closeEntryModal();
         showToast(editId ? '記録を更新しました' : 'アルバムを記録しました');
 
-        // Background Gist sync if configured
         if (state.syncConfig.githubToken && state.syncConfig.gistId) {
           syncWithGist({ silent: true });
         }
@@ -3265,11 +4022,14 @@
       }
 
       // =======================================================================
-      // iTunes Search API (JSONP with 8s timeout + Cleanup + Fetch Fallback)
+      // 3-Mode Album Search Implementation
+      //   Mode 1: iTunes Album Search (JSONP + fetch fallback, limit=50)
+      //   Mode 2: iTunes Artist Reverse Lookup (musicArtist -> lookup albums)
+      //   Mode 3: MusicBrainz Release-Group + Cover Art Archive
       // =======================================================================
-      function jsonpItunesSearch(term) {
+      function jsonpRequest(baseUrl, timeoutMs) {
         return new Promise(function (resolve, reject) {
-          const cbName = '__itunesCb_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+          const cbName = '__soundlogJsonp_' + Date.now() + '_' + Math.floor(Math.random() * 1000000);
           let script = null;
           let finished = false;
           let timer = null;
@@ -3301,13 +4061,11 @@
             finished = true;
             cleanup();
             reject(new Error('JSONP timeout'));
-          }, 8000);
+          }, timeoutMs || 8000);
 
-          const url = 'https://itunes.apple.com/search?entity=album&country=JP&lang=en_us&limit=10&term=' +
-            encodeURIComponent(term) + '&callback=' + encodeURIComponent(cbName);
-
+          const sep = baseUrl.includes('?') ? '&' : '?';
           script = document.createElement('script');
-          script.src = url;
+          script.src = baseUrl + sep + 'callback=' + encodeURIComponent(cbName);
           script.async = true;
           script.onerror = function () {
             if (finished) return;
@@ -3319,67 +4077,226 @@
         });
       }
 
-      async function searchItunesAlbums() {
-        const input = $('itunes-search-input');
-        const statusEl = $('itunes-search-status');
-        const resultsEl = $('itunes-search-results');
-        const btn = $('btn-itunes-search');
-        if (!input || !statusEl || !resultsEl) return;
+      async function fetchItunesJson(baseUrl) {
+        try {
+          return await jsonpRequest(baseUrl, 8000);
+        } catch (_) {
+          const res = await fetch(baseUrl);
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        }
+      }
+
+      function escapeLuceneTerm(str) {
+        return String(str || '')
+          .replace(/([+\-&|!(){}[\]^"~*?:\\/])/g, '\\$1')
+          .trim();
+      }
+
+      function safeLuceneToken(token) {
+        const escaped = escapeLuceneTerm(token);
+        if (!escaped) return '';
+        if (escaped === 'AND' || escaped === 'OR' || escaped === 'NOT') {
+          return '"' + escaped + '"';
+        }
+        return escaped;
+      }
+
+      function buildMusicBrainzQuery(raw) {
+        const cleaned = String(raw || '').replace(/\s+/g, ' ').trim();
+        if (!cleaned) return '';
+
+        const sepMatch = cleaned.match(/^(.+?)\s+(?:-|–|—|\/)\s+(.+)$/);
+        if (sepMatch) {
+          const partA = escapeLuceneTerm(sepMatch[1]);
+          const partB = escapeLuceneTerm(sepMatch[2]);
+          if (partA && partB) {
+            return `((artist:"${partA}" AND releasegroup:"${partB}")^5 OR (releasegroup:"${partA}" AND artist:"${partB}")^5 OR (artist:(${partA}) AND releasegroup:(${partB}))^3 OR (releasegroup:(${partA}) AND artist:(${partB}))^3)`;
+          }
+        }
+
+        const rawTokens = cleaned.split(/\s+/).filter(Boolean);
+        const tokens = rawTokens.map(safeLuceneToken).filter(Boolean);
+
+        if (tokens.length === 0) return '';
+        if (tokens.length === 1) {
+          const t = tokens[0];
+          return `releasegroup:${t}^3 OR artist:${t}^2 OR ${t}`;
+        }
+
+        const capped = tokens.slice(0, 8);
+        const andClauses = capped.map(function (t) {
+          return `(releasegroup:${t} OR artist:${t})`;
+        }).join(' AND ');
+        const escapedPhrase = escapeLuceneTerm(cleaned);
+        const plainTokens = tokens.join(' ');
+
+        return `(${andClauses})^4 OR releasegroup:"${escapedPhrase}"^3 OR (${plainTokens})`;
+      }
+
+      function checkImageExists(url, timeoutMs) {
+        return new Promise(function (resolve) {
+          let settled = false;
+          const img = new Image();
+          const timer = setTimeout(function () {
+            if (!settled) {
+              settled = true;
+              resolve(false);
+            }
+          }, timeoutMs || 7000);
+
+          img.onload = function () {
+            if (!settled) {
+              settled = true;
+              clearTimeout(timer);
+              resolve(true);
+            }
+          };
+          img.onerror = function () {
+            if (!settled) {
+              settled = true;
+              clearTimeout(timer);
+              resolve(false);
+            }
+          };
+          img.src = url;
+        });
+      }
+
+      function formatMusicBrainzArtist(artistCredit) {
+        if (!Array.isArray(artistCredit) || artistCredit.length === 0) return 'Unknown Artist';
+        let out = '';
+        for (let i = 0; i < artistCredit.length; i++) {
+          const credit = artistCredit[i];
+          if (!credit) continue;
+          const name = credit.name || (credit.artist && credit.artist.name) || '';
+          const joinphrase = credit.joinphrase || '';
+          out += name + joinphrase;
+        }
+        return out.trim() || 'Unknown Artist';
+      }
+
+      function setSearchStatus(message, isError) {
+        const statusEl = $('album-search-status');
+        if (!statusEl) return;
+        if (!message) {
+          statusEl.textContent = '';
+          statusEl.className = 'search-status hidden';
+        } else {
+          statusEl.textContent = message;
+          statusEl.className = 'search-status' + (isError ? ' error' : '');
+        }
+      }
+
+      async function executeAlbumSearch() {
+        const input = $('album-search-input');
+        const resultsEl = $('album-search-results');
+        const drillBar = $('artist-drill-bar');
+        const btn = $('btn-album-search');
+        if (!input || !resultsEl) return;
 
         const term = input.value.trim();
         if (!term) {
-          statusEl.textContent = 'アルバム名やアーティスト名を入力してください。';
-          statusEl.className = 'search-status error';
+          setSearchStatus('検索キーワードを入力してください。', true);
+          resultsEl.classList.add('hidden');
+          if (drillBar) drillBar.classList.add('hidden');
+          return;
+        }
+
+        const myToken = ++state.searchRequestToken;
+        if (btn) btn.disabled = true;
+        if (drillBar) drillBar.classList.add('hidden');
+        resultsEl.innerHTML = '';
+        resultsEl.classList.add('hidden');
+
+        try {
+          if (state.searchMode === 'itunes-album') {
+            await runItunesAlbumSearch(term, myToken);
+          } else if (state.searchMode === 'itunes-artist') {
+            await runItunesArtistSearch(term, myToken);
+          } else {
+            await runMusicBrainzSearch(term, myToken);
+          }
+        } finally {
+          if (myToken === state.searchRequestToken && btn) {
+            btn.disabled = false;
+          }
+        }
+      }
+
+      // Mode 1: iTunes Album Search
+      async function runItunesAlbumSearch(term, reqToken) {
+        const countrySelect = $('itunes-country-select');
+        const country = countrySelect && countrySelect.value === 'US' ? 'US' : 'JP';
+        setSearchStatus('iTunes からアルバムを検索しています...', false);
+
+        const url = 'https://itunes.apple.com/search?entity=album&country=' +
+          encodeURIComponent(country) + '&lang=en_us&limit=50&term=' + encodeURIComponent(term);
+
+        let data = null;
+        try {
+          data = await fetchItunesJson(url);
+        } catch (err) {
+          if (reqToken !== state.searchRequestToken) return;
+          console.error('iTunes album search failed:', err);
+          setSearchStatus('通信エラーが発生しました。時間をおいて再度お試しいただくか、下のフォームへ手動入力してください。', true);
+          return;
+        }
+
+        if (reqToken !== state.searchRequestToken) return;
+
+        const rawItems = data && Array.isArray(data.results) ? data.results : [];
+        const seenIds = new Set();
+        const unique = [];
+        for (let i = 0; i < rawItems.length; i++) {
+          const item = rawItems[i];
+          const cid = item && item.collectionId != null ? String(item.collectionId) : '';
+          if (cid) {
+            if (seenIds.has(cid)) continue;
+            seenIds.add(cid);
+          }
+          unique.push(item);
+        }
+
+        if (unique.length === 0) {
+          setSearchStatus('該当するアルバムが見つかりませんでした。ストア切替や「MusicBrainz」タブもお試しください。', false);
+          return;
+        }
+
+        state.searchResults = unique;
+        state.searchVisibleCount = 15;
+        const resultsEl = $('album-search-results');
+        if (resultsEl) resultsEl.scrollTop = 0;
+        renderItunesAlbumResults();
+      }
+
+      function renderItunesAlbumResults() {
+        const resultsEl = $('album-search-results');
+        const countrySelect = $('itunes-country-select');
+        if (!resultsEl) return;
+
+        const items = state.searchResults || [];
+        const total = items.length;
+        if (total === 0) {
+          resultsEl.innerHTML = '';
           resultsEl.classList.add('hidden');
           return;
         }
 
-        if (btn) btn.disabled = true;
-        statusEl.textContent = 'アルバムを検索しています...';
-        statusEl.className = 'search-status';
-        resultsEl.innerHTML = '';
-        resultsEl.classList.add('hidden');
+        const prevScrollTop = resultsEl.scrollTop;
+        const visibleCount = Math.min(state.searchVisibleCount, total);
+        const storeLabel = countrySelect && countrySelect.value === 'US' ? '米国ストア' : '日本ストア';
 
-        let data = null;
-        try {
-          data = await jsonpItunesSearch(term);
-        } catch (_) {
-          // Automatic fetch fallback
-          try {
-            const url = 'https://itunes.apple.com/search?entity=album&country=JP&lang=en_us&limit=10&term=' + encodeURIComponent(term);
-            const res = await fetch(url);
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-            data = await res.json();
-          } catch (fetchErr) {
-            console.error('iTunes search failed:', fetchErr);
-            statusEl.textContent = '通信エラーが発生しました。時間をおいて再度お試しいただくか、下のフォームへ手動で入力してください。';
-            statusEl.className = 'search-status error';
-            if (btn) btn.disabled = false;
-            return;
-          }
-        }
-
-        if (btn) btn.disabled = false;
-
-        const items = data && Array.isArray(data.results) ? data.results : [];
-        if (items.length === 0) {
-          statusEl.textContent = '該当するアルバムが見つかりませんでした。キーワードを変えるか手動で入力してください。';
-          statusEl.className = 'search-status';
-          return;
-        }
-
-        statusEl.textContent = `${items.length}件の候補が見つかりました（クリックで自動反映）`;
-        statusEl.className = 'search-status';
+        setSearchStatus(`全${total}件中 ${visibleCount}件を表示（${storeLabel}・クリックで自動反映）`, false);
 
         resultsEl.innerHTML = '';
-        for (let i = 0; i < items.length; i++) {
+        for (let i = 0; i < visibleCount; i++) {
           const item = items[i];
           const albumName = item.collectionName || item.trackName || '';
           const artistName = item.artistName || '';
           const year = item.releaseDate ? String(item.releaseDate).slice(0, 4) : '';
           const trackCount = item.trackCount || '';
-          const rawGenre = item.primaryGenreName || '';
-          const enGenre = mapGenreToEnglish(rawGenre) || 'Music';
+          const enGenre = mapGenreToEnglish(item.primaryGenreName || '') || 'Music';
           const thumbUrl = item.artworkUrl100 || item.artworkUrl60 || '';
           const highResUrl = thumbUrl ? thumbUrl.replace(/\/\d+x\d+bb\./, '/600x600bb.') : '';
 
@@ -3387,7 +4304,9 @@
           rowBtn.type = 'button';
           rowBtn.className = 'search-item';
           rowBtn.innerHTML = `
-            <img class="search-item-cover" src="${escapeHtml(thumbUrl)}" alt="" loading="lazy" />
+            <div class="search-item-thumb">
+              ${thumbUrl ? `<img src="${escapeHtml(thumbUrl)}" alt="" loading="lazy" />` : getVinylPlaceholderSvg(20)}
+            </div>
             <div class="search-item-info">
               <div class="search-item-title">${escapeHtml(albumName)}</div>
               <div class="search-item-sub">${escapeHtml(artistName)}</div>
@@ -3395,65 +4314,519 @@
             </div>
           `;
           rowBtn.addEventListener('click', function () {
-            applySearchResult({
+            applyItunesAlbumSelection({
               album: albumName,
               artist: artistName,
               year: year,
               trackCount: trackCount,
               genre: enGenre,
-              coverUrl: highResUrl
+              coverUrl: highResUrl,
+              appleMusicUrl: item.collectionViewUrl || ''
             });
           });
           resultsEl.appendChild(rowBtn);
         }
 
+        if (visibleCount < total) {
+          const remaining = total - visibleCount;
+          const moreBtn = document.createElement('button');
+          moreBtn.type = 'button';
+          moreBtn.className = 'btn-search-more';
+          moreBtn.textContent = `さらに表示（残り${remaining}件）`;
+          moreBtn.addEventListener('click', function () {
+            state.searchVisibleCount += 15;
+            renderItunesAlbumResults();
+          });
+          resultsEl.appendChild(moreBtn);
+        }
+
         resultsEl.classList.remove('hidden');
+        resultsEl.scrollTop = prevScrollTop;
       }
 
-      function applySearchResult(picked) {
+      // Mode 2 Step A: iTunes Artist Search
+      async function runItunesArtistSearch(term, reqToken) {
+        const countrySelect = $('itunes-country-select');
+        const country = countrySelect && countrySelect.value === 'US' ? 'US' : 'JP';
+        setSearchStatus('アーティスト候補を検索しています...', false);
+
+        const url = 'https://itunes.apple.com/search?entity=musicArtist&country=' +
+          encodeURIComponent(country) + '&lang=en_us&limit=25&term=' + encodeURIComponent(term);
+
+        let data = null;
+        try {
+          data = await fetchItunesJson(url);
+        } catch (err) {
+          if (reqToken !== state.searchRequestToken) return;
+          console.error('iTunes artist search failed:', err);
+          setSearchStatus('アーティスト検索で通信エラーが発生しました。時間をおいて再度お試しください。', true);
+          return;
+        }
+
+        if (reqToken !== state.searchRequestToken) return;
+
+        const rawItems = data && Array.isArray(data.results) ? data.results : [];
+        const seenArtistIds = new Set();
+        const uniqueArtists = [];
+        for (let i = 0; i < rawItems.length; i++) {
+          const item = rawItems[i];
+          const aid = item && item.artistId != null ? String(item.artistId) : '';
+          if (!aid || seenArtistIds.has(aid)) continue;
+          seenArtistIds.add(aid);
+          uniqueArtists.push(item);
+        }
+
+        if (uniqueArtists.length === 0) {
+          setSearchStatus('該当するアーティストが見つかりませんでした。ストア切替や「MusicBrainz」タブもお試しください。', false);
+          return;
+        }
+
+        state.artistStep = 'artists';
+        state.artistCandidates = uniqueArtists;
+        state.artistVisibleCount = 15;
+        state.selectedArtistInfo = null;
+        state.artistAlbums = [];
+        const resultsEl = $('album-search-results');
+        if (resultsEl) resultsEl.scrollTop = 0;
+        renderItunesArtistCandidates();
+      }
+
+      function renderItunesArtistCandidates() {
+        const resultsEl = $('album-search-results');
+        const drillBar = $('artist-drill-bar');
+        const countrySelect = $('itunes-country-select');
+        if (!resultsEl) return;
+
+        if (drillBar) drillBar.classList.add('hidden');
+
+        const artists = state.artistCandidates || [];
+        const total = artists.length;
+        if (total === 0) {
+          resultsEl.innerHTML = '';
+          resultsEl.classList.add('hidden');
+          return;
+        }
+
+        const prevScrollTop = resultsEl.scrollTop;
+        const visibleCount = Math.min(state.artistVisibleCount, total);
+        const storeLabel = countrySelect && countrySelect.value === 'US' ? '米国ストア' : '日本ストア';
+
+        setSearchStatus(`アーティスト全${total}件中 ${visibleCount}件を表示（${storeLabel}・選択してアルバム一覧を取得）`, false);
+
+        resultsEl.innerHTML = '';
+        for (let i = 0; i < visibleCount; i++) {
+          const artist = artists[i];
+          const artistId = artist.artistId;
+          const artistName = artist.artistName || 'Unknown Artist';
+          const primaryGenre = mapGenreToEnglish(artist.primaryGenreName || '') || (artist.primaryGenreName || 'Music');
+
+          const rowBtn = document.createElement('button');
+          rowBtn.type = 'button';
+          rowBtn.className = 'search-item';
+          rowBtn.innerHTML = `
+            <div class="search-item-thumb">${getMusicNotePlaceholderSvg(20)}</div>
+            <div class="search-item-info">
+              <div class="search-item-title">${escapeHtml(artistName)}</div>
+              <div class="search-item-sub">${escapeHtml(primaryGenre)}</div>
+            </div>
+            <span class="artist-arrow-label">アルバム一覧 →</span>
+          `;
+          rowBtn.addEventListener('click', function () {
+            lookupArtistAlbums(artistId, artistName);
+          });
+          resultsEl.appendChild(rowBtn);
+        }
+
+        if (visibleCount < total) {
+          const remaining = total - visibleCount;
+          const moreBtn = document.createElement('button');
+          moreBtn.type = 'button';
+          moreBtn.className = 'btn-search-more';
+          moreBtn.textContent = `さらに表示（残り${remaining}件）`;
+          moreBtn.addEventListener('click', function () {
+            state.artistVisibleCount += 15;
+            renderItunesArtistCandidates();
+          });
+          resultsEl.appendChild(moreBtn);
+        }
+
+        resultsEl.classList.remove('hidden');
+        resultsEl.scrollTop = prevScrollTop;
+      }
+
+      // Mode 2 Step B: iTunes Artist Lookup API (All Albums by Artist)
+      async function lookupArtistAlbums(artistId, artistName) {
+        const resultsEl = $('album-search-results');
+        const drillBar = $('artist-drill-bar');
+        const drillInfo = $('artist-drill-info');
+        const countrySelect = $('itunes-country-select');
+        const country = countrySelect && countrySelect.value === 'US' ? 'US' : 'JP';
+
+        const myToken = ++state.searchRequestToken;
+        state.artistStep = 'albums';
+        state.selectedArtistInfo = { id: artistId, name: artistName };
+        state.artistAlbums = [];
+        state.artistAlbumsVisibleCount = 15;
+
+        if (drillBar) drillBar.classList.remove('hidden');
+        if (drillInfo) drillInfo.innerHTML = `<strong>${escapeHtml(artistName)}</strong> のアルバムを取得中...`;
+        setSearchStatus('iTunes Lookup API から全アルバムを取得しています...', false);
+        if (resultsEl) {
+          resultsEl.innerHTML = '';
+          resultsEl.classList.add('hidden');
+        }
+
+        const url = 'https://itunes.apple.com/lookup?id=' + encodeURIComponent(String(artistId)) +
+          '&country=' + encodeURIComponent(country) + '&entity=album&lang=en_us&limit=100';
+
+        let data = null;
+        try {
+          data = await fetchItunesJson(url);
+        } catch (err) {
+          if (myToken !== state.searchRequestToken) return;
+          console.error('iTunes lookup failed:', err);
+          if (drillInfo) drillInfo.innerHTML = `<strong>${escapeHtml(artistName)}</strong>`;
+          setSearchStatus('アルバム一覧の取得に失敗しました。時間をおいて再度お試しください。', true);
+          return;
+        }
+
+        if (myToken !== state.searchRequestToken) return;
+
+        const rawItems = data && Array.isArray(data.results) ? data.results : [];
+        const seenIds = new Set();
+        const collections = [];
+        for (let i = 0; i < rawItems.length; i++) {
+          const item = rawItems[i];
+          if (!item || item.wrapperType !== 'collection') continue;
+          const cid = item.collectionId != null ? String(item.collectionId) : '';
+          if (cid) {
+            if (seenIds.has(cid)) continue;
+            seenIds.add(cid);
+          }
+          collections.push(item);
+        }
+
+        collections.sort(function (a, b) {
+          const da = a.releaseDate ? Date.parse(a.releaseDate) : 0;
+          const db = b.releaseDate ? Date.parse(b.releaseDate) : 0;
+          return (isFinite(db) ? db : 0) - (isFinite(da) ? da : 0);
+        });
+
+        state.artistAlbums = collections;
+        state.artistAlbumsVisibleCount = 15;
+
+        if (drillInfo) {
+          drillInfo.innerHTML = `<strong>${escapeHtml(artistName)}</strong>（${collections.length}件）`;
+        }
+
+        if (collections.length === 0) {
+          setSearchStatus('このストアではアルバムが見つかりませんでした。米国ストア (US) への切替や「MusicBrainz」タブもお試しください。', false);
+          return;
+        }
+
+        if (resultsEl) resultsEl.scrollTop = 0;
+        renderItunesArtistAlbums();
+      }
+
+      function renderItunesArtistAlbums() {
+        const resultsEl = $('album-search-results');
+        const drillBar = $('artist-drill-bar');
+        if (!resultsEl) return;
+
+        if (drillBar) drillBar.classList.remove('hidden');
+
+        const items = state.artistAlbums || [];
+        const total = items.length;
+        if (total === 0) {
+          resultsEl.innerHTML = '';
+          resultsEl.classList.add('hidden');
+          return;
+        }
+
+        const prevScrollTop = resultsEl.scrollTop;
+        const visibleCount = Math.min(state.artistAlbumsVisibleCount, total);
+        setSearchStatus(`全${total}件中 ${visibleCount}件を表示（リリース新しい順・クリックで自動反映）`, false);
+
+        resultsEl.innerHTML = '';
+        for (let i = 0; i < visibleCount; i++) {
+          const item = items[i];
+          const albumName = item.collectionName || item.trackName || '';
+          const artistName = item.artistName || (state.selectedArtistInfo && state.selectedArtistInfo.name) || '';
+          const year = item.releaseDate ? String(item.releaseDate).slice(0, 4) : '';
+          const trackCount = item.trackCount || '';
+          const enGenre = mapGenreToEnglish(item.primaryGenreName || '') || 'Music';
+          const thumbUrl = item.artworkUrl100 || item.artworkUrl60 || '';
+          const highResUrl = thumbUrl ? thumbUrl.replace(/\/\d+x\d+bb\./, '/600x600bb.') : '';
+
+          const rowBtn = document.createElement('button');
+          rowBtn.type = 'button';
+          rowBtn.className = 'search-item';
+          rowBtn.innerHTML = `
+            <div class="search-item-thumb">
+              ${thumbUrl ? `<img src="${escapeHtml(thumbUrl)}" alt="" loading="lazy" />` : getVinylPlaceholderSvg(20)}
+            </div>
+            <div class="search-item-info">
+              <div class="search-item-title">${escapeHtml(albumName)}</div>
+              <div class="search-item-sub">${escapeHtml(artistName)}</div>
+              <div class="search-item-meta">${escapeHtml([enGenre, year, trackCount ? trackCount + '曲' : ''].filter(Boolean).join(' ・ '))}</div>
+            </div>
+          `;
+          rowBtn.addEventListener('click', function () {
+            applyItunesAlbumSelection({
+              album: albumName,
+              artist: artistName,
+              year: year,
+              trackCount: trackCount,
+              genre: enGenre,
+              coverUrl: highResUrl,
+              appleMusicUrl: item.collectionViewUrl || ''
+            });
+          });
+          resultsEl.appendChild(rowBtn);
+        }
+
+        if (visibleCount < total) {
+          const remaining = total - visibleCount;
+          const moreBtn = document.createElement('button');
+          moreBtn.type = 'button';
+          moreBtn.className = 'btn-search-more';
+          moreBtn.textContent = `さらに表示（残り${remaining}件）`;
+          moreBtn.addEventListener('click', function () {
+            state.artistAlbumsVisibleCount += 15;
+            renderItunesArtistAlbums();
+          });
+          resultsEl.appendChild(moreBtn);
+        }
+
+        resultsEl.classList.remove('hidden');
+        resultsEl.scrollTop = prevScrollTop;
+      }
+
+      // Mode 3: MusicBrainz + Cover Art Archive Search
+      async function runMusicBrainzSearch(term, reqToken) {
+        const mbQuery = buildMusicBrainzQuery(term);
+        if (!mbQuery) {
+          setSearchStatus('有効な検索キーワードを入力してください。', true);
+          return;
+        }
+
+        setSearchStatus('MusicBrainz からアルバムを検索しています...', false);
+
+        const url = `https://musicbrainz.org/ws/2/release-group/?query=${encodeURIComponent(mbQuery)}&fmt=json&limit=50`;
+
+        let res = null;
+        let data = null;
+        try {
+          res = await fetch(url, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' }
+          });
+
+          if (res.status === 429 || res.status === 503) {
+            if (reqToken !== state.searchRequestToken) return;
+            setSearchStatus('MusicBrainz のアクセス制限に達しました。数秒おいてから再度検索してください。', true);
+            return;
+          }
+          if (!res.ok) {
+            throw new Error('HTTP ' + res.status);
+          }
+          data = await res.json();
+        } catch (err) {
+          if (reqToken !== state.searchRequestToken) return;
+          console.error('MusicBrainz search failed:', err);
+          setSearchStatus('MusicBrainz への接続に失敗しました。通信状況をご確認のうえ再度お試しください。', true);
+          return;
+        }
+
+        if (reqToken !== state.searchRequestToken) return;
+
+        const rawGroups = data && Array.isArray(data['release-groups']) ? data['release-groups'] : [];
+        const seenIds = new Set();
+        const uniqueGroups = [];
+        for (let i = 0; i < rawGroups.length; i++) {
+          const rg = rawGroups[i];
+          if (!rg || !rg.id || seenIds.has(rg.id)) continue;
+          seenIds.add(rg.id);
+          uniqueGroups.push(rg);
+        }
+
+        if (uniqueGroups.length === 0) {
+          setSearchStatus('MusicBrainz で該当する作品が見つかりませんでした。表記（英語/日本語）や「アーティスト - アルバム」形式でお試しください。', false);
+          return;
+        }
+
+        state.searchResults = uniqueGroups;
+        state.searchVisibleCount = 15;
+        const resultsEl = $('album-search-results');
+        if (resultsEl) resultsEl.scrollTop = 0;
+        renderMusicBrainzResults();
+      }
+
+      function renderMusicBrainzResults() {
+        const resultsEl = $('album-search-results');
+        if (!resultsEl) return;
+
+        const items = state.searchResults || [];
+        const total = items.length;
+        if (total === 0) {
+          resultsEl.innerHTML = '';
+          resultsEl.classList.add('hidden');
+          return;
+        }
+
+        const prevScrollTop = resultsEl.scrollTop;
+        const visibleCount = Math.min(state.searchVisibleCount, total);
+
+        setSearchStatus(`MusicBrainz 全${total}件中 ${visibleCount}件を表示（クリックで自動反映・ジャケットはCAAから取得）`, false);
+
+        resultsEl.innerHTML = '';
+        for (let i = 0; i < visibleCount; i++) {
+          const rg = items[i];
+          const rgId = rg.id;
+          const title = rg.title || 'Untitled';
+          const artist = formatMusicBrainzArtist(rg['artist-credit']);
+          const year = rg['first-release-date'] ? String(rg['first-release-date']).slice(0, 4) : '';
+          const primaryType = rg['primary-type'] || '';
+          const thumbUrl = `https://coverartarchive.org/release-group/${encodeURIComponent(rgId)}/front-250`;
+
+          const rawTags = Array.isArray(rg.tags)
+            ? rg.tags.slice().sort(function (a, b) { return (b.count || 0) - (a.count || 0); }).map(function (t) { return t && t.name ? t.name : ''; })
+            : [];
+          const mappedGenres = normalizeGenres(rawTags);
+
+          const rowBtn = document.createElement('button');
+          rowBtn.type = 'button';
+          rowBtn.className = 'search-item';
+          rowBtn.innerHTML = `
+            <div class="search-item-thumb">
+              <img src="${escapeHtml(thumbUrl)}" alt="" loading="lazy" onerror="this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='flex';" />
+              <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;">${getMusicNotePlaceholderSvg(20)}</span>
+            </div>
+            <div class="search-item-info">
+              <div class="search-item-title-row">
+                <div class="search-item-title">${escapeHtml(title)}</div>
+                ${primaryType ? `<span class="type-badge">${escapeHtml(primaryType)}</span>` : ''}
+              </div>
+              <div class="search-item-sub">${escapeHtml(artist)}</div>
+              <div class="search-item-meta">${escapeHtml([year, mappedGenres.join(' / ')].filter(Boolean).join(' ・ '))}</div>
+            </div>
+          `;
+          rowBtn.addEventListener('click', function () {
+            applyMusicBrainzSelection({
+              id: rgId,
+              album: title,
+              artist: artist,
+              year: year,
+              genres: mappedGenres
+            });
+          });
+          resultsEl.appendChild(rowBtn);
+        }
+
+        if (visibleCount < total) {
+          const remaining = total - visibleCount;
+          const moreBtn = document.createElement('button');
+          moreBtn.type = 'button';
+          moreBtn.className = 'btn-search-more';
+          moreBtn.textContent = `さらに表示（残り${remaining}件）`;
+          moreBtn.addEventListener('click', function () {
+            state.searchVisibleCount += 15;
+            renderMusicBrainzResults();
+          });
+          resultsEl.appendChild(moreBtn);
+        }
+
+        resultsEl.classList.remove('hidden');
+        resultsEl.scrollTop = prevScrollTop;
+      }
+
+      function applyItunesAlbumSelection(picked) {
+        state.coverCheckToken++;
+        setCoverFetchNote('');
+
         $('field-album').value = picked.album || '';
         $('field-artist').value = picked.artist || '';
         $('field-year').value = picked.year || '';
         $('field-track-count').value = picked.trackCount || '';
         $('field-cover-url').value = picked.coverUrl || '';
+        $('field-apple-music-url').value = picked.appleMusicUrl || '';
         updateCoverPreview(picked.coverUrl || '');
 
-        // Immediately set mapped iTunes genre as 1st English genre
         const firstGenre = mapGenreToEnglish(picked.genre) || 'Music';
         state.formGenres = [firstGenre];
         renderSelectedGenres();
 
-        // Hide search list
-        const resultsEl = $('itunes-search-results');
-        const statusEl = $('itunes-search-status');
-        if (resultsEl) {
-          resultsEl.innerHTML = '';
-          resultsEl.classList.add('hidden');
-        }
-        if (statusEl) {
-          statusEl.textContent = `「${picked.album}」をフォームへ反映しました。`;
-          statusEl.className = 'search-status';
-        }
+        clearSearchUI();
+        setSearchStatus(`「${picked.album}」をフォームへ反映しました。`, false);
 
-        // Automatically trigger strict album description & English genre pipeline
         fetchAlbumMeta(picked.album, picked.artist, picked.year);
       }
 
+      async function applyMusicBrainzSelection(picked) {
+        const myCoverToken = ++state.coverCheckToken;
+
+        $('field-album').value = picked.album || '';
+        $('field-artist').value = picked.artist || '';
+        $('field-year').value = picked.year || '';
+        $('field-track-count').value = '';
+        $('field-cover-url').value = '';
+        $('field-apple-music-url').value = '';
+        updateCoverPreview('');
+
+        state.formGenres = Array.isArray(picked.genres) ? picked.genres.slice(0, 3) : [];
+        renderSelectedGenres();
+
+        clearSearchUI();
+        setSearchStatus(`MusicBrainz から「${picked.album}」をフォームへ反映しました。`, false);
+        setCoverFetchNote('Cover Art Archive から高画質ジャケット画像を確認中...');
+
+        // Concurrently run Japanese album description & English genre auto-fetch
+        fetchAlbumMeta(picked.album, picked.artist, picked.year);
+
+        // Verify Cover Art Archive front-500 -> fallback front-250
+        const url500 = `https://coverartarchive.org/release-group/${encodeURIComponent(picked.id)}/front-500`;
+        const url250 = `https://coverartarchive.org/release-group/${encodeURIComponent(picked.id)}/front-250`;
+
+        const ok500 = await checkImageExists(url500, 7000);
+        if (myCoverToken !== state.coverCheckToken) return;
+
+        if (ok500) {
+          $('field-cover-url').value = url500;
+          updateCoverPreview(url500);
+          setCoverFetchNote('Cover Art Archive から高画質ジャケット画像を取得しました。');
+          return;
+        }
+
+        const ok250 = await checkImageExists(url250, 7000);
+        if (myCoverToken !== state.coverCheckToken) return;
+
+        if (ok250) {
+          $('field-cover-url').value = url250;
+          updateCoverPreview(url250);
+          setCoverFetchNote('Cover Art Archive からジャケット画像を取得しました。');
+          return;
+        }
+
+        // Neither exists: keep URL empty (do not insert broken 404 URL)
+        $('field-cover-url').value = '';
+        updateCoverPreview('');
+        setCoverFetchNote('Cover Art Archive にジャケット画像が未登録のため空欄にしています（必要に応じて手動でURLを入力できます）。');
+      }
+
       // =======================================================================
-      // Strict Album Description & English Genre Auto-Fetch Pipeline
+      // Japanese Album Description & English Genre Auto-Fetch Pipeline
+      // Rule: Album description MUST ALWAYS be in Japanese; never insert raw English.
       // =======================================================================
       function cleanSummarySentences(text, maxSentences) {
         const limit = maxSentences || 3;
-        let cleaned = String(text || '')
+        const cleaned = String(text || '')
           .replace(/\[\d+\]|\[要出典\]|\[注\s*\d+\]|\[citation needed\]/gi, '')
           .replace(/\s+/g, ' ')
           .trim();
 
         if (!cleaned) return '';
 
-        // Split by Japanese period or English sentence boundary
-        const isJa = /[ぁ-んァ-ヶ一-龯]/.test(cleaned);
-        if (isJa) {
+        if (containsJapanese(cleaned)) {
           const parts = cleaned.split('。').map(function (s) { return s.trim(); }).filter(Boolean);
           const picked = parts.slice(0, limit).join('。');
           return picked ? (picked.endsWith('。') ? picked : picked + '。') : '';
@@ -3462,8 +4835,83 @@
           if (matches && matches.length > 0) {
             return matches.slice(0, limit).join(' ').trim();
           }
-          return cleaned.slice(0, 320);
+          return cleaned.slice(0, 420);
         }
+      }
+
+      function cleanJapaneseTranslation(text) {
+        return String(text || '')
+          .replace(/\r?\n+/g, ' ')
+          .replace(/\s+([。、！？）」』])/g, '$1')
+          .replace(/([（「『])\s+/g, '$1')
+          .replace(/([。、！？])\s+/g, '$1')
+          .replace(/\s{2,}/g, ' ')
+          .trim();
+      }
+
+      /**
+       * Resilient English -> Japanese translator for English Wikipedia album summaries.
+       * 1) Google Translate gtx endpoint
+       * 2) MyMemory API fallback
+       * Always verifies the translated result contains Japanese characters.
+       */
+      async function translateEnToJa(text) {
+        const src = String(text || '').trim().slice(0, 900);
+        if (!src) return '';
+
+        // 1. Google Translate gtx endpoint
+        try {
+          const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+          const timer = controller ? setTimeout(function () { controller.abort(); }, 8000) : null;
+          const url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ja&dt=t&q=' + encodeURIComponent(src);
+          const opts = controller ? { signal: controller.signal } : {};
+          const res = await fetch(url, opts);
+          if (timer) clearTimeout(timer);
+
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data) && Array.isArray(data[0])) {
+              const joined = data[0]
+                .map(function (seg) { return Array.isArray(seg) && typeof seg[0] === 'string' ? seg[0] : ''; })
+                .join('');
+              const cleaned = cleanJapaneseTranslation(joined);
+              if (cleaned && containsJapanese(cleaned)) {
+                return cleaned;
+              }
+            }
+          }
+        } catch (err) {
+          console.warn('Google Translate fallback error:', err);
+        }
+
+        // 2. MyMemory API fallback (500-char safe chunk)
+        try {
+          const chunk = src.length > 480 ? src.slice(0, 480) : src;
+          const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+          const timer = controller ? setTimeout(function () { controller.abort(); }, 8000) : null;
+          const url = 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(chunk) + '&langpair=en|ja';
+          const opts = controller ? { signal: controller.signal } : {};
+          const res = await fetch(url, opts);
+          if (timer) clearTimeout(timer);
+
+          if (res.ok) {
+            const data = await res.json();
+            const translated = data && data.responseData && typeof data.responseData.translatedText === 'string'
+              ? data.responseData.translatedText
+              : '';
+            const isWarning = /MYMEMORY WARNING|QUERY LENGTH LIMIT|PLEASE SELECT TWO DISTINCT|INVALID EMAIL/i.test(translated);
+            if (!isWarning) {
+              const cleaned = cleanJapaneseTranslation(translated);
+              if (cleaned && containsJapanese(cleaned)) {
+                return cleaned;
+              }
+            }
+          }
+        } catch (err) {
+          console.warn('MyMemory translate error:', err);
+        }
+
+        return '';
       }
 
       function normalizeCompareStr(str) {
@@ -3482,7 +4930,7 @@
         const match = wikitext.match(pattern);
         if (!match || !match[1]) return [];
 
-        let raw = match[1]
+        const raw = match[1]
           .replace(/<!--[\s\S]*?-->/g, '')
           .replace(/<ref[^>]*>[\s\S]*?<\/ref>/gi, '')
           .replace(/<ref[^>]*\/>/gi, '')
@@ -3501,40 +4949,59 @@
         return normalizeGenres(tokens);
       }
 
-      function isStrictJaAlbumArticle(title, intro, album, artist) {
-        if (!intro || intro.length < 25) return false;
+      function extractCategoryText(page) {
+        if (!page || !Array.isArray(page.categories)) return '';
+        return page.categories.map(function (c) { return c && c.title ? c.title : ''; }).join(' ');
+      }
+
+      function extractWikitext(page) {
+        if (!page || !Array.isArray(page.revisions) || !page.revisions[0]) return '';
+        const rev = page.revisions[0];
+        return (rev.slots && rev.slots.main && (rev.slots.main['*'] || rev.slots.main.content)) || rev['*'] || '';
+      }
+
+      function isStrictJaAlbumArticle(page, album, artist) {
+        if (!page || page.missing) return false;
+        const title = page.title || '';
+        const intro = page.extract || '';
+        if (!intro || intro.length < 20 || !containsJapanese(intro)) return false;
+
         const normTitle = normalizeCompareStr(title);
         const normAlbum = normalizeCompareStr(album);
         const normArtist = normalizeCompareStr(artist);
 
-        // Immediately reject if title is literally the artist name
         if (normArtist && normTitle === normArtist && normTitle !== normAlbum) {
           return false;
         }
 
         const firstTwo = cleanSummarySentences(intro, 2);
-        const hasAlbumTitleMarker = /アルバム|EP/i.test(title);
+        const catText = extractCategoryText(page);
+        const hasAlbumCategory = /(アルバム|サウンドトラック|ミニ・アルバム|EP)/i.test(catText);
+        const hasAlbumTitleMarker = /(アルバム|\bEP\b|サウンドトラック)/i.test(title);
         const hasAlbumIntroMarker = /(スタジオ・?アルバム|デビュー・?アルバム|ライブ・?アルバム|ミニ・?アルバム|ベスト・?アルバム|コンピレーション・?アルバム|サウンドトラック|ソロ・?アルバム|オリジナル・?アルバム|枚目のアルバム|作目のアルバム|のアルバム|アルバムである|アルバム。|ミニアルバム|\bEP\b)/.test(firstTwo);
 
-        const isArtistBio = /(シンガーソングライター|ミュージシャン|ロックバンド|日本のバンド|アメリカの歌手|イギリスの歌手|日本の歌手|音楽グループ|音楽家|音楽プロデューサー|ラッパー|出身|生年月日|は、[^。]{0,40}(歌手|バンド|音楽家|グループ|デュオ|ユニット|ギタリスト|ベーシスト|ドラマー|ピアニスト))/.test(firstTwo);
+        const isArtistBio = /(シンガーソングライター|ミュージシャン|ロックバンド|日本のバンド|アメリカの歌手|イギリスの歌手|日本の歌手|音楽グループ|音楽家|音楽プロデューサー|ラッパー|出身|生年月日|は、[^。]{0,45}(歌手|バンド|音楽家|グループ|デュオ|ユニット|ギタリスト|ベーシスト|ドラマー|ピアニスト))/.test(firstTwo);
 
-        if (isArtistBio && !hasAlbumIntroMarker && !hasAlbumTitleMarker) {
+        if (isArtistBio && !hasAlbumIntroMarker && !hasAlbumTitleMarker && !hasAlbumCategory) {
           return false;
         }
-        if (!hasAlbumTitleMarker && !hasAlbumIntroMarker) {
+        if (!hasAlbumTitleMarker && !hasAlbumIntroMarker && !hasAlbumCategory) {
           return false;
         }
 
-        // Verify reasonable relevance to album or artist
         const normIntro = normalizeCompareStr(firstTwo);
         const albumMatches = normAlbum && (normTitle.includes(normAlbum) || normAlbum.includes(normTitle) || normIntro.includes(normAlbum));
         const artistMatches = !normArtist || normIntro.includes(normArtist) || normTitle.includes(normArtist);
 
-        return Boolean(albumMatches || (hasAlbumTitleMarker && artistMatches));
+        return Boolean(albumMatches || ((hasAlbumTitleMarker || hasAlbumCategory) && artistMatches));
       }
 
-      function isStrictEnAlbumArticle(title, intro, album, artist) {
-        if (!intro || intro.length < 30) return false;
+      function isStrictEnAlbumArticle(page, album, artist) {
+        if (!page || page.missing) return false;
+        const title = page.title || '';
+        const intro = page.extract || '';
+        if (!intro || intro.length < 25) return false;
+
         const normTitle = normalizeCompareStr(title);
         const normAlbum = normalizeCompareStr(album);
         const normArtist = normalizeCompareStr(artist);
@@ -3544,21 +5011,54 @@
         }
 
         const firstTwo = cleanSummarySentences(intro, 2);
-        const hasAlbumTitleMarker = /\([^)]*album[^)]*\)|\(ep\)/i.test(title);
-        const hasAlbumIntroMarker = /\b(is|was)\s+(the\s+)?[^.]{0,60}\b(studio\s+album|debut\s+album|live\s+album|compilation\s+album|remix\s+album|soundtrack\s+album|solo\s+album|concept\s+album|album\s+by|extended\s+play|EP\s+by)\b/i.test(firstTwo);
+        const catText = extractCategoryText(page);
+        const hasAlbumCategory = /\b(albums|EPs|soundtracks|mixtapes)\b/i.test(catText);
+        const hasAlbumTitleMarker = /\([^)]*(?:album|EP|soundtrack|mixtape)[^)]*\)/i.test(title);
+        const hasAlbumIntroMarker = /\b(is|was)\s+(the\s+)?[^.]{0,70}\b(studio\s+album|debut\s+album|live\s+album|compilation\s+album|remix\s+album|soundtrack\s+album|solo\s+album|concept\s+album|album\s+by|extended\s+play|EP\s+by|record\s+by|mixtape\s+by)\b/i.test(firstTwo);
 
-        const isArtistBio = /\b(is|was)\s+an?\s+[^.]{0,50}\b(singer|musician|band|rock\s+band|rapper|songwriter|group|duo|artist|composer|record\s+producer)\b/i.test(firstTwo);
+        const isArtistBio = /\b(is|was)\s+an?\s+[^.]{0,55}\b(singer|musician|band|rock\s+band|rapper|songwriter|group|duo|artist|composer|record\s+producer)\b|\(born\s+\d{4}\)|\bborn\s+[A-Z][a-z]+\s+\d{1,2},\s+19\d\d\b/i.test(firstTwo);
 
-        if (isArtistBio && !hasAlbumIntroMarker && !hasAlbumTitleMarker) {
+        if (isArtistBio && !hasAlbumIntroMarker && !hasAlbumTitleMarker && !hasAlbumCategory) {
           return false;
         }
-        if (!hasAlbumTitleMarker && !hasAlbumIntroMarker) {
+        if (!hasAlbumTitleMarker && !hasAlbumIntroMarker && !hasAlbumCategory) {
           return false;
         }
 
         const normIntro = normalizeCompareStr(firstTwo);
         const albumMatches = normAlbum && (normTitle.includes(normAlbum) || normAlbum.includes(normTitle) || normIntro.includes(normAlbum));
-        return Boolean(albumMatches || hasAlbumTitleMarker);
+        const artistMatches = !normArtist || normIntro.includes(normArtist) || normTitle.includes(normArtist);
+
+        return Boolean(albumMatches || ((hasAlbumTitleMarker || hasAlbumCategory) && artistMatches));
+      }
+
+      /**
+       * Fetch a specific Japanese Wikipedia page directly by exact title (used when English Wikipedia has a `ja` langlink).
+       */
+      async function fetchJaWikipediaByExactTitle(jaTitle) {
+        if (!jaTitle) return null;
+        try {
+          const url = `https://ja.wikipedia.org/w/api.php?origin=*&action=query&format=json&redirects=1&prop=extracts|revisions|categories&exintro=1&explaintext=1&rvprop=content&rvslots=main&cllimit=30&titles=${encodeURIComponent(jaTitle)}`;
+          const res = await fetch(url);
+          if (!res.ok) return null;
+          const data = await res.json();
+          const pagesObj = data && data.query && data.query.pages ? data.query.pages : {};
+          const keys = Object.keys(pagesObj);
+          for (let i = 0; i < keys.length; i++) {
+            const page = pagesObj[keys[i]];
+            if (!page || page.missing) continue;
+            const intro = page.extract || '';
+            if (!intro || !containsJapanese(intro)) continue;
+            const summary = cleanSummarySentences(intro, 3);
+            const genres = parseInfoboxGenres(extractWikitext(page), true);
+            if (summary && containsJapanese(summary)) {
+              return { description: summary, genres: genres, title: page.title || jaTitle };
+            }
+          }
+        } catch (err) {
+          console.warn('fetchJaWikipediaByExactTitle error:', err);
+        }
+        return null;
       }
 
       async function fetchFromWikipedia(lang, album, artist) {
@@ -3566,13 +5066,16 @@
         const base = `https://${lang}.wikipedia.org/w/api.php`;
         const queries = isJa
           ? [
-              `"${album}" "${artist}" アルバム`,
-              `"${album}" (アルバム)`,
+              `"${album}" ${artist} アルバム`,
+              `"${album} (アルバム)"`,
+              `"${album}" アルバム`,
               `"${album}" ${artist}`
             ]
           : [
-              `"${album}" "${artist}" album`,
-              `"${album}" (album)`
+              `"${album}" ${artist} album`,
+              `"${album} (album)"`,
+              `"${album}" album`,
+              `"${album}" ${artist}`
             ];
 
         const candidatePageIds = [];
@@ -3580,7 +5083,7 @@
 
         for (let q = 0; q < queries.length; q++) {
           try {
-            const searchUrl = `${base}?origin=*&action=query&list=search&format=json&srlimit=4&srsearch=${encodeURIComponent(queries[q])}`;
+            const searchUrl = `${base}?origin=*&action=query&list=search&format=json&srlimit=5&srsearch=${encodeURIComponent(queries[q])}`;
             const res = await fetch(searchUrl);
             if (!res.ok) continue;
             const data = await res.json();
@@ -3595,42 +5098,54 @@
           } catch (_) {
             // continue to next query
           }
-          if (candidatePageIds.length >= 6) break;
+          if (candidatePageIds.length >= 8) break;
         }
 
         if (candidatePageIds.length === 0) return null;
 
         try {
-          const topIds = candidatePageIds.slice(0, 6).join('|');
-          const detailUrl = `${base}?origin=*&action=query&format=json&prop=extracts|revisions&exintro=1&explaintext=1&rvprop=content&rvslots=main&pageids=${topIds}`;
+          const topIds = candidatePageIds.slice(0, 8).join('|');
+          const props = isJa
+            ? 'extracts|revisions|categories'
+            : 'extracts|revisions|categories|langlinks';
+          const extraParams = isJa ? '&cllimit=30' : '&cllimit=30&lllang=ja&lllimit=10';
+          const detailUrl = `${base}?origin=*&action=query&format=json&prop=${props}&exintro=1&explaintext=1&rvprop=content&rvslots=main${extraParams}&pageids=${topIds}`;
           const res = await fetch(detailUrl);
           if (!res.ok) return null;
           const data = await res.json();
           const pagesObj = data && data.query && data.query.pages ? data.query.pages : {};
 
-          // Inspect in search relevance order
-          for (let i = 0; i < candidatePageIds.length && i < 6; i++) {
+          for (let i = 0; i < candidatePageIds.length && i < 8; i++) {
             const page = pagesObj[String(candidatePageIds[i])];
             if (!page || page.missing) continue;
-            const title = page.title || '';
-            const intro = page.extract || '';
 
             const valid = isJa
-              ? isStrictJaAlbumArticle(title, intro, album, artist)
-              : isStrictEnAlbumArticle(title, intro, album, artist);
+              ? isStrictJaAlbumArticle(page, album, artist)
+              : isStrictEnAlbumArticle(page, album, artist);
 
             if (!valid) continue;
 
-            const summary = cleanSummarySentences(intro, 3);
-            let wikitext = '';
-            if (page.revisions && page.revisions[0]) {
-              const rev = page.revisions[0];
-              wikitext = (rev.slots && rev.slots.main && (rev.slots.main['*'] || rev.slots.main.content)) || rev['*'] || '';
-            }
-            const genres = parseInfoboxGenres(wikitext, isJa);
+            const summary = cleanSummarySentences(page.extract || '', 3);
+            const genres = parseInfoboxGenres(extractWikitext(page), isJa);
 
-            if (summary || genres.length > 0) {
-              return { description: summary, genres: genres, title: title };
+            let jaLangTitle = '';
+            if (!isJa && Array.isArray(page.langlinks)) {
+              for (let l = 0; l < page.langlinks.length; l++) {
+                const ll = page.langlinks[l];
+                if (ll && ll.lang === 'ja') {
+                  jaLangTitle = ll['*'] || ll.title || '';
+                  break;
+                }
+              }
+            }
+
+            if (summary || genres.length > 0 || jaLangTitle) {
+              return {
+                description: summary,
+                genres: genres,
+                title: page.title || '',
+                jaLangTitle: jaLangTitle
+              };
             }
           }
         } catch (err) {
@@ -3639,20 +5154,25 @@
         return null;
       }
 
-      async function fetchFromMusicBrainz(album, artist) {
+      async function fetchFromMusicBrainzTags(album, artist) {
         try {
           const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
           const timeoutId = controller ? setTimeout(function () { controller.abort(); }, 6000) : null;
-          const q = `releasegroup:"${album}" AND artist:"${artist}"`;
+          const escAlbum = escapeLuceneTerm(album);
+          const escArtist = escapeLuceneTerm(artist);
+          const q = `releasegroup:"${escAlbum}" AND artist:"${escArtist}"`;
           const url = `https://musicbrainz.org/ws/2/release-group/?query=${encodeURIComponent(q)}&fmt=json&limit=3`;
-          const res = await fetch(url, controller ? { signal: controller.signal } : undefined);
+          const fetchOpts = { headers: { 'Accept': 'application/json' } };
+          if (controller) fetchOpts.signal = controller.signal;
+
+          const res = await fetch(url, fetchOpts);
           if (timeoutId) clearTimeout(timeoutId);
           if (!res.ok) return [];
           const data = await res.json();
           const groups = data && Array.isArray(data['release-groups']) ? data['release-groups'] : [];
           const rawTags = [];
           for (let i = 0; i < groups.length; i++) {
-            const tags = Array.isArray(groups[i].tags) ? groups[i].tags : [];
+            const tags = Array.isArray(groups[i].tags) ? groups[i].tags.slice() : [];
             tags.sort(function (a, b) { return (b.count || 0) - (a.count || 0); });
             for (let j = 0; j < tags.length; j++) {
               if (tags[j] && tags[j].name) rawTags.push(tags[j].name);
@@ -3666,14 +5186,18 @@
 
       async function fetchFromGemini(apiKey, album, artist, year) {
         const prompt = [
-          '以下の音楽アルバムについて、厳密なJSONオブジェクトのみを返してください。マークダウン記法や説明文は一切付けないでください。',
+          '以下の音楽アルバムについて、厳密なJSONオブジェクトのみを返してください。マークダウン記法（```）や前置き・解説は一切付けないでください。',
           `アルバム名: ${album}`,
           `アーティスト名: ${artist}`,
           year ? `リリース年: ${year}` : '',
           '',
           '出力JSONフォーマット:',
-          '{"description": "このアルバム自体の音楽性・特徴・背景を簡潔にまとめた日本語の紹介文（2〜3文、アーティストの経歴ではなくアルバムの説明にすること）", "genres": ["EnglishGenre1", "EnglishGenre2"]}',
-          '条件: genresは1〜3個の英語の音楽ジャンル名のみ（例: "Rock", "Soul", "Dream Pop", "Jazz"）。'
+          '{"description": "日本語の紹介文", "genres": ["EnglishGenre1", "EnglishGenre2"]}',
+          '',
+          '厳守条件:',
+          '1. description は必ず自然な日本語のみ（2〜3文、120〜220文字程度）で書いてください。英語のまま出力しないでください。',
+          '2. アーティストの経歴ではなく、このアルバム自体の音楽性・サウンドの特徴・制作背景や位置づけを説明してください。',
+          '3. genres は1〜3個の英語の音楽ジャンル名のみにしてください（例: "Rock", "Neo-Soul", "Slowcore", "Dream Pop", "Jazz"）。'
         ].filter(Boolean).join('\n');
 
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
@@ -3706,8 +5230,14 @@
         if (!jsonMatch) throw new Error('JSON not found in Gemini response');
 
         const parsed = JSON.parse(jsonMatch[0]);
-        const description = typeof parsed.description === 'string' ? parsed.description.trim() : '';
+        let description = typeof parsed.description === 'string' ? parsed.description.trim() : '';
         const genres = normalizeGenres(parsed.genres);
+
+        // Enforce Japanese description: if Gemini unexpectedly answered in English, translate it
+        if (description && !containsJapanese(description)) {
+          const translated = await translateEnToJa(description);
+          description = translated && containsJapanese(translated) ? translated : '';
+        }
 
         if (!description && genres.length === 0) {
           throw new Error('Invalid Gemini JSON payload');
@@ -3726,93 +5256,146 @@
         const myToken = ++state.metaFetchToken;
         const refetchBtn = $('btn-refetch-meta');
         if (refetchBtn) refetchBtn.disabled = true;
-        setAutoFetchStatus('アルバム紹介文と英語ジャンルを取得中...', '');
+        setAutoFetchStatus('日本語のアルバム紹介文と英語ジャンルを取得中...', '');
 
         const existingGenres = state.formGenres.slice();
-        let finalDescription = '';
+        let finalDescriptionJa = '';
+        let descriptionSource = '';
         let collectedGenres = [];
-        const sources = [];
+        let genreSources = [];
+        let enWikiFoundButTranslationFailed = false;
 
         try {
-          // Step 1: Gemini API (if API key configured)
+          // Step A: Gemini API (if API key configured)
           if (state.syncConfig.geminiApiKey) {
             try {
               const geminiResult = await fetchFromGemini(state.syncConfig.geminiApiKey, cleanAlbum, cleanArtist, year);
               if (myToken !== state.metaFetchToken) return;
-              if (geminiResult.description) finalDescription = geminiResult.description;
-              if (geminiResult.genres.length > 0) collectedGenres = geminiResult.genres.slice(0, 3);
-              sources.push('Gemini AI');
+              if (geminiResult.description && containsJapanese(geminiResult.description)) {
+                finalDescriptionJa = geminiResult.description;
+                descriptionSource = 'gemini';
+              }
+              if (geminiResult.genres.length > 0) {
+                collectedGenres = geminiResult.genres.slice(0, 3);
+                genreSources.push('Gemini AI');
+              }
             } catch (geminiErr) {
               console.warn('Gemini fallback triggered:', geminiErr);
             }
           }
 
-          // Step 2: Strict Wikipedia Album Search (Japanese first, then English)
-          if (!finalDescription || collectedGenres.length < 3) {
+          // Step B-1: Japanese Wikipedia (Strict Album Articles Only)
+          if (!finalDescriptionJa || collectedGenres.length < 3) {
             const jaWiki = await fetchFromWikipedia('ja', cleanAlbum, cleanArtist);
             if (myToken !== state.metaFetchToken) return;
             if (jaWiki) {
-              if (!finalDescription && jaWiki.description) {
-                finalDescription = jaWiki.description;
-                sources.push('日本語Wikipedia（アルバム記事）');
+              if (!finalDescriptionJa && jaWiki.description && containsJapanese(jaWiki.description)) {
+                finalDescriptionJa = jaWiki.description;
+                descriptionSource = 'ja-wiki';
               }
               if (jaWiki.genres.length > 0) {
+                const beforeLen = collectedGenres.length;
                 collectedGenres = normalizeGenres(collectedGenres.concat(jaWiki.genres));
-                if (!sources.includes('日本語Wikipedia（アルバム記事）')) {
-                  sources.push('日本語Wikipedia（アルバム記事）');
+                if (collectedGenres.length > beforeLen) {
+                  genreSources.push('日本語Wikipedia');
                 }
               }
             }
           }
 
-          if (!finalDescription || collectedGenres.length < 3) {
+          // Step B-2 & B-3: English Wikipedia (Strict Album Article -> check ja langlink -> else translate En->Ja)
+          if (!finalDescriptionJa || collectedGenres.length < 3) {
             const enWiki = await fetchFromWikipedia('en', cleanAlbum, cleanArtist);
             if (myToken !== state.metaFetchToken) return;
             if (enWiki) {
-              if (!finalDescription && enWiki.description) {
-                finalDescription = enWiki.description;
-                sources.push('英語Wikipedia（アルバム記事）');
-              }
               if (enWiki.genres.length > 0) {
+                const beforeLen = collectedGenres.length;
                 collectedGenres = normalizeGenres(collectedGenres.concat(enWiki.genres));
-                if (!sources.includes('英語Wikipedia（アルバム記事）')) {
-                  sources.push('英語Wikipedia（アルバム記事）');
+                if (collectedGenres.length > beforeLen) {
+                  genreSources.push('英語Wikipedia');
+                }
+              }
+
+              if (!finalDescriptionJa) {
+                // First check if English Wikipedia links directly to a Japanese Wikipedia article (e.g. katakana titles)
+                if (enWiki.jaLangTitle) {
+                  setAutoFetchStatus('関連する日本語Wikipedia記事から紹介文を取得中...', '');
+                  const linkedJa = await fetchJaWikipediaByExactTitle(enWiki.jaLangTitle);
+                  if (myToken !== state.metaFetchToken) return;
+                  if (linkedJa && linkedJa.description && containsJapanese(linkedJa.description)) {
+                    finalDescriptionJa = linkedJa.description;
+                    descriptionSource = 'ja-wiki';
+                    if (linkedJa.genres && linkedJa.genres.length > 0 && collectedGenres.length < 3) {
+                      collectedGenres = normalizeGenres(collectedGenres.concat(linkedJa.genres));
+                    }
+                  }
+                }
+
+                // If no Japanese Wikipedia page exists, automatically translate the English album summary into Japanese
+                if (!finalDescriptionJa && enWiki.description) {
+                  setAutoFetchStatus('英語Wikipediaのアルバム記事を日本語へ翻訳中...', '');
+                  const translatedJa = await translateEnToJa(enWiki.description);
+                  if (myToken !== state.metaFetchToken) return;
+                  if (translatedJa && containsJapanese(translatedJa)) {
+                    finalDescriptionJa = translatedJa;
+                    descriptionSource = 'en-wiki-translated';
+                  } else {
+                    enWikiFoundButTranslationFailed = true;
+                  }
                 }
               }
             }
           }
 
-          // Step 3: MusicBrainz genre supplement if fewer than 3 genres
+          // Step B-4: Supplement English genres from MusicBrainz if fewer than 3
           if (collectedGenres.length < 3) {
-            const mbGenres = await fetchFromMusicBrainz(cleanAlbum, cleanArtist);
+            const mbGenres = await fetchFromMusicBrainzTags(cleanAlbum, cleanArtist);
             if (myToken !== state.metaFetchToken) return;
             if (mbGenres.length > 0) {
               const beforeLen = collectedGenres.length;
               collectedGenres = normalizeGenres(collectedGenres.concat(mbGenres));
               if (collectedGenres.length > beforeLen) {
-                sources.push('MusicBrainz');
+                genreSources.push('MusicBrainz');
               }
             }
           }
 
           if (myToken !== state.metaFetchToken) return;
 
-          // Merge genres while preserving existing iTunes genre if needed (always >= 1 genre)
+          // Update English genres (preserve previously detected genres as fallback)
           const mergedGenres = normalizeGenres(collectedGenres.concat(existingGenres));
           if (mergedGenres.length > 0) {
             state.formGenres = mergedGenres.slice(0, 3);
             renderSelectedGenres();
           }
 
-          if (finalDescription) {
-            $('field-description').value = finalDescription;
+          // Strictly write description ONLY if confirmed Japanese; never insert raw English text
+          if (finalDescriptionJa && containsJapanese(finalDescriptionJa)) {
+            $('field-description').value = finalDescriptionJa;
           }
 
-          if (sources.length > 0) {
-            const descNote = finalDescription ? '' : '（※該当するアルバム紹介記事が見つからなかったため紹介文は空欄です）';
-            setAutoFetchStatus(`${sources.join(' ＋ ')} から取得しました${descNote}`, 'ok');
+          // Clear, accurate Japanese status message
+          if (descriptionSource === 'gemini') {
+            setAutoFetchStatus('Gemini AIから日本語の紹介文・英語ジャンルを取得しました', 'ok');
+          } else if (descriptionSource === 'ja-wiki') {
+            setAutoFetchStatus('日本語Wikipedia（アルバム記事）から取得しました', 'ok');
+          } else if (descriptionSource === 'en-wiki-translated') {
+            setAutoFetchStatus('英語Wikipediaのアルバム記事を日本語に翻訳して取得しました', 'ok');
+          } else if (enWikiFoundButTranslationFailed) {
+            setAutoFetchStatus(
+              '英語Wikipediaから英語ジャンルを取得しました（日本語翻訳に失敗したため紹介文は未反映です。手動入力または設定画面でGemini APIキーを登録してください）。',
+              ''
+            );
+          } else if (genreSources.length > 0) {
+            setAutoFetchStatus(
+              `${genreSources.join('・')}から英語ジャンルを取得しました（該当する日本語アルバム紹介記事が見つからなかったため紹介文は手動入力またはGemini APIキー設定をお試しください）。`,
+              'ok'
+            );
           } else {
-            setAutoFetchStatus('アルバム記事が見つかりませんでした。取得済みのジャンルを維持しています（手動入力可）。', '');
+            setAutoFetchStatus(
+              'アルバム記事が見つかりませんでした。取得済みの英語ジャンルを維持しています（紹介文は手動入力またはGemini APIキー設定で生成できます）。',
+              ''
+            );
           }
         } catch (err) {
           console.error('fetchAlbumMeta error:', err);
@@ -3874,7 +5457,7 @@
         byId.forEach(function (entry, id) {
           const delTs = mergedDeleted[id] || 0;
           if (delTs > 0 && delTs >= entry.updatedAt) {
-            return; // Keep deleted across devices
+            return;
           }
           finalEntries.push(entry);
         });
@@ -3947,7 +5530,6 @@
           const gistId = state.syncConfig.gistId;
 
           if (!gistId) {
-            // Create new private Gist
             const payload = {
               version: 2,
               updatedAt: new Date().toISOString(),
@@ -3977,7 +5559,6 @@
             renderAll();
             if (!silent) showToast('非公開Gistを作成し同期しました');
           } else {
-            // Fetch existing Gist and merge
             const url = `https://api.github.com/gists/${encodeURIComponent(gistId)}`;
             const gist = await githubGistRequest('GET', url, token);
             const fileObj = gist && gist.files ? gist.files[GIST_FILENAME] : null;
@@ -4081,7 +5662,7 @@
       }
 
       // =======================================================================
-      // JSON Export & Import
+      // JSON Export & Import (Safe Merge or Replace via In-App Modal)
       // =======================================================================
       function exportJsonBackup() {
         try {
@@ -4106,6 +5687,31 @@
         }
       }
 
+      function applyImportedEntries(incomingNormalized, mode) {
+        if (mode === 'replace') {
+          state.entries = incomingNormalized.slice();
+          state.deletedIds = {};
+        } else {
+          const merged = mergeCloudAndLocal(state.entries, {}, incomingNormalized, {});
+          state.entries = merged.entries;
+          for (let i = 0; i < incomingNormalized.length; i++) {
+            delete state.deletedIds[incomingNormalized[i].id];
+          }
+        }
+
+        saveLocalData();
+        renderAll();
+        showToast(
+          mode === 'replace'
+            ? `${incomingNormalized.length}件のデータで置き換えました`
+            : `${incomingNormalized.length}件のデータを既存データと統合しました`
+        );
+
+        if (state.syncConfig.githubToken && state.syncConfig.gistId) {
+          syncWithGist({ silent: true });
+        }
+      }
+
       function importJsonBackup(file) {
         if (!file) return;
         const reader = new FileReader();
@@ -4121,21 +5727,25 @@
             }
 
             const incomingNormalized = incomingRaw.map(normalizeEntry);
-            const merged = mergeCloudAndLocal(state.entries, {}, incomingNormalized, {});
-            state.entries = merged.entries;
-
-            // Remove deleted flags for re-imported entries
-            for (let i = 0; i < incomingNormalized.length; i++) {
-              delete state.deletedIds[incomingNormalized[i].id];
+            if (state.entries.length === 0) {
+              applyImportedEntries(incomingNormalized, 'merge');
+              return;
             }
 
-            saveLocalData();
-            renderAll();
-            showToast(`${incomingNormalized.length}件のデータを読み込みました`);
-
-            if (state.syncConfig.githubToken && state.syncConfig.gistId) {
-              syncWithGist({ silent: true });
-            }
+            openConfirmModal(
+              'JSONバックアップの読み込み',
+              `${incomingNormalized.length}件の記録を読み込みます。現在の記録（${state.entries.length}件）と統合するか、すべて置き換えるかを選択してください。`,
+              'すべて置換',
+              function () {
+                applyImportedEntries(incomingNormalized, 'replace');
+              },
+              {
+                label: '既存データと統合',
+                onClick: function () {
+                  applyImportedEntries(incomingNormalized, 'merge');
+                }
+              }
+            );
           } catch (err) {
             console.error('Import failed:', err);
             showToast('JSONの読み込みに失敗しました: ' + (err.message || ''), true);
@@ -4202,7 +5812,7 @@
           }
         });
 
-        // Entry card actions delegation (Selected Date Panel & List View)
+        // Entry card actions delegation
         function handleEntriesContainerClick(evt) {
           const btn = evt.target.closest('button[data-action]');
           if (!btn) return;
@@ -4219,18 +5829,20 @@
         on($('selected-date-entries'), 'click', handleEntriesContainerClick);
         on($('list-entries-container'), 'click', handleEntriesContainerClick);
 
-        // List View filters
+        // List View filters & genre chips
         on($('list-search-input'), 'input', function (evt) {
           state.listSearch = evt.target.value;
-          renderListView();
-        });
-        on($('list-genre-filter'), 'change', function (evt) {
-          state.listGenre = evt.target.value;
-          renderListView();
+          renderList();
         });
         on($('list-sort-select'), 'change', function (evt) {
           state.listSort = evt.target.value;
-          renderListView();
+          renderList();
+        });
+        on($('list-genre-chips'), 'click', function (evt) {
+          const chip = evt.target.closest('button[data-filter-genre]');
+          if (!chip) return;
+          state.listGenre = chip.getAttribute('data-filter-genre') || '';
+          renderList();
         });
 
         // Entry Modal controls
@@ -4241,13 +5853,39 @@
         });
         on($('entry-form'), 'submit', handleEntryFormSubmit);
 
-        // iTunes search
-        on($('btn-itunes-search'), 'click', searchItunesAlbums);
-        on($('itunes-search-input'), 'keydown', function (evt) {
+        // 3-Mode Search Tabs & Store Selector
+        const modeTabs = document.querySelectorAll('[data-search-mode]');
+        for (let i = 0; i < modeTabs.length; i++) {
+          on(modeTabs[i], 'click', function (evt) {
+            const nextMode = evt.currentTarget.getAttribute('data-search-mode');
+            if (nextMode && nextMode !== state.searchMode) {
+              setSearchMode(nextMode, true);
+            }
+          });
+        }
+
+        on($('btn-album-search'), 'click', executeAlbumSearch);
+        on($('album-search-input'), 'keydown', function (evt) {
           if (evt.key === 'Enter') {
             evt.preventDefault();
-            searchItunesAlbums();
+            executeAlbumSearch();
           }
+        });
+        on($('itunes-country-select'), 'change', function () {
+          if (state.searchMode === 'musicbrainz') return;
+          if (state.searchMode === 'itunes-artist' && state.artistStep === 'albums' && state.selectedArtistInfo) {
+            lookupArtistAlbums(state.selectedArtistInfo.id, state.selectedArtistInfo.name);
+            return;
+          }
+          const input = $('album-search-input');
+          if (input && input.value.trim()) {
+            executeAlbumSearch();
+          }
+        });
+        on($('btn-back-to-artists'), 'click', function () {
+          state.artistStep = 'artists';
+          state.selectedArtistInfo = null;
+          renderItunesArtistCandidates();
         });
 
         // Manual re-fetch album meta
@@ -4307,8 +5945,18 @@
           }
         });
 
+        // Reset direct Apple Music URL if album or artist is edited manually
+        function clearDirectAppleMusicUrl() {
+          const urlField = $('field-apple-music-url');
+          if (urlField) urlField.value = '';
+        }
+        on($('field-album'), 'input', clearDirectAppleMusicUrl);
+        on($('field-artist'), 'input', clearDirectAppleMusicUrl);
+
         // Cover URL preview live update
         on($('field-cover-url'), 'input', function (evt) {
+          state.coverCheckToken++;
+          setCoverFetchNote('');
           updateCoverPreview(evt.target.value);
         });
 
@@ -4397,6 +6045,11 @@
         });
         on($('btn-confirm-ok'), 'click', function () {
           const cb = state.confirmCallback;
+          closeConfirmModal();
+          if (typeof cb === 'function') cb();
+        });
+        on($('btn-confirm-alt'), 'click', function () {
+          const cb = state.confirmAltCallback;
           closeConfirmModal();
           if (typeof cb === 'function') cb();
         });
