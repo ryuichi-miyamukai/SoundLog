@@ -1067,21 +1067,6 @@
       margin-top: 1px;
     }
 
-    .chat-album-summary {
-      padding: 10px 20px;
-      background: #fafafa;
-      border-bottom: 1px solid var(--border);
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-      line-height: 1.55;
-      flex-shrink: 0;
-    }
-
-    .chat-album-summary strong {
-      color: var(--text);
-      margin-right: 6px;
-    }
-
     .chat-api-banner {
       margin: 12px 20px 0;
       padding: 12px 14px;
@@ -1257,6 +1242,22 @@
     @keyframes chat-bounce {
       0%, 80%, 100% { opacity: 0.3; transform: translateY(0); }
       40% { opacity: 1; transform: translateY(-2px); }
+    }
+
+    .chat-bubble.streaming::after {
+      content: "";
+      display: inline-block;
+      width: 6px;
+      height: 1em;
+      margin-left: 3px;
+      vertical-align: -0.15em;
+      background: var(--text-muted);
+      border-radius: 1px;
+      animation: stream-blink 0.8s steps(2, start) infinite;
+    }
+
+    @keyframes stream-blink {
+      to { opacity: 0; }
     }
 
     .chat-composer-area {
@@ -2376,7 +2377,7 @@
         max-height: 92vh;
       }
 
-      .chat-album-bar, .chat-album-summary, .chat-messages {
+      .chat-album-bar, .chat-messages {
         padding-left: 14px;
         padding-right: 14px;
       }
@@ -3013,7 +3014,6 @@
       </div>
 
       <div id="ai-chat-album-bar" class="chat-album-bar"></div>
-      <div id="ai-chat-album-summary" class="chat-album-summary hidden"></div>
 
       <div id="ai-chat-api-banner" class="chat-api-banner hidden">
         <span>AIと自由に対話するには「同期・AI設定」で Gemini API キー（無料枠あり）を設定してください。</span>
@@ -3027,11 +3027,12 @@
 
       <div class="chat-composer-area">
         <div id="ai-chat-quick-prompts" class="chat-quick-prompts">
-          <button type="button" class="btn-quick-prompt" data-chat-prompt="このアルバムの制作背景や、リリース当時の音楽シーンにおける位置づけを詳しく教えてください。">制作背景・時代性</button>
-          <button type="button" class="btn-quick-prompt" data-chat-prompt="サウンドデザイン、アレンジ、楽器編成や録音・ミックス面での聴きどころを具体的に教えてください。">サウンド・録音の聴きどころ</button>
-          <button type="button" class="btn-quick-prompt" data-chat-prompt="このアルバムを象徴する注目トラックをいくつか挙げて、それぞれの魅力や構成の面白さを教えてください。">注目トラック解説</button>
-          <button type="button" class="btn-quick-prompt" data-chat-prompt="このアルバムが影響を受けたルーツや、これが好きなら次に聴くべき関連アルバムを3〜5枚、理由つきで紹介してください。">影響源と関連盤</button>
-          <button type="button" class="btn-quick-prompt" id="btn-quick-prompt-notes" data-chat-prompt="私が記録した感想・メモを踏まえて、このアルバムのさらに深い聴き方や別の視点での楽しみ方を提案してください。">自分の感想から深ぼる</button>
+          <button type="button" class="btn-quick-prompt" data-chat-prompt="このアルバムの制作背景や、リリース当時の音楽シーンにおける位置づけを客観的に整理してください。">制作背景・時代性</button>
+          <button type="button" class="btn-quick-prompt" data-chat-prompt="サウンドデザイン、アレンジ、楽器編成や録音・ミックス面の特徴と意図を具体的に分析してください。">サウンド・録音分析</button>
+          <button type="button" class="btn-quick-prompt" data-chat-prompt="このアルバムに対する賛否両論や批判的な評価、構造上の弱点・限界がある点も含めて多角的に検証してください。">賛否・批判的視点</button>
+          <button type="button" class="btn-quick-prompt" data-chat-prompt="このアルバムの要となるトラックをいくつか挙げ、構成上の役割や特徴を掘り下げてください。">注目トラック分析</button>
+          <button type="button" class="btn-quick-prompt" data-chat-prompt="影響源となった作品や、対比・発展として次に聴くべき関連アルバムを3〜5枚、音楽的な接点と差異を添えて挙げてください。">影響源と関連盤</button>
+          <button type="button" class="btn-quick-prompt" id="btn-quick-prompt-notes" data-chat-prompt="私の評価と感想メモを踏まえ、同調や称賛は不要なので、別の角度からの解釈・見落としがちな論点・反論的な視点を提示してください。">感想を多角的に検証</button>
         </div>
         <form id="ai-chat-form" class="chat-input-row" novalidate>
           <textarea
@@ -3085,6 +3086,7 @@
         entries: 'soundlog_entries_v2',
         deletedIds: 'soundlog_deleted_v2',
         syncConfig: 'soundlog_sync_config_v2',
+        geminiModel: 'soundlog_gemini_model_v1',
         legacyEntries: ['soundlog_entries_v1', 'soundlog_entries', 'soundlog_logs']
       };
 
@@ -3343,6 +3345,8 @@
         activeChatEntryId: null,
         aiChatSending: false,
         aiChatRequestToken: 0,
+        aiChatStreamingText: '',
+        aiChatAbortController: null,
         detectedGeminiModel: '',
         confirmCallback: null,
         confirmAltCallback: null
@@ -3877,6 +3881,12 @@
           }
         } catch (_) {
           // ignore
+        }
+
+        try {
+          state.detectedGeminiModel = String(localStorage.getItem(STORAGE_KEYS.geminiModel) || '').trim();
+        } catch (_) {
+          state.detectedGeminiModel = '';
         }
 
         if (state.syncConfig.githubToken && state.syncConfig.gistId) {
@@ -5491,11 +5501,67 @@
         }
       }
 
-      async function callGeminiGenerateContent(apiKey, payloadObj) {
-        const defaultModels = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite'];
-        const tried = new Set();
-        const queue = [];
+      function cacheDetectedGeminiModel(model) {
+        state.detectedGeminiModel = model || '';
+        try {
+          if (model) {
+            localStorage.setItem(STORAGE_KEYS.geminiModel, model);
+          } else {
+            localStorage.removeItem(STORAGE_KEYS.geminiModel);
+          }
+        } catch (_) {
+          // ignore
+        }
+      }
 
+      function buildGeminiRequestBody(payloadObj, disableThinking) {
+        const reqBody = Object.assign({}, payloadObj);
+        const prevGenCfg = (payloadObj && typeof payloadObj.generationConfig === 'object')
+          ? payloadObj.generationConfig
+          : {};
+        if (disableThinking && !Object.prototype.hasOwnProperty.call(prevGenCfg, 'thinkingConfig')) {
+          reqBody.generationConfig = Object.assign({}, prevGenCfg, {
+            thinkingConfig: { thinkingBudget: 0 }
+          });
+        } else {
+          reqBody.generationConfig = Object.assign({}, prevGenCfg);
+        }
+        return reqBody;
+      }
+
+      function extractTextFromGeminiPayload(data) {
+        const parts = data &&
+          data.candidates &&
+          data.candidates[0] &&
+          data.candidates[0].content &&
+          Array.isArray(data.candidates[0].content.parts)
+          ? data.candidates[0].content.parts
+          : [];
+        const answerParts = parts.filter(function (p) {
+          return p && !p.thought && typeof p.text === 'string';
+        });
+        const useParts = answerParts.length > 0 ? answerParts : parts;
+        return useParts.map(function (p) { return p && typeof p.text === 'string' ? p.text : ''; }).join('');
+      }
+
+      async function parseGeminiHttpError(res) {
+        let detail = `HTTP ${res.status}`;
+        try {
+          const errJson = await res.json();
+          if (errJson && errJson.error && errJson.error.message) {
+            detail = `${res.status}: ${errJson.error.message}`;
+          }
+        } catch (_) {
+          // ignore
+        }
+        const err = new Error(detail);
+        err.status = res.status;
+        return err;
+      }
+
+      function getInitialGeminiModelQueue() {
+        const defaultModels = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite'];
+        const queue = [];
         if (state.detectedGeminiModel) {
           queue.push(state.detectedGeminiModel);
         }
@@ -5504,21 +5570,18 @@
             queue.push(defaultModels[i]);
           }
         }
+        return queue;
+      }
 
+      async function callGeminiGenerateContent(apiKey, payloadObj) {
+        const tried = new Set();
+        const queue = getInitialGeminiModelQueue();
         let lastErr = null;
         let discovered = false;
 
-        async function tryModel(model) {
+        async function tryModel(model, disableThinking) {
           const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
-          const reqBody = Object.assign({}, payloadObj);
-          const prevGenCfg = (payloadObj && typeof payloadObj.generationConfig === 'object')
-            ? payloadObj.generationConfig
-            : {};
-          if (!Object.prototype.hasOwnProperty.call(prevGenCfg, 'thinkingConfig')) {
-            reqBody.generationConfig = Object.assign({}, prevGenCfg, {
-              thinkingConfig: { thinkingBudget: 0 }
-            });
-          }
+          const reqBody = buildGeminiRequestBody(payloadObj, disableThinking);
           const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
           const timer = controller ? setTimeout(function () { controller.abort(); }, 18000) : null;
           let res = null;
@@ -5543,32 +5606,40 @@
             if (timer) clearTimeout(timer);
           }
           if (!res.ok) {
-            let detail = `HTTP ${res.status}`;
-            try {
-              const errJson = await res.json();
-              if (errJson && errJson.error && errJson.error.message) {
-                detail = `${res.status}: ${errJson.error.message}`;
+            const err = await parseGeminiHttpError(res);
+            if (res.status === 400 && disableThinking && /thinking|responseMimeType/i.test(err.message)) {
+              const fallbackPayload = Object.assign({}, payloadObj);
+              if (fallbackPayload.generationConfig && /responseMimeType/i.test(err.message)) {
+                fallbackPayload.generationConfig = Object.assign({}, fallbackPayload.generationConfig);
+                delete fallbackPayload.generationConfig.responseMimeType;
               }
-            } catch (_) {
-              // ignore
+              return tryModelWithBody(model, buildGeminiRequestBody(fallbackPayload, false));
             }
-            const err = new Error(detail);
-            err.status = res.status;
             throw err;
           }
           const data = await res.json();
-          const parts = data &&
-            data.candidates &&
-            data.candidates[0] &&
-            data.candidates[0].content &&
-            Array.isArray(data.candidates[0].content.parts)
-            ? data.candidates[0].content.parts
-            : [];
-          const answerParts = parts.filter(function (p) {
-            return p && !p.thought && typeof p.text === 'string';
+          const text = extractTextFromGeminiPayload(data).trim();
+          if (!text) {
+            const emptyErr = new Error('Geminiから空の応答が返りました');
+            emptyErr.status = 502;
+            throw emptyErr;
+          }
+          return text;
+        }
+
+        async function tryModelWithBody(model, reqBody) {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-goog-api-key': apiKey
+            },
+            body: JSON.stringify(reqBody)
           });
-          const useParts = answerParts.length > 0 ? answerParts : parts;
-          const text = useParts.map(function (p) { return p && typeof p.text === 'string' ? p.text : ''; }).join('').trim();
+          if (!res.ok) throw await parseGeminiHttpError(res);
+          const data = await res.json();
+          const text = extractTextFromGeminiPayload(data).trim();
           if (!text) {
             const emptyErr = new Error('Geminiから空の応答が返りました');
             emptyErr.status = 502;
@@ -5583,17 +5654,172 @@
           tried.add(model);
 
           try {
-            const text = await tryModel(model);
-            state.detectedGeminiModel = model;
+            const text = await tryModel(model, true);
+            cacheDetectedGeminiModel(model);
             return text;
           } catch (err) {
             lastErr = err;
             const status = err && err.status;
-            // Stop immediately on authentication / permission / malformed request errors
             if (status && status !== 404 && status !== 503 && status !== 429 && status !== 502) {
               throw err;
             }
-            // If all static fallback models failed with 404, auto-discover currently active models via ListModels
+            if (status === 404 && queue.length === 0 && !discovered) {
+              discovered = true;
+              const liveModels = await discoverAvailableGeminiModels(apiKey);
+              let added = 0;
+              for (let j = 0; j < liveModels.length && added < 3; j++) {
+                if (!tried.has(liveModels[j])) {
+                  queue.push(liveModels[j]);
+                  added++;
+                }
+              }
+            }
+          }
+        }
+        throw lastErr || new Error('Gemini APIの呼び出しに失敗しました');
+      }
+
+      /**
+       * Streams Gemini responses via Server-Sent Events (:streamGenerateContent?alt=sse)
+       * so the user sees text appear within ~1 second without sacrificing response depth.
+       */
+      async function callGeminiStreamGenerateContent(apiKey, payloadObj, onChunk, externalController) {
+        const tried = new Set();
+        const queue = getInitialGeminiModelQueue();
+        let lastErr = null;
+        let discovered = false;
+
+        async function tryStreamModel(model, disableThinking) {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:streamGenerateContent?alt=sse`;
+          const reqBody = buildGeminiRequestBody(payloadObj, disableThinking);
+          const controller = externalController || (typeof AbortController !== 'undefined' ? new AbortController() : null);
+          let firstByteReceived = false;
+          let timer = controller ? setTimeout(function () {
+            if (!firstByteReceived) controller.abort();
+          }, 20000) : null;
+
+          let res = null;
+          try {
+            res = await fetch(url, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-goog-api-key': apiKey
+              },
+              signal: controller ? controller.signal : undefined,
+              body: JSON.stringify(reqBody)
+            });
+          } catch (netErr) {
+            if (timer) clearTimeout(timer);
+            if (netErr && netErr.name === 'AbortError') {
+              const tErr = new Error('応答がタイムアウトまたは中断されました');
+              tErr.status = 408;
+              tErr.isAbort = true;
+              throw tErr;
+            }
+            throw netErr;
+          }
+
+          if (!res.ok) {
+            if (timer) clearTimeout(timer);
+            const err = await parseGeminiHttpError(res);
+            if (res.status === 400 && disableThinking && /thinking/i.test(err.message)) {
+              return tryStreamModel(model, false);
+            }
+            throw err;
+          }
+
+          if (!res.body || typeof res.body.getReader !== 'function') {
+            if (timer) clearTimeout(timer);
+            const fallbackText = await callGeminiGenerateContent(apiKey, payloadObj);
+            if (typeof onChunk === 'function') onChunk(fallbackText);
+            return fallbackText;
+          }
+
+          const reader = res.body.getReader();
+          const decoder = new TextDecoder('utf-8');
+          let buffer = '';
+          let fullText = '';
+
+          function processEventBlock(block) {
+            const lines = block.split(/\r?\n/);
+            const dataLines = [];
+            for (let i = 0; i < lines.length; i++) {
+              if (lines[i].startsWith('data:')) {
+                dataLines.push(lines[i].slice(5).trim());
+              }
+            }
+            if (dataLines.length === 0) return;
+            const joined = dataLines.join('\n').trim();
+            if (!joined || joined === '[DONE]') return;
+            try {
+              const parsed = JSON.parse(joined);
+              const delta = extractTextFromGeminiPayload(parsed);
+              if (delta) {
+                if (!firstByteReceived) {
+                  firstByteReceived = true;
+                  if (timer) {
+                    clearTimeout(timer);
+                    timer = null;
+                  }
+                }
+                fullText += delta;
+                if (typeof onChunk === 'function') onChunk(fullText);
+              }
+            } catch (_) {
+              // ignore partial/non-JSON SSE frames
+            }
+          }
+
+          try {
+            while (true) {
+              const chunk = await reader.read();
+              if (chunk.done) break;
+              buffer += decoder.decode(chunk.value, { stream: true });
+              const blocks = buffer.split(/\r?\n\r?\n/);
+              buffer = blocks.pop() || '';
+              for (let i = 0; i < blocks.length; i++) {
+                processEventBlock(blocks[i]);
+              }
+            }
+            buffer += decoder.decode();
+            if (buffer.trim()) {
+              processEventBlock(buffer);
+            }
+          } catch (readErr) {
+            if (fullText.trim()) {
+              return fullText.trim();
+            }
+            throw readErr;
+          } finally {
+            if (timer) clearTimeout(timer);
+          }
+
+          const trimmed = fullText.trim();
+          if (!trimmed) {
+            const emptyErr = new Error('Geminiから空の応答が返りました');
+            emptyErr.status = 502;
+            throw emptyErr;
+          }
+          return trimmed;
+        }
+
+        while (queue.length > 0) {
+          const model = queue.shift();
+          if (!model || tried.has(model)) continue;
+          tried.add(model);
+
+          try {
+            const text = await tryStreamModel(model, true);
+            cacheDetectedGeminiModel(model);
+            return text;
+          } catch (err) {
+            lastErr = err;
+            if (err && err.isAbort) throw err;
+            const status = err && err.status;
+            if (status && status !== 404 && status !== 503 && status !== 429 && status !== 502) {
+              throw err;
+            }
             if (status === 404 && queue.length === 0 && !discovered) {
               discovered = true;
               const liveModels = await discoverAvailableGeminiModels(apiKey);
@@ -5890,22 +6116,22 @@
         const candidatePageIds = [];
         const seenIds = new Set();
 
-        for (let q = 0; q < queries.length; q++) {
-          try {
-            const searchUrl = `${base}?origin=*&action=query&list=search&format=json&srlimit=5&srsearch=${encodeURIComponent(queries[q])}`;
-            const res = await fetch(searchUrl);
-            if (!res.ok) continue;
-            const data = await res.json();
-            const hits = data && data.query && Array.isArray(data.query.search) ? data.query.search : [];
-            for (let i = 0; i < hits.length; i++) {
-              const pid = hits[i].pageid;
-              if (pid && !seenIds.has(pid)) {
-                seenIds.add(pid);
-                candidatePageIds.push(pid);
-              }
+        const searchResults = await Promise.all(queries.map(function (queryStr) {
+          const searchUrl = `${base}?origin=*&action=query&list=search&format=json&srlimit=5&srsearch=${encodeURIComponent(queryStr)}`;
+          return fetch(searchUrl)
+            .then(function (res) { return res.ok ? res.json() : null; })
+            .catch(function () { return null; });
+        }));
+
+        for (let q = 0; q < searchResults.length; q++) {
+          const data = searchResults[q];
+          const hits = data && data.query && Array.isArray(data.query.search) ? data.query.search : [];
+          for (let i = 0; i < hits.length; i++) {
+            const pid = hits[i].pageid;
+            if (pid && !seenIds.has(pid)) {
+              seenIds.add(pid);
+              candidatePageIds.push(pid);
             }
-          } catch (_) {
-            // continue to next query
           }
           if (candidatePageIds.length >= 8) break;
         }
@@ -5995,27 +6221,24 @@
 
       async function fetchFromGemini(apiKey, album, artist, year) {
         const prompt = [
-          '以下の音楽アルバムについて、簡潔な日本語解説と英語ジャンルを厳密なJSONオブジェクトのみで返してください。マークダウン記法（```）や前置きは一切付けないでください。',
-          `アルバム名: ${album}`,
-          `アーティスト名: ${artist}`,
-          year ? `リリース年: ${year}` : '',
-          '',
-          '出力JSONフォーマット:',
-          '{"description": "日本語の簡単な解説", "genres": ["EnglishGenre1", "EnglishGenre2"]}',
-          '',
-          '厳守条件:',
-          '1. description は必ず自然な日本語のみ（2〜3文、110〜200文字程度の簡単な解説）で書いてください。英語で書かないでください。',
-          '2. アーティスト経歴ではなく、このアルバム自体のサウンドの特徴・音楽性・時代的位置づけをわかりやすく要約してください。',
-          '3. 不確かな事実（存在しない曲名や根拠のないエピソード等）は捏造しないでください。',
-          '4. genres は1〜3個の英語の音楽ジャンル名のみにしてください（例: "Rock", "Neo-Soul", "Slowcore", "Dream Pop", "Jazz"）。'
-        ].filter(Boolean).join('\n');
+          `対象アルバム: ${album} / アーティスト: ${artist}${year ? ` (${year})` : ''}`,
+          '以下のJSON形式のみで返答してください:',
+          '{"description": "日本語の簡潔な解説", "genres": ["EnglishGenre1", "EnglishGenre2", "EnglishGenre3"]}',
+          '条件:',
+          '1. description は自然な日本語2〜3文（110〜190文字）。サウンドの特徴・音楽性・位置づけを客観的に要約。',
+          '2. 不確かな曲名やエピソードは捏造しない。',
+          '3. genres は的確な英語ジャンルを2〜3個（例: "Neo-Soul", "Slowcore", "Indie Rock"）。'
+        ].join('\n');
 
         const text = await callGeminiGenerateContent(apiKey, {
           systemInstruction: {
-            parts: [{ text: 'あなたは日本の音楽評論家です。アルバム解説(description)は必ず自然な日本語で記述し、指定されたJSON形式のみで回答してください。' }]
+            parts: [{ text: '音楽データベース編集者として、指定されたJSONのみを簡潔・正確に返してください。descriptionは必ず自然な日本語にします。' }]
           },
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.3 }
+          generationConfig: {
+            temperature: 0.3,
+            responseMimeType: 'application/json'
+          }
         });
 
         const stripped = text.replace(/```(?:json)?/gi, '').replace(/```/g, '').trim();
@@ -6059,7 +6282,7 @@
         let enWikiFoundButTranslationFailed = false;
 
         try {
-          // Step A: Gemini API (if API key configured)
+          // Step A: Gemini API (if API key configured) — fast path: stop immediately once description + genres arrive
           if (state.syncConfig.geminiApiKey) {
             try {
               const geminiResult = await fetchFromGemini(state.syncConfig.geminiApiKey, cleanAlbum, cleanArtist, year);
@@ -6067,6 +6290,7 @@
               if (geminiResult.description && isPrimarilyJapanese(geminiResult.description)) {
                 finalDescriptionJa = geminiResult.description;
                 descriptionSource = 'gemini';
+                $('field-description').value = finalDescriptionJa;
               }
               if (geminiResult.genres.length > 0) {
                 collectedGenres = geminiResult.genres.slice(0, 3);
@@ -6077,10 +6301,19 @@
             }
           }
 
-          // Step B-1: Japanese Wikipedia (Strict Album Articles Only)
-          if (!finalDescriptionJa || collectedGenres.length < 3) {
-            const jaWiki = await fetchFromWikipedia('ja', cleanAlbum, cleanArtist);
+          // Step B: Fallback to Wikipedia & MusicBrainz ONLY when Gemini didn't produce a description or genres
+          const needsFallback = !finalDescriptionJa || collectedGenres.length === 0;
+          if (needsFallback) {
+            const wikiTasks = [
+              fetchFromWikipedia('ja', cleanAlbum, cleanArtist),
+              fetchFromWikipedia('en', cleanAlbum, cleanArtist)
+            ];
+            const wikiPair = await Promise.all(wikiTasks);
             if (myToken !== state.metaFetchToken) return;
+
+            const jaWiki = wikiPair[0];
+            const enWiki = wikiPair[1];
+
             if (jaWiki) {
               if (!finalDescriptionJa && jaWiki.description && isPrimarilyJapanese(jaWiki.description)) {
                 finalDescriptionJa = jaWiki.description;
@@ -6094,12 +6327,7 @@
                 }
               }
             }
-          }
 
-          // Step B-2 & B-3: English Wikipedia (Strict Album Article -> check ja langlink -> else translate En->Ja)
-          if (!finalDescriptionJa || collectedGenres.length < 3) {
-            const enWiki = await fetchFromWikipedia('en', cleanAlbum, cleanArtist);
-            if (myToken !== state.metaFetchToken) return;
             if (enWiki) {
               if (enWiki.genres.length > 0) {
                 const beforeLen = collectedGenres.length;
@@ -6110,7 +6338,6 @@
               }
 
               if (!finalDescriptionJa) {
-                // First check if English Wikipedia links directly to a Japanese Wikipedia article
                 if (enWiki.jaLangTitle) {
                   setAutoFetchStatus('関連する日本語Wikipedia記事から解説を取得中...', '');
                   const linkedJa = await fetchJaWikipediaByExactTitle(enWiki.jaLangTitle);
@@ -6124,7 +6351,6 @@
                   }
                 }
 
-                // If no Japanese Wikipedia page exists, automatically translate the English album summary into Japanese
                 if (!finalDescriptionJa && enWiki.description) {
                   setAutoFetchStatus('英語Wikipediaのアルバム記事を日本語へ翻訳中...', '');
                   const translatedJa = await translateEnToJa(enWiki.description);
@@ -6138,17 +6364,17 @@
                 }
               }
             }
-          }
 
-          // Step B-4: Supplement English genres from MusicBrainz if fewer than 3
-          if (collectedGenres.length < 3) {
-            const mbGenres = await fetchFromMusicBrainzTags(cleanAlbum, cleanArtist);
-            if (myToken !== state.metaFetchToken) return;
-            if (mbGenres.length > 0) {
-              const beforeLen = collectedGenres.length;
-              collectedGenres = normalizeGenres(collectedGenres.concat(mbGenres));
-              if (collectedGenres.length > beforeLen) {
-                genreSources.push('MusicBrainz');
+            // Supplement English genres from MusicBrainz only if still fewer than 2 genres
+            if (collectedGenres.length < 2) {
+              const mbGenres = await fetchFromMusicBrainzTags(cleanAlbum, cleanArtist);
+              if (myToken !== state.metaFetchToken) return;
+              if (mbGenres.length > 0) {
+                const beforeLen = collectedGenres.length;
+                collectedGenres = normalizeGenres(collectedGenres.concat(mbGenres));
+                if (collectedGenres.length > beforeLen) {
+                  genreSources.push('MusicBrainz');
+                }
               }
             }
           }
@@ -6293,7 +6519,6 @@
         if (!entry) return;
 
         const barEl = $('ai-chat-album-bar');
-        const summaryEl = $('ai-chat-album-summary');
         const bannerEl = $('ai-chat-api-banner');
         const msgEl = $('ai-chat-messages');
         const notesQuickBtn = $('btn-quick-prompt-notes');
@@ -6318,16 +6543,6 @@
               <div class="chat-album-sub">${escapeHtml(metaLine)}</div>
             </div>
           `;
-        }
-
-        if (summaryEl) {
-          if (entry.description) {
-            summaryEl.innerHTML = `<strong>簡単な解説:</strong>${escapeHtml(entry.description)}`;
-            summaryEl.classList.remove('hidden');
-          } else {
-            summaryEl.innerHTML = '';
-            summaryEl.classList.add('hidden');
-          }
         }
 
         if (bannerEl) {
@@ -6358,7 +6573,7 @@
             <div class="chat-empty">
               <p class="chat-empty-title">このアルバムについてAIと深掘りできます</p>
               <p class="chat-empty-desc">
-                下のワンタップ質問を選ぶか、気になるトラック・音作り・時代背景・関連作品などを自由に聞いてみてください。<br />
+                下のワンタップ質問を選ぶか、気になるトラック・音作り・時代背景・批判的視点などを自由に聞いてみてください。<br />
                 会話はこのアルバムに自動保存され、気に入った内容はメモへ追記できます。
               </p>
             </div>
@@ -6386,16 +6601,50 @@
         });
 
         if (state.aiChatSending) {
-          bubbles.push(`
-            <div class="chat-typing">
-              <span>AIが回答を作成中</span>
-              <span class="chat-typing-dots"><span></span><span></span><span></span></span>
-            </div>
-          `);
+          if (state.aiChatStreamingText) {
+            bubbles.push(`
+              <div class="chat-msg model" id="ai-chat-streaming-msg">
+                <div class="chat-bubble streaming" id="ai-chat-streaming-bubble">${formatChatMessageHtml(state.aiChatStreamingText)}</div>
+              </div>
+            `);
+          } else {
+            bubbles.push(`
+              <div class="chat-typing" id="ai-chat-typing-indicator">
+                <span>AIが回答を作成中</span>
+                <span class="chat-typing-dots"><span></span><span></span><span></span></span>
+              </div>
+            `);
+          }
         }
 
         msgEl.innerHTML = bubbles.join('');
         msgEl.scrollTop = msgEl.scrollHeight;
+      }
+
+      function updateStreamingChatBubble(partialText) {
+        state.aiChatStreamingText = partialText;
+        const msgEl = $('ai-chat-messages');
+        if (!msgEl) return;
+        let bubbleEl = $('ai-chat-streaming-bubble');
+        if (!bubbleEl) {
+          const typingEl = $('ai-chat-typing-indicator');
+          if (typingEl && typingEl.parentNode) {
+            typingEl.parentNode.removeChild(typingEl);
+          }
+          const wrap = document.createElement('div');
+          wrap.className = 'chat-msg model';
+          wrap.id = 'ai-chat-streaming-msg';
+          wrap.innerHTML = '<div class="chat-bubble streaming" id="ai-chat-streaming-bubble"></div>';
+          msgEl.appendChild(wrap);
+          bubbleEl = $('ai-chat-streaming-bubble');
+        }
+        if (bubbleEl) {
+          bubbleEl.innerHTML = formatChatMessageHtml(partialText);
+        }
+        const nearBottom = (msgEl.scrollHeight - msgEl.scrollTop - msgEl.clientHeight) < 120;
+        if (nearBottom) {
+          msgEl.scrollTop = msgEl.scrollHeight;
+        }
       }
 
       function openAiChatModal(entryId) {
@@ -6403,6 +6652,7 @@
         if (!entry) return;
         state.activeChatEntryId = entry.id;
         state.aiChatSending = false;
+        state.aiChatStreamingText = '';
         const input = $('ai-chat-input');
         if (input) {
           input.value = '';
@@ -6415,7 +6665,12 @@
 
       function closeAiChatModal() {
         state.aiChatRequestToken++;
+        if (state.aiChatAbortController) {
+          try { state.aiChatAbortController.abort(); } catch (_) {}
+          state.aiChatAbortController = null;
+        }
         state.aiChatSending = false;
+        state.aiChatStreamingText = '';
         state.activeChatEntryId = null;
         const backdrop = $('ai-chat-modal-backdrop');
         if (backdrop) backdrop.classList.add('hidden');
@@ -6423,23 +6678,25 @@
 
       function buildAiChatSystemInstruction(entry) {
         const lines = [
-          'あなたは音楽に深く精通した知識豊富で誠実な音楽ガイド・評論家です。',
-          'ユーザーは自分の音楽記録アプリ（SoundLog）に記録した以下のアルバムについて、簡単な解説のさらに先を深掘りしたいと考えています。',
+          'あなたは音楽史・サウンドデザイン・録音技術・批評文脈に精通した、客観的かつ率直な音楽評論家・議論相手です。',
+          'ユーザーは記録アプリ（SoundLog）に保存した以下のアルバムについて、表面的な紹介を超えて深く検証・考察したいと考えています。',
           '',
           '【対象アルバム情報】',
           `アルバム名: ${entry.album}`,
           `アーティスト名: ${entry.artist}`,
           entry.year ? `リリース年: ${entry.year}` : '',
           entry.genres && entry.genres.length ? `ジャンル: ${entry.genres.join(', ')}` : '',
-          entry.description ? `既存の簡単な解説: ${entry.description}` : '',
+          entry.description ? `参考（既存の簡単な解説）: ${entry.description}` : '',
           `ユーザーの評価: ${formatScore(entry.score)} / 5.0`,
           entry.notes ? `ユーザーの感想・メモ: ${entry.notes}` : '',
           '',
-          '【応答ルール】',
-          '1. 必ず自然で読みやすい日本語で回答してください。',
-          '2. 簡単な解説の単なる言い換えに留まらず、音楽理論・サウンドデザイン・録音・歴史的文脈・聴きどころなど具体的に踏み込んで回答してください。',
-          '3. 収録曲名・参加ミュージシャン・具体的な年号など確証が持てない細部は推測や創作をせず、「正確な確認が必要ですが」と率直に伝えてください。',
-          '4. 長文になりすぎないよう見出しや箇条書きを活用し、ユーザーがさらに質問を続けやすい対話トーンを心がけてください。'
+          '【応答スタンス・厳守ルール】',
+          '1. ユーザーを過度に褒めないこと。「素晴らしい着眼点ですね」「鋭いですね」「素敵な感性です」といったお世辞・社交辞令・過剰な持ち上げは一切入れず、前置きなしに本題から入ってください。',
+          '2. 客観的・多角的・批判的な目線を持つこと。作品の魅力や功績だけでなく、構成上の弱点・マンネリ・過剰さ・当時の賛否両論・別ジャンルや現在の耳から見た限界なども必要に応じて率直に指摘してください。',
+          '3. ユーザーの感想や評価に無条件で同調せず、対等な議論相手として別の解釈・反論的な視点・見落とされがちな論点も提示してください。',
+          '4. 質を落とさず、音楽構造・音色・アレンジ・録音／ミックス・時代背景など具体的な根拠に踏み込んで解説してください。',
+          '5. 収録曲名・参加メンバー・制作年・機材など確証が持てない事実は創作・推測せず、「正確な確認が必要ですが」と明記してください。',
+          '6. 簡潔で密度の高い日本語で、見出しや箇条書きを活用して読みやすくまとめてください。'
         ];
         return lines.filter(Boolean).join('\n');
       }
@@ -6476,14 +6733,19 @@
         }
 
         const myToken = ++state.aiChatRequestToken;
+        if (state.aiChatAbortController) {
+          try { state.aiChatAbortController.abort(); } catch (_) {}
+        }
+        state.aiChatAbortController = typeof AbortController !== 'undefined' ? new AbortController() : null;
         state.aiChatSending = true;
+        state.aiChatStreamingText = '';
         renderAiChatModal();
 
         const slowTimer = setTimeout(function () {
-          if (myToken !== state.aiChatRequestToken || !state.aiChatSending) return;
-          const typingEl = document.querySelector('#ai-chat-messages .chat-typing span:first-child');
-          if (typingEl) typingEl.textContent = 'AIが詳しく回答を作成中（少し時間がかかっています）';
-        }, 5000);
+          if (myToken !== state.aiChatRequestToken || !state.aiChatSending || state.aiChatStreamingText) return;
+          const typingEl = document.querySelector('#ai-chat-typing-indicator span:first-child');
+          if (typingEl) typingEl.textContent = 'AIが応答を準備中...';
+        }, 4000);
 
         try {
           // Send recent 8 turns so prompt processing stays fast
@@ -6494,13 +6756,22 @@
             };
           });
 
-          const replyText = await callGeminiGenerateContent(state.syncConfig.geminiApiKey, {
-            systemInstruction: {
-              parts: [{ text: buildAiChatSystemInstruction(state.entries[idx]) }]
+          const replyText = await callGeminiStreamGenerateContent(
+            state.syncConfig.geminiApiKey,
+            {
+              systemInstruction: {
+                parts: [{ text: buildAiChatSystemInstruction(state.entries[idx]) }]
+              },
+              contents: recentMsgs,
+              generationConfig: { temperature: 0.6 }
             },
-            contents: recentMsgs,
-            generationConfig: { temperature: 0.6 }
-          });
+            function (partialText) {
+              if (myToken !== state.aiChatRequestToken) return;
+              clearTimeout(slowTimer);
+              updateStreamingChatBubble(partialText);
+            },
+            state.aiChatAbortController
+          );
 
           if (myToken !== state.aiChatRequestToken) return;
 
@@ -6517,6 +6788,8 @@
           }));
 
           clearTimeout(slowTimer);
+          state.aiChatAbortController = null;
+          state.aiChatStreamingText = '';
           saveLocalData();
           state.aiChatSending = false;
           renderAiChatModal();
@@ -6527,6 +6800,8 @@
           }
         } catch (err) {
           clearTimeout(slowTimer);
+          state.aiChatAbortController = null;
+          state.aiChatStreamingText = '';
           console.error('AI chat error:', err);
           if (myToken !== state.aiChatRequestToken) return;
           state.aiChatSending = false;
@@ -6947,6 +7222,7 @@
             $('field-github-token').value = '';
             $('field-gist-id').value = '';
             $('field-gemini-key').value = '';
+            cacheDetectedGeminiModel('');
             renderSyncStatus();
             showToast('同期設定を解除しました');
           }
@@ -7364,7 +7640,7 @@
           state.syncConfig.githubToken = $('field-github-token').value.trim();
           state.syncConfig.gistId = $('field-gist-id').value.trim();
           state.syncConfig.geminiApiKey = $('field-gemini-key').value.trim();
-          state.detectedGeminiModel = '';
+          cacheDetectedGeminiModel('');
           saveSyncConfig();
           if (state.activeChatEntryId) renderAiChatModal();
 
