@@ -203,6 +203,28 @@
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     }
 
+    .nav-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 17px;
+      height: 17px;
+      padding: 0 5px;
+      margin-left: 4px;
+      border-radius: var(--radius-pill);
+      background: var(--border);
+      color: var(--text);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      line-height: 1;
+      vertical-align: middle;
+    }
+
+    .seg-btn.active .nav-badge {
+      background: var(--accent);
+      color: var(--accent-fg);
+    }
+
     .header-actions {
       display: flex;
       align-items: center;
@@ -1473,6 +1495,336 @@
       gap: 14px;
     }
 
+
+    /* =========================================================================
+       Wishlist & Daily Recommendations Views
+       ========================================================================= */
+    .view-section-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .view-section-kicker {
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+
+    .view-section-title {
+      margin: 0;
+      font-size: 1.125rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    .view-section-sub {
+      margin: 4px 0 0;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+    }
+
+    .btn-card-complete {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 11px;
+      border-radius: var(--radius-pill);
+      background: var(--accent);
+      color: var(--accent-fg);
+      font-size: 0.75rem;
+      font-weight: 600;
+      transition: background 0.15s ease, transform 0.1s ease;
+      white-space: nowrap;
+    }
+
+    .btn-card-complete:hover:not(:disabled) {
+      background: var(--accent-hover);
+    }
+
+    .btn-card-wishlist-add {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 12px;
+      border-radius: var(--radius-pill);
+      background: var(--accent);
+      color: var(--accent-fg);
+      font-size: 0.75rem;
+      font-weight: 600;
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-card-wishlist-add:hover:not(:disabled) {
+      background: var(--accent-hover);
+    }
+
+    .btn-card-wishlist-add.added {
+      background: var(--surface-subtle);
+      color: var(--status-ok);
+      border: 1px solid #bbf7d0;
+      cursor: default;
+    }
+
+    .btn-card-wishlist-add.logged {
+      background: var(--surface-subtle);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      cursor: default;
+    }
+
+    .tag-pill.rec-origin-tag {
+      background: #f0fdf4;
+      border-color: #bbf7d0;
+      color: #15803d;
+    }
+
+    .rec-info-banner {
+      margin-bottom: 16px;
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .rec-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .rec-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 14px;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .rec-card:hover {
+      border-color: var(--border-strong);
+      box-shadow: var(--shadow-md);
+    }
+
+    .rec-slot-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .rec-slot-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .rec-slot-badge.alltime {
+      background: #171717;
+      color: #ffffff;
+    }
+
+    .rec-slot-badge.recent {
+      background: #eef2ff;
+      color: #3730a3;
+      border: 1px solid #c7d2fe;
+    }
+
+    .rec-country-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .rec-top {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .rec-cover {
+      width: 92px;
+      height: 92px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--surface-subtle);
+      border: 1px solid rgba(0, 0, 0, 0.07);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+    }
+
+    .rec-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .rec-title {
+      margin: 0;
+      font-size: 1.0625rem;
+      font-weight: 700;
+      line-height: 1.35;
+      color: var(--text);
+      word-break: break-word;
+    }
+
+    .rec-artist {
+      margin: 3px 0 8px;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+      word-break: break-word;
+    }
+
+    .rec-reason {
+      margin: 0;
+      padding: 11px 13px;
+      background: #f7f7f7;
+      border-left: 3px solid #d4d4d4;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .rec-loading-card {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 48px 16px;
+      border: 1px dashed var(--border-strong);
+      border-radius: var(--radius-lg);
+      background: var(--surface-subtle);
+      color: var(--text-secondary);
+    }
+
+    .rec-history-section {
+      margin-top: 24px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+    }
+
+    .rec-history-title {
+      margin: 0 0 12px;
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+
+    .rec-history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .rec-history-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      flex-wrap: wrap;
+    }
+
+    .rec-history-thumb {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--surface-subtle);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+    }
+
+    .rec-history-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .rec-history-info {
+      flex: 1 1 180px;
+      min-width: 0;
+    }
+
+    .rec-history-album {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .rec-history-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .rec-history-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .mobile-add-fab {
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      color: var(--accent-fg);
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
+      flex-shrink: 0;
+    }
+
+    .mobile-add-fab:active {
+      transform: scale(0.95);
+    }
+
     /* =========================================================================
        Modals (Entry Modal, Sync Modal, Confirm / Import Modals)
        ========================================================================= */
@@ -2274,7 +2626,7 @@
         position: static;
       }
 
-      .list-grid {
+      .list-grid, .rec-grid {
         grid-template-columns: minmax(0, 1fr);
       }
     }
@@ -2406,14 +2758,24 @@
         bottom: 0;
         z-index: 40;
         display: grid;
-        grid-template-columns: 1fr auto 1fr;
+        grid-template-columns: 1fr 1fr auto 1fr 1fr;
         align-items: center;
-        gap: 10px;
-        padding: 8px 14px calc(8px + env(safe-area-inset-bottom));
+        gap: 4px;
+        padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
         background: rgba(255, 255, 255, 0.96);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         border-top: 1px solid var(--border);
+      }
+
+      .mobile-nav-btn {
+        padding: 6px 4px;
+        font-size: 0.6875rem;
+      }
+
+      .rec-cover {
+        width: 76px;
+        height: 76px;
       }
 
       .toast-container {
@@ -2523,6 +2885,8 @@
       <nav class="segmented-nav desktop-nav" aria-label="表示切替">
         <button type="button" class="seg-btn active" data-view-target="calendar">カレンダー</button>
         <button type="button" class="seg-btn" data-view-target="list">一覧</button>
+        <button type="button" class="seg-btn" data-view-target="wishlist">聴きたい<span id="nav-wishlist-count" class="nav-badge tabular-nums hidden">0</span></button>
+        <button type="button" class="seg-btn" data-view-target="recommend">おすすめ</button>
       </nav>
 
       <div class="header-actions">
@@ -2649,6 +3013,74 @@
       <div id="list-summary-banner" class="list-summary-banner tabular-nums"></div>
       <div id="list-entries-container" class="list-grid"></div>
     </section>
+
+    <!-- Wishlist (Want-to-Listen) View -->
+    <section id="view-wishlist" class="card list-card hidden" aria-label="これから聴きたいリスト">
+      <div class="view-section-header">
+        <div>
+          <div class="view-section-kicker">Want To Listen</div>
+          <h2 class="view-section-title">これから聴きたいリスト</h2>
+          <p class="view-section-sub">気になるアルバムをストックして、聴き終えたらそのまま記録へ移せます</p>
+        </div>
+        <button type="button" id="btn-open-add-wishlist" class="btn-primary">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>聴きたいアルバムを追加</span>
+        </button>
+      </div>
+
+      <div class="list-toolbar">
+        <input
+          type="search"
+          id="wishlist-search-input"
+          class="input-control"
+          placeholder="アルバム・アーティスト・ジャンル・メモで検索..."
+          autocomplete="off"
+        />
+        <select id="wishlist-sort-select" class="select-control" aria-label="並び替え">
+          <option value="added-desc">追加した順（新しい順）</option>
+          <option value="added-asc">追加した順（古い順）</option>
+          <option value="year-desc">リリース年（新しい順）</option>
+          <option value="year-asc">リリース年（古い順）</option>
+        </select>
+      </div>
+
+      <div id="wishlist-genre-chips" class="genre-filter-chips" role="group" aria-label="英語ジャンル絞り込み"></div>
+      <div id="wishlist-summary-banner" class="list-summary-banner tabular-nums"></div>
+      <div id="wishlist-entries-container" class="list-grid"></div>
+    </section>
+
+    <!-- Daily Recommendations View -->
+    <section id="view-recommend" class="card list-card hidden" aria-label="毎日のおすすめアルバム">
+      <div class="view-section-header">
+        <div>
+          <div class="view-section-kicker">Daily Album Picks</div>
+          <h2 id="rec-date-title" class="view-section-title">今日のおすすめアルバム</h2>
+          <p class="view-section-sub">オールタイム名盤 1枚 ＋ 近年の注目作 1枚を毎日提案（記録済み・紹介済みを除外）</p>
+        </div>
+        <button type="button" id="btn-refresh-daily-recs" class="btn-secondary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+          </svg>
+          <span>別のおすすめを取得</span>
+        </button>
+      </div>
+
+      <div id="rec-api-banner" class="rec-info-banner hidden">
+        <span>現在は厳選リストから毎日2枚を提案しています。「同期・AI設定」で Gemini API キーを設定すると、聴いた履歴を踏まえてAIが毎日新しい組み合わせを提案します。</span>
+        <button type="button" id="btn-rec-open-settings" class="btn-secondary" style="height:30px;padding:0 12px;font-size:0.75rem;">APIキーを設定</button>
+      </div>
+
+      <div id="daily-recs-container" class="rec-grid"></div>
+
+      <div id="rec-history-section" class="rec-history-section hidden">
+        <h3 class="rec-history-title">過去のおすすめ履歴</h3>
+        <div id="rec-history-list" class="rec-history-list"></div>
+      </div>
+    </section>
   </main>
 
   <!-- =========================================================================
@@ -2665,14 +3097,6 @@
       <span>カレンダー</span>
     </button>
 
-    <button type="button" id="btn-open-add-mobile" class="btn-primary">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="12" y1="5" x2="12" y2="19"></line>
-        <line x1="5" y1="12" x2="19" y2="12"></line>
-      </svg>
-      <span>記録を追加</span>
-    </button>
-
     <button type="button" class="mobile-nav-btn" data-view-target="list">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="8" y1="6" x2="21" y2="6"></line>
@@ -2683,6 +3107,28 @@
         <line x1="3" y1="18" x2="3.01" y2="18"></line>
       </svg>
       <span>一覧</span>
+    </button>
+
+    <button type="button" id="btn-open-add-mobile" class="mobile-add-fab" aria-label="アルバムを追加">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+    </button>
+
+    <button type="button" class="mobile-nav-btn" data-view-target="wishlist">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+      </svg>
+      <span>聴きたい</span>
+    </button>
+
+    <button type="button" class="mobile-nav-btn" data-view-target="recommend">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z"></path>
+        <path d="M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8L19 16z"></path>
+      </svg>
+      <span>おすすめ</span>
     </button>
   </nav>
 
@@ -2705,6 +3151,8 @@
         <div class="modal-body">
           <input type="hidden" id="field-entry-id" />
           <input type="hidden" id="field-apple-music-url" />
+          <input type="hidden" id="field-form-mode" value="entry" />
+          <input type="hidden" id="field-from-wishlist-id" value="" />
 
           <!-- Section A: 3-Mode Album Search -->
           <div class="section-box">
@@ -2788,7 +3236,7 @@
               <input type="text" id="field-artist" class="input-control" required placeholder="アーティスト名を入力" />
             </div>
 
-            <div class="form-field">
+            <div class="form-field" id="field-wrap-date">
               <label class="field-label" for="field-date">
                 <span>聴いた日<span class="field-required">*</span></span>
               </label>
@@ -2809,7 +3257,7 @@
             </div>
 
             <!-- Re-listen Toggle -->
-            <div class="form-field full">
+            <div class="form-field full" id="field-wrap-relisten">
               <label class="checkbox-row" for="field-relisten">
                 <input type="checkbox" id="field-relisten" />
                 <span class="checkbox-text">
@@ -2820,7 +3268,7 @@
             </div>
 
             <!-- 0.5-Step 5-Point Rating -->
-            <div class="form-field full">
+            <div class="form-field full" id="field-wrap-score">
               <label class="field-label" for="field-score">
                 <span>評価（0.5刻み・5点満点）</span>
               </label>
@@ -2875,7 +3323,7 @@
 
             <!-- User Notes -->
             <div class="form-field full">
-              <label class="field-label" for="field-notes">感想・メモ</label>
+              <label class="field-label" id="field-notes-label" for="field-notes">感想・メモ</label>
               <textarea
                 id="field-notes"
                 class="textarea-control"
@@ -3085,10 +3533,52 @@
       const STORAGE_KEYS = {
         entries: 'soundlog_entries_v2',
         deletedIds: 'soundlog_deleted_v2',
+        wishlist: 'soundlog_wishlist_v1',
+        wishlistDeletedIds: 'soundlog_wishlist_deleted_v1',
+        dailyRecs: 'soundlog_daily_recs_v1',
         syncConfig: 'soundlog_sync_config_v2',
         geminiModel: 'soundlog_gemini_model_v1',
         legacyEntries: ['soundlog_entries_v1', 'soundlog_entries', 'soundlog_logs']
       };
+
+      // Diverse curated fallback pool used when Gemini API key is not configured
+      const CURATED_ALLTIME_POOL = [
+        { album: 'Talk Talk - Spirit of Eden', title: 'Spirit of Eden', artist: 'Talk Talk', year: '1988', country: 'UK', genres: ['Post-Rock', 'Art Rock', 'Ambient'], reason: 'ロックの定型を解体し、即興演奏と沈黙の間合いを緻密に編集してポストロックの原型を築いた1988年作。生楽器の有機的な響きとダイナミクスの落差が際立つ。' },
+        { album: 'Arthur Verocai', title: 'Arthur Verocai', artist: 'Arthur Verocai', year: '1972', country: 'Brazil', genres: ['MPB', 'Psychedelic Soul', 'Jazz'], reason: 'リオデジャネイロで録音されたブラジル音楽の孤高の傑作。壮麗なストリングスとサイケデリックなファンク／サンバのグルーヴが濃密に交差する。' },
+        { album: 'Fishmans - Long Season', title: 'LONG SEASON', artist: 'Fishmans', year: '1996', country: 'Japan', genres: ['Dream Pop', 'Dub', 'Neo-Psychedelia'], reason: '1曲35分の組曲形式でダブの空間処理とドリームポップの浮遊感を融合させた90年代日本の重要作。反復するリズムの上で音像が繊細に変容し続ける。' },
+        { album: 'Cocteau Twins - Heaven or Las Vegas', title: 'Heaven or Las Vegas', artist: 'Cocteau Twins', year: '1990', country: 'UK', genres: ['Dream Pop', 'Shoegaze', 'Alternative'], reason: '幾重にも重ねたコーラス／リバーブギターと楽器のように響くヴォーカルが結晶したドリームポップの金字塔。抽象的な音像と親しみやすい旋律が同居する。' },
+        { album: 'Bill Evans - Waltz for Debby', title: 'Waltz for Debby', artist: 'Bill Evans Trio', year: '1961', country: 'USA', genres: ['Jazz', 'Post-Bop'], reason: 'ヴィレッジ・ヴァンガードの客席ノイズごと収録されたピアノ・トリオの名盤。ピアノ・ベース・ドラムが対等に会話を交わすインタープレイの到達点。' },
+        { album: 'Milton Nascimento & Lô Borges - Clube da Esquina', title: 'Clube da Esquina', artist: 'Milton Nascimento & Lô Borges', year: '1972', country: 'Brazil', genres: ['MPB', 'Psychedelic Folk', 'Jazz'], reason: 'ミナスジェライス州の音楽家たちが結集し、ボサノヴァ以降のブラジル音楽にビートルズ的ポップネスとジャズの和声感覚を注ぎ込んだ2枚組大作。' },
+        { album: 'Boards of Canada - Music Has the Right to Children', title: 'Music Has the Right to Children', artist: 'Boards of Canada', year: '1998', country: 'UK', genres: ['Electronic', 'IDM', 'Ambient'], reason: '劣化したアナログシンセとテープの揺らぎ、ヒップホップ由来のビートでノスタルジックかつ不穏な音風景を描き出したエレクトロニカの転換点。' },
+        { album: 'Fela Kuti - Expensive Shit', title: 'Expensive Shit', artist: 'Fela Kuti & Africa 70', year: '1975', country: 'Nigeria', genres: ['Afrobeat', 'Funk', 'Jazz'], reason: 'ポリリズムを刻む打楽器群と鋭利なホーン・セクションが長尺でうねるアフロビートの代表作。政治的風刺と強靭なダンス・グルーヴが一体となっている。' },
+        { album: 'Portishead - Dummy', title: 'Dummy', artist: 'Portishead', year: '1994', country: 'UK', genres: ['Trip-Hop', 'Electronic', 'Alternative'], reason: '自作フレーズをわざわざレコードに刻んで傷をつけサンプリングした質感と、陰影の深いヴォーカルで90年代トリップホップの美学を確立したデビュー盤。' },
+        { album: 'Taeko Onuki - Sunshower', title: 'SUNSHOWER', artist: '大貫妙子', year: '1977', country: 'Japan', genres: ['City Pop', 'Jazz Fusion', 'Pop'], reason: '坂本龍一のアレンジとクリス・パーカーらのタイトなリズム隊により、洗練された都会的ポップスとクロスオーバー・ファンクを高度に結びつけた70年代邦楽の名盤。' },
+        { album: 'Low - Things We Lost in the Fire', title: 'Things We Lost in the Fire', artist: 'Low', year: '2001', country: 'USA', genres: ['Slowcore', 'Indie Rock'], reason: 'スティーヴ・アルビニの端正な録音により、極限まで遅いテンポと男女ハーモニーの緊張感を生々しく封じ込めたスロウコアの到達点。' },
+        { album: 'A Tribe Called Quest - The Low End Theory', title: 'The Low End Theory', artist: 'A Tribe Called Quest', year: '1991', country: 'USA', genres: ['Hip-Hop', 'Jazz Rap'], reason: 'ロン・カーターのウッドベースをはじめジャズの質感と低域の空間設計をヒップホップに持ち込み、以降のジャズ・ラップの基準を作った90年代の重要盤。' },
+        { album: 'Neu! - Neu! 75', title: "Neu! '75", artist: 'Neu!', year: '1975', country: 'Germany', genres: ['Krautrock', 'Experimental', 'Post-Punk'], reason: 'A面の静謐なアンビエント的音響と、B面の疾走するモーターリック・ビート＆パンク前夜の轟音が対比を成すクラウトロックの象徴的作品。' },
+        { album: 'Nick Drake - Pink Moon', title: 'Pink Moon', artist: 'Nick Drake', year: '1972', country: 'UK', genres: ['Folk', 'Singer-Songwriter'], reason: 'わずか2晩のセッションでアコースティックギターと声（一部ピアノ）のみを録音。装飾を削ぎ落とした変則チューニングと陰影が今も色褪せない。' },
+        { album: 'Air - Moon Safari', title: 'Moon Safari', artist: 'Air', year: '1998', country: 'France', genres: ['Electronic', 'Downtempo', 'Pop'], reason: 'アナログシンセとヴィンテージ機材、60年代フレンチポップの旋律美を融合し、エレガントなラウンジ／ダウントテンポ像を世界に広めたデビュー作。' },
+        { album: 'Augustus Pablo - King Tubbys Meets Rockers Uptown', title: 'King Tubbys Meets Rockers Uptown', artist: 'Augustus Pablo', year: '1976', country: 'Jamaica', genres: ['Dub', 'Reggae'], reason: 'キング・タビーの大胆なミキシング卓操作とパブロの憂いあるメロディカが交錯し、スタジオ自体を楽器として扱うダブ表現の古典となった一枚。' }
+      ];
+
+      const CURATED_RECENT_POOL = [
+        { title: 'Diamond Jubilee', artist: 'Cindy Lee', year: '2024', country: 'Canada', genres: ['Hypnagogic Pop', 'Psychedelic Rock', 'Indie Rock'], reason: '60年代ガールグループやローファイ・サイケの記憶を歪んだギターと深い残響で再構築した2時間超の大作。インディー発信ながら2024年を代表する評価を得た。' },
+        { title: 'Lives Outgrown', artist: 'Beth Gibbons', year: '2024', country: 'UK', genres: ['Chamber Folk', 'Art Rock'], reason: 'ポーティスヘッドのヴォーカリストによる初の本格ソロ作。10年をかけて練られた木管・弦楽・生パーカッションの緻密な音響が老いや喪失を静謐に描く。' },
+        { title: 'Imaginal Disk', artist: 'Magdalena Bay', year: '2024', country: 'USA', genres: ['Synth-Pop', 'Psychedelic Pop', 'Electronic'], reason: 'プログレッシブな展開と緻密なシンセプロダクションをポップスの枠に落とし込んだコンセプト作。ディスコ、サイケ、エレクトロが高密度に連結する。' },
+        { title: 'Lahai', artist: 'Sampha', year: '2023', country: 'UK', genres: ['Alternative R&B', 'Electronic', 'Neo-Soul'], reason: 'ブレイクビーツやジャズのポリリズムと繊細なピアノ弾き語りを融合させた2ndアルバム。時間や記憶の飛躍をテーマに、声とリズムの立体感がさらに深化している。' },
+        { title: 'Heavy Metal', artist: 'Cameron Winter', year: '2024', country: 'USA', genres: ['Indie Folk', 'Avant-Folk', 'Singer-Songwriter'], reason: 'Geeseのフロントマンによるソロ作。震えるような独特の声質と予測不能な和声・ピアノアレンジが、古典的シンガーソングライター像を現代的にずらしている。' },
+        { title: 'No Name', artist: 'Jack White', year: '2024', country: 'USA', genres: ['Garage Rock', 'Blues Rock'], reason: '無地のヴァイナル配布から始まった原点回帰的なガレージロック作。過剰な装飾を排し、荒々しいファズギターと生々しいドラムの推進力で一気に聴かせる。' },
+        { title: 'Mahashmashana', artist: 'Father John Misty', year: '2024', country: 'USA', genres: ['Indie Folk', 'Baroque Pop', 'Chamber Pop'], reason: '壮大なオーケストレーションからディスコ・ファンク調の異色曲までをシニカルな語りで貫く作品。録音レンジの広さと皮肉なユーモアのバランスが際立つ。' },
+        { title: 'The New Sound', artist: 'Geordie Greep', year: '2024', country: 'UK', genres: ['Jazz Rock', 'Progressive Rock', 'Art Rock'], reason: '元black midiのフロントマンがブラジル音楽やサルサ、プログレ、ジャズロックを過剰な演奏力で掛け合わせたソロ作。演劇的な歌唱と変拍子アンサンブルが強烈。' },
+        { title: 'Only God Was Above Us', artist: 'Vampire Weekend', year: '2024', country: 'USA', genres: ['Indie Rock', 'Baroque Pop'], reason: 'ノイジーなギターや歪んだピアノ、クラシック由来の対位法を緻密に織り込んだ5thアルバム。明朗なポップ性と不穏なノイズ処理の対比が印象的。' },
+        { title: 'GUTS', artist: 'Olivia Rodrigo', year: '2023', country: 'USA', genres: ['Pop Rock', 'Alternative Rock'], reason: '90年代オルタナティブやパワーポップのギター質感と鋭いバンドアンサンブルを現行メインストリームに落とし込んだ2nd作。緩急のある構成力が高い。' },
+        { title: 'Scaring the Hoes', artist: 'JPEGMAFIA & Danny Brown', year: '2023', country: 'USA', genres: ['Experimental Hip-Hop', 'Hip-Hop', 'Noise'], reason: 'SP-404を駆使した破天荒なサンプリングと歪みきったミックスに、個性の強い2人のラップがぶつかり合う実験的コラボ作。音響の飽和感が圧倒的。' },
+        { title: 'Desire, I Want to Turn Into You', artist: 'Caroline Polachek', year: '2023', country: 'USA', genres: ['Art Pop', 'Electronic', 'Pop'], reason: 'オペラ的な歌唱技術と90sトリップホップ、フラメンコギター、バグパイプまでを自在に織り込んだアートポップ作。緻密なサウンドデザインが光る。' },
+        { title: '3D Country', artist: 'Geese', year: '2023', country: 'USA', genres: ['Indie Rock', 'Art Punk', 'Country Rock'], reason: 'ポストパンクの緊張感にクラシックロックやカントリーの土臭い要素をねじ込んだ2ndアルバム。変幻自在なリズムチェンジと奔放なヴォーカルが魅力。' },
+        { title: 'Wall of Eyes', artist: 'The Smile', year: '2024', country: 'UK', genres: ['Art Rock', 'Post-Rock', 'Jazz'], reason: 'トム・ヨークらがトム・スキナーの変拍子ドラムとロンドン現代オーケストラを交え、より有機的でサイケデリックな音響空間へ踏み込んだ2nd作。' },
+        { title: 'Charm', artist: 'Clairo', year: '2024', country: 'USA', genres: ['Indie Pop', 'Soft Rock', 'Soul'], reason: 'レオン・ミッチェルズのプロデュースにより全編アナログテープで録音された70年代ソウル／ソフトロック調の3rd作。温かなウッドウィンドと鍵盤の質感が心地よい。' },
+        { title: 'Alligator Bites Never Heal', artist: 'Doechii', year: '2024', country: 'USA', genres: ['Hip-Hop', 'Jazz Rap', 'R&B'], reason: '90年代ブーンバップの質感から現代的なトラップ、ジャズ的アプローチまでを自在な声色と高度なフロウで乗りこなしたミックステープ。構成の緩急が鮮やか。' }
+      ];
 
       const GIST_FILENAME = 'soundlog_data.json';
 
@@ -3312,6 +3802,18 @@
       const state = {
         entries: [],
         deletedIds: {},
+        wishlist: [],
+        wishlistDeletedIds: {},
+        wishlistSearch: '',
+        wishlistGenre: '',
+        wishlistSort: 'added-desc',
+        dailyRecs: {
+          byDate: {},
+          seenKeys: []
+        },
+        dailyRecsLoading: false,
+        dailyRecsRequestToken: 0,
+        dailyRecsError: '',
         syncConfig: {
           githubToken: '',
           gistId: '',
@@ -3661,6 +4163,47 @@
         };
       }
 
+      function normalizeWishlistItem(raw) {
+        const obj = raw && typeof raw === 'object' ? raw : {};
+        const album = String(obj.album || obj.title || '').trim();
+        const artist = String(obj.artist || '').trim();
+        const addedDate = /^\d{4}-\d{2}-\d{2}$/.test(String(obj.addedDate || obj.date || ''))
+          ? String(obj.addedDate || obj.date)
+          : formatDateKey(new Date());
+        const yearRaw = obj.year !== undefined ? obj.year : (obj.releaseYear !== undefined ? obj.releaseYear : '');
+        const year = String(yearRaw == null ? '' : yearRaw).replace(/[^\d]/g, '').slice(0, 4);
+        const trackNum = parseInt(obj.trackCount, 10);
+        const trackCount = isFinite(trackNum) && trackNum > 0 ? trackNum : '';
+        const genres = normalizeGenres(
+          Array.isArray(obj.genres) && obj.genres.length > 0
+            ? obj.genres
+            : (obj.genre ? [obj.genre] : [])
+        );
+        const coverUrl = String(obj.coverUrl || obj.artworkUrl || '').trim();
+        const appleMusicUrl = String(obj.appleMusicUrl || '').trim();
+        const description = String(obj.description || '').trim();
+        const notes = String(obj.notes !== undefined ? obj.notes : (obj.comment || '')).trim();
+        const source = String(obj.source || '').trim();
+        const updatedAtNum = Number(obj.updatedAt);
+        const updatedAt = isFinite(updatedAtNum) && updatedAtNum > 0 ? updatedAtNum : Date.now();
+
+        return {
+          id: String(obj.id || generateId()),
+          album: album,
+          artist: artist,
+          addedDate: addedDate,
+          year: year,
+          trackCount: trackCount,
+          genres: genres,
+          coverUrl: coverUrl,
+          appleMusicUrl: appleMusicUrl,
+          description: description,
+          notes: notes,
+          source: source,
+          updatedAt: updatedAt
+        };
+      }
+
       function albumIdentityKey(entry) {
         return `${String(entry.album || '').toLowerCase().trim()}::${String(entry.artist || '').toLowerCase().trim()}`;
       }
@@ -3852,6 +4395,37 @@
           state.deletedIds = {};
         }
 
+        try {
+          const wishRaw = localStorage.getItem(STORAGE_KEYS.wishlist);
+          const wishParsed = wishRaw ? JSON.parse(wishRaw) : [];
+          state.wishlist = Array.isArray(wishParsed) ? wishParsed.map(normalizeWishlistItem) : [];
+        } catch (_) {
+          state.wishlist = [];
+        }
+
+        try {
+          const wishDelRaw = localStorage.getItem(STORAGE_KEYS.wishlistDeletedIds);
+          const wishDelParsed = wishDelRaw ? JSON.parse(wishDelRaw) : {};
+          state.wishlistDeletedIds = wishDelParsed && typeof wishDelParsed === 'object' ? wishDelParsed : {};
+        } catch (_) {
+          state.wishlistDeletedIds = {};
+        }
+
+        try {
+          const recRaw = localStorage.getItem(STORAGE_KEYS.dailyRecs);
+          const recParsed = recRaw ? JSON.parse(recRaw) : null;
+          if (recParsed && typeof recParsed === 'object') {
+            state.dailyRecs = {
+              byDate: recParsed.byDate && typeof recParsed.byDate === 'object' ? recParsed.byDate : {},
+              seenKeys: Array.isArray(recParsed.seenKeys) ? recParsed.seenKeys : []
+            };
+          } else {
+            state.dailyRecs = { byDate: {}, seenKeys: [] };
+          }
+        } catch (_) {
+          state.dailyRecs = { byDate: {}, seenKeys: [] };
+        }
+
         loadSyncConfig();
       }
 
@@ -3859,9 +4433,31 @@
         try {
           localStorage.setItem(STORAGE_KEYS.entries, JSON.stringify(state.entries));
           localStorage.setItem(STORAGE_KEYS.deletedIds, JSON.stringify(state.deletedIds));
+          localStorage.setItem(STORAGE_KEYS.wishlist, JSON.stringify(state.wishlist));
+          localStorage.setItem(STORAGE_KEYS.wishlistDeletedIds, JSON.stringify(state.wishlistDeletedIds));
         } catch (err) {
           console.error('Failed to save entries:', err);
           showToast('データの保存に失敗しました（ストレージ容量を確認してください）', true);
+        }
+      }
+
+      function saveDailyRecsData() {
+        try {
+          // Prune very old dates beyond 30 days to keep localStorage lightweight
+          const dates = Object.keys(state.dailyRecs.byDate || {}).sort().reverse();
+          if (dates.length > 30) {
+            const keep = {};
+            for (let i = 0; i < 30; i++) {
+              keep[dates[i]] = state.dailyRecs.byDate[dates[i]];
+            }
+            state.dailyRecs.byDate = keep;
+          }
+          if (Array.isArray(state.dailyRecs.seenKeys) && state.dailyRecs.seenKeys.length > 300) {
+            state.dailyRecs.seenKeys = state.dailyRecs.seenKeys.slice(-300);
+          }
+          localStorage.setItem(STORAGE_KEYS.dailyRecs, JSON.stringify(state.dailyRecs));
+        } catch (err) {
+          console.error('Failed to save daily recs:', err);
         }
       }
 
@@ -4238,24 +4834,826 @@
         }).join('');
       }
 
+      function renderWishlistCard(item) {
+        const w = normalizeWishlistItem(item);
+        const coverHtml = w.coverUrl
+          ? `<img src="${escapeHtml(w.coverUrl)}" alt="${escapeHtml(w.album)}" loading="lazy" onerror="this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='flex';" /><span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;">${getVinylPlaceholderSvg(24)}</span>`
+          : getVinylPlaceholderSvg(24);
+
+        const tags = [];
+        if (w.addedDate) {
+          tags.push(`<span class="tag-pill date-tag tabular-nums">追加 ${escapeHtml(w.addedDate)}</span>`);
+        }
+        if (w.source === 'daily-rec') {
+          tags.push('<span class="tag-pill rec-origin-tag">おすすめから追加</span>');
+        }
+        for (let i = 0; i < w.genres.length; i++) {
+          tags.push(`<span class="tag-pill">${escapeHtml(w.genres[i])}</span>`);
+        }
+        if (w.year) {
+          tags.push(`<span class="tag-pill tabular-nums">${escapeHtml(w.year)}</span>`);
+        }
+        if (w.trackCount) {
+          tags.push(`<span class="tag-pill tabular-nums">${escapeHtml(w.trackCount)}曲</span>`);
+        }
+
+        const needsJaTranslate = Boolean(w.description && !isPrimarilyJapanese(w.description));
+        const descHtml = w.description
+          ? `<div class="entry-description">
+              <div class="entry-description-header">
+                <span class="entry-description-label">簡単な解説</span>
+                ${needsJaTranslate ? `<button type="button" class="btn-inline-translate" data-wishlist-action="translate-desc" data-id="${escapeHtml(w.id)}">日本語に翻訳</button>` : ''}
+              </div>
+              <p class="entry-description-text">${escapeHtml(w.description)}</p>
+            </div>`
+          : '';
+
+        const notesHtml = w.notes
+          ? `<p class="entry-notes">${escapeHtml(w.notes)}</p>`
+          : '';
+
+        const appleMusicUrl = buildAppleMusicUrl(w);
+        const spotifyUrl = buildSpotifyUrl(w);
+
+        return `
+          <article class="entry-card" data-wishlist-id="${escapeHtml(w.id)}">
+            <div class="entry-top">
+              <div class="entry-cover">${coverHtml}</div>
+              <div class="entry-info">
+                <div class="entry-title-row">
+                  <h4 class="entry-title">${escapeHtml(w.album || 'Untitled Album')}</h4>
+                </div>
+                <p class="entry-artist">${escapeHtml(w.artist || 'Unknown Artist')}</p>
+                ${tags.length ? `<div class="entry-tags">${tags.join('')}</div>` : ''}
+              </div>
+            </div>
+            ${descHtml}
+            ${notesHtml}
+            <div class="entry-actions">
+              <div class="entry-streaming-links">
+                <a href="${escapeHtml(appleMusicUrl)}" target="_blank" rel="noopener noreferrer" class="btn-stream-link apple-music" title="Apple Musicで開く" aria-label="Apple Musicで開く">${getAppleMusicIconSvg()}</a>
+                <a href="${escapeHtml(spotifyUrl)}" target="_blank" rel="noopener noreferrer" class="btn-stream-link spotify" title="Spotifyで開く" aria-label="Spotifyで開く">${getSpotifyIconSvg()}</a>
+              </div>
+              <div class="entry-edit-actions">
+                <button type="button" class="btn-card-complete" data-wishlist-action="complete" data-id="${escapeHtml(w.id)}">聴いた記録にする</button>
+                <button type="button" class="btn-card-action" data-wishlist-action="edit" data-id="${escapeHtml(w.id)}">編集</button>
+                <button type="button" class="btn-card-action delete" data-wishlist-action="delete" data-id="${escapeHtml(w.id)}">削除</button>
+              </div>
+            </div>
+          </article>
+        `;
+      }
+
+      function renderWishlist() {
+        const navBadge = $('nav-wishlist-count');
+        if (navBadge) {
+          navBadge.textContent = String(state.wishlist.length);
+          navBadge.classList.toggle('hidden', state.wishlist.length === 0);
+        }
+
+        const chipsContainer = $('wishlist-genre-chips');
+        const summaryEl = $('wishlist-summary-banner');
+        const containerEl = $('wishlist-entries-container');
+        if (!containerEl) return;
+
+        const genreCounts = {};
+        for (let i = 0; i < state.wishlist.length; i++) {
+          const gs = state.wishlist[i].genres || [];
+          for (let j = 0; j < gs.length; j++) {
+            const g = gs[j];
+            if (!g) continue;
+            genreCounts[g] = (genreCounts[g] || 0) + 1;
+          }
+        }
+        const sortedGenres = Object.keys(genreCounts).sort(function (a, b) {
+          return a.localeCompare(b, 'en', { sensitivity: 'base' });
+        });
+
+        if (state.wishlistGenre && !Object.prototype.hasOwnProperty.call(genreCounts, state.wishlistGenre)) {
+          state.wishlistGenre = '';
+        }
+
+        if (chipsContainer) {
+          const chipButtons = [
+            `<button type="button" class="filter-chip${state.wishlistGenre === '' ? ' active' : ''}" data-wishlist-genre="">すべて <span class="filter-chip-count tabular-nums">${state.wishlist.length}</span></button>`
+          ];
+          for (let i = 0; i < sortedGenres.length; i++) {
+            const g = sortedGenres[i];
+            const isActive = state.wishlistGenre.toLowerCase() === g.toLowerCase();
+            chipButtons.push(
+              `<button type="button" class="filter-chip${isActive ? ' active' : ''}" data-wishlist-genre="${escapeHtml(g)}">${escapeHtml(g)} <span class="filter-chip-count tabular-nums">${genreCounts[g]}</span></button>`
+            );
+          }
+          chipsContainer.innerHTML = chipButtons.join('');
+        }
+
+        const query = state.wishlistSearch.trim().toLowerCase();
+        const selectedGenre = state.wishlistGenre;
+
+        const filtered = state.wishlist.filter(function (w) {
+          if (selectedGenre) {
+            const hasGenre = (w.genres || []).some(function (g) {
+              return g.toLowerCase() === selectedGenre.toLowerCase();
+            });
+            if (!hasGenre) return false;
+          }
+          if (query) {
+            const haystack = [
+              w.album,
+              w.artist,
+              (w.genres || []).join(' '),
+              w.description,
+              w.notes,
+              w.year
+            ].join(' ').toLowerCase();
+            if (!haystack.includes(query)) return false;
+          }
+          return true;
+        });
+
+        filtered.sort(function (a, b) {
+          switch (state.wishlistSort) {
+            case 'added-asc':
+              return a.addedDate.localeCompare(b.addedDate) || (a.updatedAt - b.updatedAt);
+            case 'year-desc':
+              return (parseInt(b.year, 10) || 0) - (parseInt(a.year, 10) || 0) || b.addedDate.localeCompare(a.addedDate);
+            case 'year-asc':
+              return (parseInt(a.year, 10) || 9999) - (parseInt(b.year, 10) || 9999) || b.addedDate.localeCompare(a.addedDate);
+            case 'added-desc':
+            default:
+              return b.addedDate.localeCompare(a.addedDate) || (b.updatedAt - a.updatedAt);
+          }
+        });
+
+        if (summaryEl) {
+          const filterLabel = selectedGenre ? `ジャンル: <strong>${escapeHtml(selectedGenre)}</strong>` : 'すべて表示中';
+          summaryEl.innerHTML = `
+            <span>聴きたいアルバム: <strong>${filtered.length}枚</strong>（全 ${state.wishlist.length}枚）</span>
+            <span>${filterLabel}</span>
+          `;
+        }
+
+        if (filtered.length === 0) {
+          const isEmptyAll = state.wishlist.length === 0;
+          containerEl.innerHTML = `
+            <div class="empty-state" style="grid-column:1/-1;">
+              <div class="empty-state-icon">${getVinylPlaceholderSvg(22)}</div>
+              <p class="empty-state-title">${isEmptyAll ? 'これから聴きたいアルバムがまだありません' : '該当するアルバムが見つかりません'}</p>
+              <p class="empty-state-desc">${isEmptyAll ? '右上のボタンから検索して追加するか、「おすすめ」タブから気になるアルバムをストックできます' : '検索キーワードやジャンル絞り込みを変更してください'}</p>
+              ${isEmptyAll ? '<button type="button" class="btn-primary" data-wishlist-action="add-new">聴きたいアルバムを追加</button>' : ''}
+            </div>
+          `;
+          return;
+        }
+
+        containerEl.innerHTML = filtered.map(renderWishlistCard).join('');
+      }
+
+      function isAlbumInWishlist(album, artist) {
+        const key = albumIdentityKey({ album: album, artist: artist });
+        if (key === '::') return false;
+        return state.wishlist.some(function (w) { return albumIdentityKey(w) === key; });
+      }
+
+      function isAlbumInEntries(album, artist) {
+        const key = albumIdentityKey({ album: album, artist: artist });
+        if (key === '::') return false;
+        return state.entries.some(function (e) { return albumIdentityKey(e) === key; });
+      }
+
+      function addAlbumToWishlist(itemData, sourceTag) {
+        const album = String(itemData.album || itemData.title || '').trim();
+        const artist = String(itemData.artist || '').trim();
+        if (!album || !artist) return false;
+
+        if (isAlbumInWishlist(album, artist)) {
+          showToast('すでに「これから聴きたいリスト」に追加されています');
+          return false;
+        }
+
+        const newItem = normalizeWishlistItem({
+          id: generateId(),
+          album: album,
+          artist: artist,
+          addedDate: formatDateKey(new Date()),
+          year: itemData.year || '',
+          trackCount: itemData.trackCount || '',
+          genres: Array.isArray(itemData.genres) && itemData.genres.length > 0 ? itemData.genres : ['Music'],
+          coverUrl: itemData.coverUrl || '',
+          appleMusicUrl: itemData.appleMusicUrl || '',
+          description: itemData.description || itemData.reason || '',
+          notes: itemData.notes || '',
+          source: sourceTag || '',
+          updatedAt: Date.now()
+        });
+
+        state.wishlist.unshift(newItem);
+        saveLocalData();
+        renderAll();
+        showToast(`「${newItem.album}」を聴きたいリストに追加しました`);
+
+        if (state.syncConfig.githubToken && state.syncConfig.gistId) {
+          syncWithGist({ silent: true });
+        }
+        return true;
+      }
+
+      function deleteWishlistById(id) {
+        const target = state.wishlist.find(function (w) { return w.id === id; });
+        if (!target) return;
+
+        openConfirmModal(
+          '聴きたいリストから削除',
+          `「${target.album} / ${target.artist}」をこれから聴きたいリストから削除しますか？`,
+          '削除する',
+          function () {
+            state.wishlist = state.wishlist.filter(function (w) { return w.id !== id; });
+            state.wishlistDeletedIds[id] = Date.now();
+            saveLocalData();
+            renderAll();
+            showToast('聴きたいリストから削除しました');
+
+            if (state.syncConfig.githubToken && state.syncConfig.gistId) {
+              syncWithGist({ silent: true });
+            }
+          }
+        );
+      }
+
+      async function translateWishlistDescriptionById(id, triggerBtn) {
+        const idx = state.wishlist.findIndex(function (w) { return w.id === id; });
+        if (idx < 0) return;
+        const item = state.wishlist[idx];
+        if (!item.description) return;
+        if (isPrimarilyJapanese(item.description)) {
+          showToast('すでに日本語の解説になっています');
+          return;
+        }
+
+        if (triggerBtn) {
+          triggerBtn.disabled = true;
+          triggerBtn.textContent = '翻訳中...';
+        }
+
+        try {
+          const translated = await translateEnToJa(item.description);
+          if (translated && isPrimarilyJapanese(translated)) {
+            state.wishlist[idx] = normalizeWishlistItem(Object.assign({}, item, {
+              description: translated,
+              updatedAt: Date.now()
+            }));
+            saveLocalData();
+            renderAll();
+            showToast('解説を日本語に翻訳して保存しました');
+            if (state.syncConfig.githubToken && state.syncConfig.gistId) {
+              syncWithGist({ silent: true });
+            }
+          } else {
+            showToast('翻訳に失敗しました。通信状況やGemini APIキー設定を確認してください', true);
+            if (triggerBtn) {
+              triggerBtn.disabled = false;
+              triggerBtn.textContent = '日本語に翻訳';
+            }
+          }
+        } catch (err) {
+          console.error('Wishlist translation error:', err);
+          showToast('翻訳中にエラーが発生しました', true);
+          if (triggerBtn) {
+            triggerBtn.disabled = false;
+            triggerBtn.textContent = '日本語に翻訳';
+          }
+        }
+      }
+
+      // =======================================================================
+      // Daily Album Recommendations Engine
+      // =======================================================================
+      function getExcludedAlbumKeysSet() {
+        const set = new Set();
+        for (let i = 0; i < state.entries.length; i++) {
+          const k = albumIdentityKey(state.entries[i]);
+          if (k !== '::') set.add(k);
+        }
+        for (let i = 0; i < state.wishlist.length; i++) {
+          const k = albumIdentityKey(state.wishlist[i]);
+          if (k !== '::') set.add(k);
+        }
+        const seen = Array.isArray(state.dailyRecs.seenKeys) ? state.dailyRecs.seenKeys : [];
+        for (let i = 0; i < seen.length; i++) {
+          if (seen[i]) set.add(String(seen[i]).toLowerCase());
+        }
+        return set;
+      }
+
+      function recordSeenRecommendationKeys(items) {
+        if (!Array.isArray(state.dailyRecs.seenKeys)) {
+          state.dailyRecs.seenKeys = [];
+        }
+        const existing = new Set(state.dailyRecs.seenKeys);
+        for (let i = 0; i < items.length; i++) {
+          const k = albumIdentityKey(items[i]);
+          if (k !== '::' && !existing.has(k)) {
+            state.dailyRecs.seenKeys.push(k);
+            existing.add(k);
+          }
+        }
+      }
+
+      function hashStringToInt(str) {
+        let h = 2166136261;
+        for (let i = 0; i < str.length; i++) {
+          h ^= str.charCodeAt(i);
+          h = Math.imul(h, 16777619);
+        }
+        return h >>> 0;
+      }
+
+      function pickBuiltInDailyRecs(dateKey, salt) {
+        const excluded = getExcludedAlbumKeysSet();
+        const seedBase = hashStringToInt(dateKey + '::' + (salt || 0));
+
+        function selectFromPool(pool, offset, avoidGenreLower) {
+          const avail = pool.filter(function (p) {
+            return !excluded.has(albumIdentityKey({ album: p.title, artist: p.artist }));
+          });
+          const sourcePool = avail.length > 0 ? avail : pool;
+          const diffGenre = avoidGenreLower
+            ? sourcePool.filter(function (p) {
+                return !(p.genres || []).some(function (g) { return g.toLowerCase() === avoidGenreLower; });
+              })
+            : sourcePool;
+          const finalPool = diffGenre.length > 0 ? diffGenre : sourcePool;
+          return finalPool[(seedBase + offset) % finalPool.length];
+        }
+
+        const alltime = selectFromPool(CURATED_ALLTIME_POOL, 0, '');
+        const firstGenre = alltime && alltime.genres && alltime.genres[0] ? alltime.genres[0].toLowerCase() : '';
+        const recent = selectFromPool(CURATED_RECENT_POOL, 7, firstGenre);
+
+        return [
+          {
+            id: generateId(),
+            slot: 'alltime',
+            slotLabel: 'オールタイム名盤',
+            album: alltime.title,
+            artist: alltime.artist,
+            year: alltime.year,
+            country: alltime.country,
+            trackCount: '',
+            genres: normalizeGenres(alltime.genres),
+            reason: alltime.reason,
+            coverUrl: '',
+            appleMusicUrl: ''
+          },
+          {
+            id: generateId(),
+            slot: 'recent',
+            slotLabel: '近年の注目作',
+            album: recent.title,
+            artist: recent.artist,
+            year: recent.year,
+            country: recent.country,
+            trackCount: '',
+            genres: normalizeGenres(recent.genres),
+            reason: recent.reason,
+            coverUrl: '',
+            appleMusicUrl: ''
+          }
+        ];
+      }
+
+      async function enrichRecommendationWithItunes(item) {
+        const term = `${item.album} ${item.artist}`.trim();
+        if (!term) return item;
+
+        const normTargetAlbum = normalizeCompareStr(stripEditionNoise(item.album));
+        const normTargetArtist = normalizeCompareStr(item.artist);
+
+        async function searchCountry(country) {
+          const url = 'https://itunes.apple.com/search?entity=album&country=' +
+            encodeURIComponent(country) + '&lang=en_us&limit=10&term=' + encodeURIComponent(term);
+          try {
+            const data = await fetchItunesJson(url);
+            const results = data && Array.isArray(data.results) ? data.results : [];
+            if (results.length === 0) return null;
+
+            // Prefer exact or strong album + artist match
+            let best = null;
+            let bestScore = -1;
+            for (let i = 0; i < results.length; i++) {
+              const r = results[i];
+              const rAlbum = normalizeCompareStr(stripEditionNoise(r.collectionName || ''));
+              const rArtist = normalizeCompareStr(r.artistName || '');
+              let score = 0;
+              if (rAlbum === normTargetAlbum) score += 5;
+              else if (rAlbum.includes(normTargetAlbum) || normTargetAlbum.includes(rAlbum)) score += 3;
+              if (rArtist === normTargetArtist) score += 5;
+              else if (rArtist.includes(normTargetArtist) || normTargetArtist.includes(rArtist)) score += 3;
+              if (item.year && r.releaseDate && String(r.releaseDate).startsWith(String(item.year))) score += 2;
+              if (score > bestScore) {
+                bestScore = score;
+                best = r;
+              }
+            }
+            return bestScore >= 4 ? best : null;
+          } catch (_) {
+            return null;
+          }
+        }
+
+        let match = await searchCountry('JP');
+        if (!match) {
+          match = await searchCountry('US');
+        }
+        if (!match) return item;
+
+        const thumb = match.artworkUrl100 || match.artworkUrl60 || '';
+        const coverUrl = thumb ? thumb.replace(/\/\d+x\d+bb\./, '/600x600bb.') : item.coverUrl;
+        return Object.assign({}, item, {
+          coverUrl: coverUrl || item.coverUrl || '',
+          appleMusicUrl: match.collectionViewUrl || item.appleMusicUrl || '',
+          trackCount: match.trackCount || item.trackCount || '',
+          year: item.year || (match.releaseDate ? String(match.releaseDate).slice(0, 4) : '')
+        });
+      }
+
+      async function generateDailyRecsWithGemini(apiKey, dateKey) {
+        const excludedLines = [];
+        const seenLabel = new Set();
+
+        function pushExclude(album, artist) {
+          const a = String(album || '').trim();
+          const ar = String(artist || '').trim();
+          if (!a || !ar) return;
+          const k = `${a.toLowerCase()}::${ar.toLowerCase()}`;
+          if (seenLabel.has(k)) return;
+          seenLabel.add(k);
+          excludedLines.push(`${a} / ${ar}`);
+        }
+
+        for (let i = 0; i < state.entries.length && excludedLines.length < 70; i++) {
+          pushExclude(state.entries[i].album, state.entries[i].artist);
+        }
+        for (let i = 0; i < state.wishlist.length && excludedLines.length < 100; i++) {
+          pushExclude(state.wishlist[i].album, state.wishlist[i].artist);
+        }
+        const prevDates = Object.keys(state.dailyRecs.byDate || {}).sort().reverse();
+        for (let d = 0; d < prevDates.length && excludedLines.length < 130; d++) {
+          const rec = state.dailyRecs.byDate[prevDates[d]];
+          if (!rec || !Array.isArray(rec.items)) continue;
+          for (let j = 0; j < rec.items.length; j++) {
+            pushExclude(rec.items[j].album, rec.items[j].artist);
+          }
+        }
+
+        const currentYear = new Date().getFullYear();
+        const recentStartYear = Math.max(2022, currentYear - 3);
+        const prompt = [
+          `本日(${dateKey})の「毎日のおすすめアルバム」として、実在する音楽アルバムを正確に2枚選び、JSONのみで返してください。`,
+          '',
+          '枠構成:',
+          '1. slot="alltime": オールタイム名盤・歴史的重要作または再評価される傑作（1955年〜2019年）',
+          `2. slot="recent": 近年の注目作・良質な新譜（${recentStartYear}年〜${currentYear}年）`,
+          '',
+          '厳守条件:',
+          '1. 2枚は互いに異なる音楽ジャンル・異なる時代・なるべく異なる国／地域から選出し、幅広い音楽体験になるようにする。',
+          '2. 確実に実在する正規アルバムのみを選び、アルバム名(album)とアーティスト名(artist)はApple Music / Spotifyで検索できる正確な原題表記にする。',
+          '3. 以下の除外リストに含まれるアルバム（および同アーティストの重複）は絶対に選ばない。',
+          '4. reason は自然な日本語（120〜190文字程度）で、サウンドの質感・アレンジ・時代や地域シーンでの位置づけを客観的かつ具体的に解説する（「必聴の神盤」などの誇張表現は避ける）。',
+          '5. genres は英語ジャンル名を2〜3個（例: "Jazz", "Shoegaze", "MPB"）、country は出身国／地域（例: "USA", "UK", "Japan", "Brazil", "France"）。',
+          '',
+          excludedLines.length > 0 ? '【除外リスト（記録済み・聴きたい済み・過去紹介済み）】\n' + excludedLines.join('\n') : '',
+          '',
+          '出力JSONフォーマット:',
+          '{"picks":[{"slot":"alltime","album":"Album Title","artist":"Artist Name","year":"1975","country":"USA","genres":["Genre1","Genre2"],"reason":"日本語の解説"},{"slot":"recent","album":"Album Title","artist":"Artist Name","year":"2024","country":"UK","genres":["Genre1","Genre2"],"reason":"日本語の解説"}]}'
+        ].filter(Boolean).join('\n');
+
+        const text = await callGeminiGenerateContent(apiKey, {
+          systemInstruction: {
+            parts: [{ text: '世界中の幅広い年代・国・ジャンルに精通した音楽キュレーターとして、実在するアルバム2枚を指定JSON形式のみで正確に推薦してください。' }]
+          },
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.75,
+            responseMimeType: 'application/json'
+          }
+        });
+
+        const stripped = text.replace(/```(?:json)?/gi, '').replace(/```/g, '').trim();
+        const jsonMatch = stripped.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error('JSON not found in daily recommendation response');
+
+        const parsed = JSON.parse(jsonMatch[0]);
+        const picks = Array.isArray(parsed.picks) ? parsed.picks : [];
+        if (picks.length < 2) throw new Error('Invalid picks count');
+
+        return picks.slice(0, 2).map(function (p, idx) {
+          const isAlltime = p.slot === 'alltime' || (p.slot !== 'recent' && idx === 0);
+          return {
+            id: generateId(),
+            slot: isAlltime ? 'alltime' : 'recent',
+            slotLabel: isAlltime ? 'オールタイム名盤' : '近年の注目作',
+            album: String(p.album || '').trim(),
+            artist: String(p.artist || '').trim(),
+            year: String(p.year || '').replace(/[^\d]/g, '').slice(0, 4),
+            country: String(p.country || '').trim(),
+            trackCount: '',
+            genres: normalizeGenres(p.genres),
+            reason: String(p.reason || '').trim(),
+            coverUrl: '',
+            appleMusicUrl: ''
+          };
+        }).filter(function (item) { return item.album && item.artist; });
+      }
+
+      async function ensureDailyRecommendations(forceRefresh) {
+        const todayKey = formatDateKey(new Date());
+        const existing = state.dailyRecs.byDate && state.dailyRecs.byDate[todayKey];
+
+        if (!forceRefresh && existing && Array.isArray(existing.items) && existing.items.length > 0) {
+          renderDailyRecommendations();
+          // Enrich missing covers lazily if any
+          const needsArtwork = existing.items.some(function (it) { return !it.coverUrl; });
+          if (needsArtwork) {
+            const enriched = await Promise.all(existing.items.map(enrichRecommendationWithItunes));
+            if (state.dailyRecs.byDate[todayKey] === existing) {
+              state.dailyRecs.byDate[todayKey] = Object.assign({}, existing, { items: enriched });
+              saveDailyRecsData();
+              renderDailyRecommendations();
+            }
+          }
+          return;
+        }
+
+        if (state.dailyRecsLoading) return;
+
+        const myToken = ++state.dailyRecsRequestToken;
+        state.dailyRecsLoading = true;
+        state.dailyRecsError = '';
+        renderDailyRecommendations();
+
+        try {
+          // If refreshing, add current today's picks to seenKeys first so we get different albums
+          if (forceRefresh && existing && Array.isArray(existing.items)) {
+            recordSeenRecommendationKeys(existing.items);
+          }
+
+          let rawItems = [];
+          let source = 'builtin';
+
+          if (state.syncConfig.geminiApiKey) {
+            try {
+              rawItems = await generateDailyRecsWithGemini(state.syncConfig.geminiApiKey, todayKey);
+              if (myToken !== state.dailyRecsRequestToken) return;
+              if (rawItems.length >= 2) {
+                source = 'gemini';
+              }
+            } catch (geminiErr) {
+              console.warn('Daily recs Gemini fallback:', geminiErr);
+              state.dailyRecsError = 'AI生成に失敗したため厳選リストから表示しています（' + (geminiErr.message || '') + '）';
+            }
+          }
+
+          if (rawItems.length < 2) {
+            rawItems = pickBuiltInDailyRecs(todayKey, forceRefresh ? Date.now() : 0);
+            source = 'builtin';
+          }
+
+          // Enrich both picks concurrently via iTunes Search API for cover art & direct Apple Music links
+          const enrichedItems = await Promise.all(rawItems.map(enrichRecommendationWithItunes));
+          if (myToken !== state.dailyRecsRequestToken) return;
+
+          recordSeenRecommendationKeys(enrichedItems);
+          state.dailyRecs.byDate[todayKey] = {
+            date: todayKey,
+            source: source,
+            generatedAt: new Date().toISOString(),
+            items: enrichedItems
+          };
+          saveDailyRecsData();
+        } catch (err) {
+          console.error('Daily recs error:', err);
+          if (myToken === state.dailyRecsRequestToken) {
+            state.dailyRecsError = 'おすすめの取得中にエラーが発生しました。時間をおいて再度お試しください。';
+          }
+        } finally {
+          if (myToken === state.dailyRecsRequestToken) {
+            state.dailyRecsLoading = false;
+            renderDailyRecommendations();
+          }
+        }
+      }
+
+      function findRecItemById(recId) {
+        const dates = Object.keys(state.dailyRecs.byDate || {});
+        for (let i = 0; i < dates.length; i++) {
+          const dayObj = state.dailyRecs.byDate[dates[i]];
+          if (!dayObj || !Array.isArray(dayObj.items)) continue;
+          for (let j = 0; j < dayObj.items.length; j++) {
+            if (dayObj.items[j].id === recId) return dayObj.items[j];
+          }
+        }
+        return null;
+      }
+
+      function renderDailyRecommendationCard(item) {
+        const coverHtml = item.coverUrl
+          ? `<img src="${escapeHtml(item.coverUrl)}" alt="${escapeHtml(item.album)}" loading="lazy" onerror="this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='flex';" /><span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;">${getVinylPlaceholderSvg(26)}</span>`
+          : getVinylPlaceholderSvg(26);
+
+        const tags = [];
+        for (let i = 0; i < (item.genres || []).length; i++) {
+          tags.push(`<span class="tag-pill">${escapeHtml(item.genres[i])}</span>`);
+        }
+        if (item.year) {
+          tags.push(`<span class="tag-pill tabular-nums">${escapeHtml(item.year)}</span>`);
+        }
+        if (item.trackCount) {
+          tags.push(`<span class="tag-pill tabular-nums">${escapeHtml(item.trackCount)}曲</span>`);
+        }
+
+        const appleMusicUrl = buildAppleMusicUrl(item);
+        const spotifyUrl = buildSpotifyUrl(item);
+        const inWishlist = isAlbumInWishlist(item.album, item.artist);
+        const inEntries = isAlbumInEntries(item.album, item.artist);
+
+        let wishBtnHtml = '';
+        if (inEntries) {
+          wishBtnHtml = '<button type="button" class="btn-card-wishlist-add logged" disabled>聴いた記録済み</button>';
+        } else if (inWishlist) {
+          wishBtnHtml = '<button type="button" class="btn-card-wishlist-add added" disabled>聴きたいに追加済み ✓</button>';
+        } else {
+          wishBtnHtml = `<button type="button" class="btn-card-wishlist-add" data-rec-action="add-wishlist" data-rec-id="${escapeHtml(item.id)}">＋ 聴きたいに追加</button>`;
+        }
+
+        const slotClass = item.slot === 'recent' ? 'recent' : 'alltime';
+        const slotText = item.slotLabel || (item.slot === 'recent' ? '近年の注目作' : 'オールタイム名盤');
+
+        return `
+          <article class="rec-card">
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <div class="rec-slot-row">
+                <span class="rec-slot-badge ${slotClass}">${escapeHtml(slotText)}</span>
+                ${item.country ? `<span class="rec-country-label">${escapeHtml(item.country)}</span>` : ''}
+              </div>
+              <div class="rec-top">
+                <div class="rec-cover">${coverHtml}</div>
+                <div class="entry-info">
+                  <h3 class="rec-title">${escapeHtml(item.album)}</h3>
+                  <p class="rec-artist">${escapeHtml(item.artist)}</p>
+                  ${tags.length ? `<div class="entry-tags">${tags.join('')}</div>` : ''}
+                </div>
+              </div>
+              ${item.reason ? `<p class="rec-reason">${escapeHtml(item.reason)}</p>` : ''}
+            </div>
+            <div class="entry-actions" style="margin-top:0;">
+              <div class="entry-streaming-links">
+                <a href="${escapeHtml(appleMusicUrl)}" target="_blank" rel="noopener noreferrer" class="btn-stream-link apple-music" title="Apple Musicで開く" aria-label="Apple Musicで開く">${getAppleMusicIconSvg()}</a>
+                <a href="${escapeHtml(spotifyUrl)}" target="_blank" rel="noopener noreferrer" class="btn-stream-link spotify" title="Spotifyで開く" aria-label="Spotifyで開く">${getSpotifyIconSvg()}</a>
+              </div>
+              <div class="entry-edit-actions">
+                ${wishBtnHtml}
+                <button type="button" class="btn-card-action" data-rec-action="log-entry" data-rec-id="${escapeHtml(item.id)}">記録する</button>
+              </div>
+            </div>
+          </article>
+        `;
+      }
+
+      function renderDailyRecommendations() {
+        const titleEl = $('rec-date-title');
+        const bannerEl = $('rec-api-banner');
+        const containerEl = $('daily-recs-container');
+        const refreshBtn = $('btn-refresh-daily-recs');
+        const histSec = $('rec-history-section');
+        const histList = $('rec-history-list');
+        if (!containerEl) return;
+
+        const todayKey = formatDateKey(new Date());
+        if (titleEl) {
+          titleEl.textContent = `${formatDisplayDate(todayKey)}のおすすめ`;
+        }
+        if (bannerEl) {
+          bannerEl.classList.toggle('hidden', Boolean(state.syncConfig.geminiApiKey));
+        }
+        if (refreshBtn) {
+          refreshBtn.disabled = state.dailyRecsLoading;
+        }
+
+        if (state.dailyRecsLoading) {
+          containerEl.innerHTML = `
+            <div class="rec-loading-card">
+              <div class="chat-typing" style="margin:0 auto 8px;display:inline-flex;">
+                <span>今日のおすすめアルバムを選定中</span>
+                <span class="chat-typing-dots"><span></span><span></span><span></span></span>
+              </div>
+              <p class="field-help">ジャケット画像と配信リンクもあわせて取得しています...</p>
+            </div>
+          `;
+        } else {
+          const todayRec = state.dailyRecs.byDate && state.dailyRecs.byDate[todayKey];
+          const items = todayRec && Array.isArray(todayRec.items) ? todayRec.items : [];
+          if (items.length === 0) {
+            containerEl.innerHTML = `
+              <div class="empty-state" style="grid-column:1/-1;">
+                <div class="empty-state-icon">${getVinylPlaceholderSvg(22)}</div>
+                <p class="empty-state-title">今日のおすすめアルバムを取得できます</p>
+                <p class="empty-state-desc">${escapeHtml(state.dailyRecsError || 'ボタンを押してオールタイム名盤1枚と近年の注目作1枚を生成しましょう')}</p>
+                <button type="button" class="btn-primary" id="btn-generate-recs-empty">今日のおすすめを取得</button>
+              </div>
+            `;
+          } else {
+            const errNote = state.dailyRecsError
+              ? `<div class="rec-info-banner" style="grid-column:1/-1;margin-bottom:0;background:#fffbeb;border-color:#fde68a;color:#92400e;"><span>${escapeHtml(state.dailyRecsError)}</span></div>`
+              : '';
+            containerEl.innerHTML = errNote + items.map(renderDailyRecommendationCard).join('');
+          }
+        }
+
+        // Render past days' recommendations history (excluding today)
+        if (histSec && histList) {
+          const pastDates = Object.keys(state.dailyRecs.byDate || {})
+            .filter(function (d) { return d !== todayKey; })
+            .sort()
+            .reverse()
+            .slice(0, 7);
+
+          const histRows = [];
+          for (let i = 0; i < pastDates.length; i++) {
+            const dKey = pastDates[i];
+            const dayRec = state.dailyRecs.byDate[dKey];
+            if (!dayRec || !Array.isArray(dayRec.items)) continue;
+            for (let j = 0; j < dayRec.items.length; j++) {
+              const it = dayRec.items[j];
+              const thumbHtml = it.coverUrl
+                ? `<img src="${escapeHtml(it.coverUrl)}" alt="" loading="lazy" onerror="this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='flex';" /><span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;">${getVinylPlaceholderSvg(18)}</span>`
+                : getVinylPlaceholderSvg(18);
+              const appleUrl = buildAppleMusicUrl(it);
+              const spotifyUrl = buildSpotifyUrl(it);
+              const inWish = isAlbumInWishlist(it.album, it.artist);
+              const inLog = isAlbumInEntries(it.album, it.artist);
+              const btnHtml = inLog
+                ? '<button type="button" class="btn-card-wishlist-add logged" disabled style="padding:4px 9px;">記録済み</button>'
+                : (inWish
+                    ? '<button type="button" class="btn-card-wishlist-add added" disabled style="padding:4px 9px;">追加済み ✓</button>'
+                    : `<button type="button" class="btn-card-wishlist-add" style="padding:4px 9px;" data-rec-action="add-wishlist" data-rec-id="${escapeHtml(it.id)}">＋ 聴きたい</button>`);
+
+              histRows.push(`
+                <div class="rec-history-item">
+                  <div class="rec-history-thumb">${thumbHtml}</div>
+                  <div class="rec-history-info">
+                    <div class="rec-history-album">${escapeHtml(it.album)} — ${escapeHtml(it.artist)}</div>
+                    <div class="rec-history-meta tabular-nums">${escapeHtml([dKey, it.slotLabel, it.year, (it.genres || []).join(' / ')].filter(Boolean).join(' ・ '))}</div>
+                  </div>
+                  <div class="rec-history-actions">
+                    <a href="${escapeHtml(appleUrl)}" target="_blank" rel="noopener noreferrer" class="btn-stream-link apple-music" title="Apple Musicで開く" aria-label="Apple Musicで開く">${getAppleMusicIconSvg()}</a>
+                    <a href="${escapeHtml(spotifyUrl)}" target="_blank" rel="noopener noreferrer" class="btn-stream-link spotify" title="Spotifyで開く" aria-label="Spotifyで開く">${getSpotifyIconSvg()}</a>
+                    ${btnHtml}
+                  </div>
+                </div>
+              `);
+            }
+          }
+
+          if (histRows.length > 0) {
+            histList.innerHTML = histRows.join('');
+            histSec.classList.remove('hidden');
+          } else {
+            histList.innerHTML = '';
+            histSec.classList.add('hidden');
+          }
+        }
+      }
+
       function renderAll() {
         renderSyncStatus();
         renderCalendar();
         renderSelectedDatePanel();
         renderList();
+        renderWishlist();
+        renderDailyRecommendations();
       }
 
       function switchView(viewName) {
-        state.currentView = viewName === 'list' ? 'list' : 'calendar';
+        const valid = ['calendar', 'list', 'wishlist', 'recommend'];
+        state.currentView = valid.includes(viewName) ? viewName : 'calendar';
         const calSec = $('view-calendar');
         const listSec = $('view-list');
+        const wishSec = $('view-wishlist');
+        const recSec = $('view-recommend');
         if (calSec) calSec.classList.toggle('hidden', state.currentView !== 'calendar');
         if (listSec) listSec.classList.toggle('hidden', state.currentView !== 'list');
+        if (wishSec) wishSec.classList.toggle('hidden', state.currentView !== 'wishlist');
+        if (recSec) recSec.classList.toggle('hidden', state.currentView !== 'recommend');
 
         const navBtns = document.querySelectorAll('[data-view-target]');
         for (let i = 0; i < navBtns.length; i++) {
           const btn = navBtns[i];
           btn.classList.toggle('active', btn.getAttribute('data-view-target') === state.currentView);
+        }
+
+        if (state.currentView === 'recommend') {
+          ensureDailyRecommendations(false);
         }
       }
 
@@ -4462,11 +5860,41 @@
         }
       }
 
+      function applyEntryModalModeUI(isWishlistMode, isEditing) {
+        const dateWrap = $('field-wrap-date');
+        const relistenWrap = $('field-wrap-relisten');
+        const scoreWrap = $('field-wrap-score');
+        const notesLabel = $('field-notes-label');
+        const notesInput = $('field-notes');
+        const saveBtn = $('btn-save-entry');
+
+        if (dateWrap) dateWrap.classList.toggle('hidden', isWishlistMode);
+        if (relistenWrap) relistenWrap.classList.toggle('hidden', isWishlistMode);
+        if (scoreWrap) scoreWrap.classList.toggle('hidden', isWishlistMode);
+
+        if (notesLabel) {
+          notesLabel.textContent = isWishlistMode ? '気になった理由・メモ' : '感想・メモ';
+        }
+        if (notesInput) {
+          notesInput.placeholder = isWishlistMode
+            ? '誰のおすすめか、気になったポイントなどを自由にメモ...'
+            : '聴いた印象、好きな曲、当時の気分などを自由に記録...';
+        }
+        if (saveBtn) {
+          if (isWishlistMode) {
+            saveBtn.textContent = isEditing ? '更新する' : 'リストに追加する';
+          } else {
+            saveBtn.textContent = isEditing ? '更新する' : '保存する';
+          }
+        }
+      }
+
       function openEntryModal(options) {
         const opts = options && typeof options === 'object' ? options : {};
         const backdrop = $('entry-modal-backdrop');
         const titleEl = $('entry-modal-title');
         const searchInput = $('album-search-input');
+        const isWishlistMode = opts.mode === 'wishlist';
 
         state.metaFetchToken++;
         state.coverCheckToken++;
@@ -4474,9 +5902,51 @@
         setSearchMode('itunes-album', false);
         setCoverFetchNote('');
 
-        if (opts.entryId) {
+        $('field-form-mode').value = isWishlistMode ? 'wishlist' : 'entry';
+        $('field-from-wishlist-id').value = opts.fromWishlistId || '';
+
+        if (isWishlistMode && opts.wishlistId) {
+          const existingW = state.wishlist.find(function (w) { return w.id === opts.wishlistId; });
+          if (!existingW) return;
+          applyEntryModalModeUI(true, true);
+          if (titleEl) titleEl.textContent = '聴きたいアルバムを編集';
+          $('field-entry-id').value = existingW.id;
+          $('field-apple-music-url').value = existingW.appleMusicUrl || '';
+          $('field-album').value = existingW.album;
+          $('field-artist').value = existingW.artist;
+          $('field-date').value = existingW.addedDate || formatDateKey(new Date());
+          $('field-year').value = existingW.year || '';
+          $('field-track-count').value = existingW.trackCount || '';
+          $('field-relisten').checked = false;
+          $('field-description').value = existingW.description || '';
+          $('field-notes').value = existingW.notes || '';
+          $('field-cover-url').value = existingW.coverUrl || '';
+          state.formGenres = existingW.genres.slice(0, 3);
+          updateScoreUI(4.0);
+          updateCoverPreview(existingW.coverUrl);
+          setAutoFetchStatus('必要に応じて「解説・ジャンルを再取得」で日本語解説・英語ジャンルを補完できます', '');
+        } else if (isWishlistMode) {
+          applyEntryModalModeUI(true, false);
+          if (titleEl) titleEl.textContent = '聴きたいアルバムを追加';
+          $('field-entry-id').value = '';
+          $('field-apple-music-url').value = '';
+          $('field-album').value = '';
+          $('field-artist').value = '';
+          $('field-date').value = formatDateKey(new Date());
+          $('field-year').value = '';
+          $('field-track-count').value = '';
+          $('field-relisten').checked = false;
+          $('field-description').value = '';
+          $('field-notes').value = '';
+          $('field-cover-url').value = '';
+          state.formGenres = [];
+          updateScoreUI(4.0);
+          updateCoverPreview('');
+          setAutoFetchStatus('アルバム選択時に日本語の簡単な解説と英語ジャンルを自動取得します', '');
+        } else if (opts.entryId) {
           const existing = state.entries.find(function (e) { return e.id === opts.entryId; });
           if (!existing) return;
+          applyEntryModalModeUI(false, true);
           if (titleEl) titleEl.textContent = 'アルバムの記録を編集';
           $('field-entry-id').value = existing.id;
           $('field-apple-music-url').value = existing.appleMusicUrl || '';
@@ -4492,8 +5962,28 @@
           state.formGenres = existing.genres.slice(0, 3);
           updateScoreUI(existing.score);
           updateCoverPreview(existing.coverUrl);
-          setAutoFetchStatus('必要に応じて「紹介文・ジャンルを再取得」で日本語の紹介文・英語ジャンルを補完できます', '');
+          setAutoFetchStatus('必要に応じて「解説・ジャンルを再取得」で日本語解説・英語ジャンルを補完できます', '');
+        } else if (opts.prefill && typeof opts.prefill === 'object') {
+          const pf = opts.prefill;
+          applyEntryModalModeUI(false, false);
+          if (titleEl) titleEl.textContent = opts.fromWishlistId ? '聴いた記録として保存' : 'アルバムの記録を追加';
+          $('field-entry-id').value = '';
+          $('field-apple-music-url').value = pf.appleMusicUrl || '';
+          $('field-album').value = pf.album || '';
+          $('field-artist').value = pf.artist || '';
+          $('field-date').value = opts.date || formatDateKey(new Date());
+          $('field-year').value = pf.year || '';
+          $('field-track-count').value = pf.trackCount || '';
+          $('field-relisten').checked = false;
+          $('field-description').value = pf.description || pf.reason || '';
+          $('field-notes').value = pf.notes || '';
+          $('field-cover-url').value = pf.coverUrl || '';
+          state.formGenres = normalizeGenres(pf.genres || []).slice(0, 3);
+          updateScoreUI(4.0);
+          updateCoverPreview(pf.coverUrl || '');
+          setAutoFetchStatus('評価と聴いた日・感想を入力して保存してください', '');
         } else {
+          applyEntryModalModeUI(false, false);
           if (titleEl) titleEl.textContent = 'アルバムの記録を追加';
           $('field-entry-id').value = '';
           $('field-apple-music-url').value = '';
@@ -4509,7 +5999,7 @@
           state.formGenres = [];
           updateScoreUI(4.0);
           updateCoverPreview('');
-          setAutoFetchStatus('アルバム選択時に日本語の紹介文と英語ジャンルを自動取得します', '');
+          setAutoFetchStatus('アルバム選択時に日本語の簡単な解説と英語ジャンルを自動取得します', '');
         }
 
         const customGenreInput = $('genre-custom-input');
@@ -4529,6 +6019,7 @@
 
       function handleEntryFormSubmit(evt) {
         evt.preventDefault();
+        const formMode = $('field-form-mode') ? $('field-form-mode').value : 'entry';
         const album = $('field-album').value.trim();
         const artist = $('field-artist').value.trim();
         const date = $('field-date').value.trim();
@@ -4543,15 +6034,61 @@
           $('field-artist').focus();
           return;
         }
+
+        const editId = $('field-entry-id').value.trim();
+        const genresToSave = state.formGenres.length > 0 ? state.formGenres.slice(0, 3) : ['Music'];
+
+        if (formMode === 'wishlist') {
+          const existingW = editId ? state.wishlist.find(function (w) { return w.id === editId; }) : null;
+          const wishItem = normalizeWishlistItem({
+            id: editId || generateId(),
+            album: album,
+            artist: artist,
+            addedDate: existingW ? existingW.addedDate : formatDateKey(new Date()),
+            year: $('field-year').value.trim(),
+            trackCount: $('field-track-count').value.trim(),
+            genres: genresToSave,
+            description: $('field-description').value.trim(),
+            notes: $('field-notes').value.trim(),
+            coverUrl: $('field-cover-url').value.trim(),
+            appleMusicUrl: $('field-apple-music-url').value.trim(),
+            source: existingW ? existingW.source : 'manual',
+            updatedAt: Date.now()
+          });
+
+          if (editId) {
+            const wIdx = state.wishlist.findIndex(function (w) { return w.id === editId; });
+            if (wIdx >= 0) {
+              state.wishlist[wIdx] = wishItem;
+            } else {
+              state.wishlist.unshift(wishItem);
+            }
+          } else {
+            state.wishlist.unshift(wishItem);
+          }
+
+          if (state.wishlistDeletedIds[wishItem.id]) {
+            delete state.wishlistDeletedIds[wishItem.id];
+          }
+
+          saveLocalData();
+          renderAll();
+          closeEntryModal();
+          showToast(editId ? '聴きたいリストを更新しました' : '聴きたいリストに追加しました');
+
+          if (state.syncConfig.githubToken && state.syncConfig.gistId) {
+            syncWithGist({ silent: true });
+          }
+          return;
+        }
+
         if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
           showToast('聴いた日を選択してください', true);
           $('field-date').focus();
           return;
         }
 
-        const editId = $('field-entry-id').value.trim();
         const existingEntry = editId ? state.entries.find(function (e) { return e.id === editId; }) : null;
-        const genresToSave = state.formGenres.length > 0 ? state.formGenres.slice(0, 3) : ['Music'];
 
         const entry = normalizeEntry({
           id: editId || generateId(),
@@ -4586,6 +6123,18 @@
           delete state.deletedIds[entry.id];
         }
 
+        // If converted from wishlist, remove from wishlist automatically
+        const fromWishlistId = $('field-from-wishlist-id') ? $('field-from-wishlist-id').value.trim() : '';
+        let removedFromWishlist = false;
+        if (fromWishlistId) {
+          const prevLen = state.wishlist.length;
+          state.wishlist = state.wishlist.filter(function (w) { return w.id !== fromWishlistId; });
+          if (state.wishlist.length < prevLen) {
+            state.wishlistDeletedIds[fromWishlistId] = Date.now();
+            removedFromWishlist = true;
+          }
+        }
+
         state.selectedDate = entry.date;
         const parsedDate = parseDateKey(entry.date);
         state.calYear = parsedDate.getFullYear();
@@ -4594,7 +6143,11 @@
         saveLocalData();
         renderAll();
         closeEntryModal();
-        showToast(editId ? '記録を更新しました' : 'アルバムを記録しました');
+        showToast(
+          removedFromWishlist
+            ? '聴いた記録に保存し、聴きたいリストから完了にしました'
+            : (editId ? '記録を更新しました' : 'アルバムを記録しました')
+        );
 
         if (state.syncConfig.githubToken && state.syncConfig.gistId) {
           syncWithGist({ silent: true });
@@ -5350,6 +6903,7 @@
         $('field-artist').value = picked.artist || '';
         $('field-year').value = picked.year || '';
         $('field-track-count').value = picked.trackCount || '';
+        $('field-description').value = '';
         $('field-cover-url').value = picked.coverUrl || '';
         $('field-apple-music-url').value = picked.appleMusicUrl || '';
         updateCoverPreview(picked.coverUrl || '');
@@ -5361,7 +6915,7 @@
         clearSearchUI();
         setSearchStatus(`「${picked.album}」をフォームへ反映しました。`, false);
 
-        fetchAlbumMeta(picked.album, picked.artist, picked.year);
+        fetchAlbumMeta(picked.album, picked.artist, picked.year, picked.trackCount);
       }
 
       async function applyMusicBrainzSelection(picked) {
@@ -5371,6 +6925,7 @@
         $('field-artist').value = picked.artist || '';
         $('field-year').value = picked.year || '';
         $('field-track-count').value = '';
+        $('field-description').value = '';
         $('field-cover-url').value = '';
         $('field-apple-music-url').value = '';
         updateCoverPreview('');
@@ -5383,7 +6938,7 @@
         setCoverFetchNote('Cover Art Archive から高画質ジャケット画像を確認中...');
 
         // Concurrently run Japanese album description & English genre auto-fetch
-        fetchAlbumMeta(picked.album, picked.artist, picked.year);
+        fetchAlbumMeta(picked.album, picked.artist, picked.year, '');
 
         // Verify Cover Art Archive front-500 -> fallback front-250
         const url500 = `https://coverartarchive.org/release-group/${encodeURIComponent(picked.id)}/front-500`;
@@ -5949,11 +7504,97 @@
         return '';
       }
 
+      function stripEditionNoise(str) {
+        return String(str || '')
+          .replace(/\s*[-–—]\s*(?:EP|Single|Deluxe(?:\s+Edition)?|Remaster(?:ed)?)$/i, '')
+          .replace(/\s*[\(\[（【][^\)\]）】]*(?:deluxe|remaster|expanded|anniversary|edition|bonus|version|mono|stereo|live|ep|single|盤|エディション|リマスター)[^\)\]）】]*[\)\]）】]/gi, '')
+          .trim();
+      }
+
+      function stripWikiDisambig(title) {
+        return String(title || '')
+          .replace(/\s*[（(][^）)]*(?:アルバム|サウンドトラック|ミニ・?アルバム|album|EP|soundtrack|mixtape|record|作品|音楽)[^）)]*[）)]\s*$/i, '')
+          .trim();
+      }
+
       function normalizeCompareStr(str) {
         return String(str || '')
           .toLowerCase()
           .replace(/（[^）]*）|\([^)]*\)/g, '')
-          .replace(/[\s\-_'"’‘.,!?・:：/／]/g, '');
+          .replace(/[\s\-_'"’‘.,!?・:：/／&＆]/g, '');
+      }
+
+      function parseInfoboxArtistText(wikitext, isJapanese) {
+        if (!wikitext) return '';
+        const pattern = isJapanese
+          ? /\|\s*(?:アーティスト|歌手|演奏者|作曲者|作者)\s*=\s*([\s\S]*?)(?=\n\s*\||\n\s*\}\}|$)/i
+          : /\|\s*artist\s*=\s*([\s\S]*?)(?=\n\s*\||\n\s*\}\}|$)/i;
+        const match = wikitext.match(pattern);
+        if (!match || !match[1]) return '';
+        return match[1]
+          .replace(/<!--([\s\S]*?)-->/g, '')
+          .replace(/<ref[^>]*>[\s\S]*?<\/ref>/gi, '')
+          .replace(/\[\[[^\]|]+\|([^\]]+)\]\]/g, '$1')
+          .replace(/\[\[([^\]]+)\]\]/g, '$1')
+          .replace(/\{\{[^|{}]+\|([^{}]+)\}\}/g, '$1')
+          .replace(/\{\{[^{}]*\}\}/g, '')
+          .trim();
+      }
+
+      function doesAlbumTitleMatchWiki(pageTitle, intro, album, isJa) {
+        const cleanTitle = stripWikiDisambig(pageTitle);
+        const normTitle = normalizeCompareStr(cleanTitle);
+        const normAlbumFull = normalizeCompareStr(album);
+        const normAlbumBase = normalizeCompareStr(stripEditionNoise(album));
+        const target = normAlbumBase || normAlbumFull;
+        if (!target || !normTitle) return false;
+
+        if (normTitle === target || normTitle === normAlbumFull) return true;
+
+        // Allow prefix match for subtitles when title length is sufficiently specific (>= 4 chars)
+        if (target.length >= 4 && normTitle.length >= 4) {
+          if (normTitle.startsWith(target) || target.startsWith(normTitle)) {
+            return true;
+          }
+        }
+
+        // For Japanese Wikipedia articles with katakana titles, English original title often appears in opening subject before "は、"
+        if (isJa && intro) {
+          const subjectPart = String(intro).split(/は、|とは、|は日本の|はアメリカ|はイギリス/)[0].slice(0, 90);
+          const normSubjectRaw = subjectPart.toLowerCase().replace(/[\s\-_'"’‘.,!?・:：/／「」『』（）()]/g, '');
+          if (target.length >= 3 && normSubjectRaw.includes(target)) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      function doesArtistMatchWiki(page, artist, isJa) {
+        const cleanArtist = String(artist || '').trim();
+        if (!cleanArtist) return true;
+        const primaryArtist = cleanArtist.split(/\s+(?:feat\.?|ft\.?|with|&|and)\s+|[,、]/i)[0].trim() || cleanArtist;
+        const normFull = normalizeCompareStr(cleanArtist);
+        const normPrimary = normalizeCompareStr(primaryArtist);
+        if (!normPrimary) return true;
+
+        const introTwo = cleanSummarySentences(page.extract || '', 2);
+        const infoboxArtist = parseInfoboxArtistText(extractWikitext(page), isJa);
+        const rawHaystack = `${page.title || ''} ${introTwo} ${infoboxArtist}`.toLowerCase();
+        const normHaystack = rawHaystack.replace(/[\s\-_'"’‘.,!?・:：/／&＆「」『』（）()]/g, '');
+
+        if (normHaystack.includes(normFull) || normHaystack.includes(normPrimary)) {
+          return true;
+        }
+        // Check significant multi-character tokens (e.g. last name / band core name) if artist has multiple words
+        const parts = primaryArtist.split(/\s+/).map(normalizeCompareStr).filter(function (p) { return p.length >= 3 && p !== 'the'; });
+        if (parts.length >= 2) {
+          let matched = 0;
+          for (let i = 0; i < parts.length; i++) {
+            if (normHaystack.includes(parts[i])) matched++;
+          }
+          if (matched === parts.length) return true;
+        }
+        return false;
       }
 
       function parseInfoboxGenres(wikitext, isJapanese) {
@@ -6024,11 +7665,10 @@
           return false;
         }
 
-        const normIntro = normalizeCompareStr(firstTwo);
-        const albumMatches = normAlbum && (normTitle.includes(normAlbum) || normAlbum.includes(normTitle) || normIntro.includes(normAlbum));
-        const artistMatches = !normArtist || normIntro.includes(normArtist) || normTitle.includes(normArtist);
+        const albumMatches = doesAlbumTitleMatchWiki(title, intro, album, true);
+        const artistMatches = doesArtistMatchWiki(page, artist, true);
 
-        return Boolean(albumMatches || ((hasAlbumTitleMarker || hasAlbumCategory) && artistMatches));
+        return Boolean(albumMatches && artistMatches);
       }
 
       function isStrictEnAlbumArticle(page, album, artist) {
@@ -6060,11 +7700,10 @@
           return false;
         }
 
-        const normIntro = normalizeCompareStr(firstTwo);
-        const albumMatches = normAlbum && (normTitle.includes(normAlbum) || normAlbum.includes(normTitle) || normIntro.includes(normAlbum));
-        const artistMatches = !normArtist || normIntro.includes(normArtist) || normTitle.includes(normArtist);
+        const albumMatches = doesAlbumTitleMatchWiki(title, intro, album, false);
+        const artistMatches = doesArtistMatchWiki(page, artist, false);
 
-        return Boolean(albumMatches || ((hasAlbumTitleMarker || hasAlbumCategory) && artistMatches));
+        return Boolean(albumMatches && artistMatches);
       }
 
       /**
@@ -6096,21 +7735,22 @@
         return null;
       }
 
-      async function fetchFromWikipedia(lang, album, artist) {
+      async function fetchFromWikipedia(lang, album, artist, year) {
         const isJa = lang === 'ja';
         const base = `https://${lang}.wikipedia.org/w/api.php`;
+        const baseAlbum = stripEditionNoise(album) || album;
         const queries = isJa
           ? [
-              `"${album}" ${artist} アルバム`,
-              `"${album} (アルバム)"`,
-              `"${album}" アルバム`,
-              `"${album}" ${artist}`
+              `"${baseAlbum}" "${artist}" アルバム`,
+              `"${baseAlbum} (アルバム)"`,
+              `"${baseAlbum}" ${artist} アルバム`,
+              `"${baseAlbum}" ${artist}`
             ]
           : [
-              `"${album}" ${artist} album`,
-              `"${album} (album)"`,
-              `"${album}" album`,
-              `"${album}" ${artist}`
+              `"${baseAlbum}" "${artist}" album`,
+              `"${baseAlbum} (album)"`,
+              `"${baseAlbum}" ${artist} album`,
+              `"${baseAlbum}" ${artist}`
             ];
 
         const candidatePageIds = [];
@@ -6150,6 +7790,7 @@
           const data = await res.json();
           const pagesObj = data && data.query && data.query.pages ? data.query.pages : {};
 
+          const validMatches = [];
           for (let i = 0; i < candidatePageIds.length && i < 8; i++) {
             const page = pagesObj[String(candidatePageIds[i])];
             if (!page || page.missing) continue;
@@ -6161,7 +7802,8 @@
             if (!valid) continue;
 
             const summary = cleanSummarySentences(page.extract || '', 3);
-            const genres = parseInfoboxGenres(extractWikitext(page), isJa);
+            const wikitext = extractWikitext(page);
+            const genres = parseInfoboxGenres(wikitext, isJa);
 
             let jaLangTitle = '';
             if (!isJa && Array.isArray(page.langlinks)) {
@@ -6175,13 +7817,25 @@
             }
 
             if (summary || genres.length > 0 || jaLangTitle) {
-              return {
+              const yearMatched = Boolean(year && (String(page.extract || '').includes(String(year)) || wikitext.includes(String(year))));
+              validMatches.push({
                 description: summary,
                 genres: genres,
                 title: page.title || '',
-                jaLangTitle: jaLangTitle
-              };
+                jaLangTitle: jaLangTitle,
+                yearMatched: yearMatched
+              });
             }
+          }
+
+          if (validMatches.length > 0) {
+            const preferred = validMatches.find(function (m) { return m.yearMatched; }) || validMatches[0];
+            return {
+              description: preferred.description,
+              genres: preferred.genres,
+              title: preferred.title,
+              jaLangTitle: preferred.jaLangTitle
+            };
           }
         } catch (err) {
           console.warn(`Wikipedia (${lang}) fetch error:`, err);
@@ -6219,24 +7873,46 @@
         }
       }
 
-      async function fetchFromGemini(apiKey, album, artist, year) {
+      function doesGeminiIdentityMatch(requested, returned) {
+        const reqNorm = normalizeCompareStr(stripEditionNoise(requested));
+        const retNorm = normalizeCompareStr(stripEditionNoise(returned));
+        if (!reqNorm || !retNorm) return true;
+        // If one is Japanese/non-Latin and the other is Latin, allow translation differences
+        const reqHasJa = containsJapanese(requested);
+        const retHasJa = containsJapanese(returned);
+        if (reqHasJa !== retHasJa) return true;
+        return retNorm === reqNorm || retNorm.includes(reqNorm) || reqNorm.includes(retNorm);
+      }
+
+      async function fetchFromGemini(apiKey, album, artist, year, trackCount) {
+        const specParts = [
+          `アルバム名: ${album}`,
+          `アーティスト名: ${artist}`,
+          year ? `リリース年: ${year}` : '',
+          trackCount ? `収録曲数: ${trackCount}曲` : ''
+        ].filter(Boolean);
+
         const prompt = [
-          `対象アルバム: ${album} / アーティスト: ${artist}${year ? ` (${year})` : ''}`,
-          '以下のJSON形式のみで返答してください:',
-          '{"description": "日本語の簡潔な解説", "genres": ["EnglishGenre1", "EnglishGenre2", "EnglishGenre3"]}',
-          '条件:',
-          '1. description は自然な日本語2〜3文（110〜190文字）。サウンドの特徴・音楽性・位置づけを客観的に要約。',
-          '2. 不確かな曲名やエピソードは捏造しない。',
-          '3. genres は的確な英語ジャンルを2〜3個（例: "Neo-Soul", "Slowcore", "Indie Rock"）。'
+          '以下の特定の音楽アルバムについて、厳密なJSONのみで回答してください。',
+          specParts.join(' / '),
+          '',
+          '出力JSON形式:',
+          '{"known": true, "matchedAlbum": "特定したアルバム名", "matchedArtist": "特定したアーティスト名", "description": "日本語の簡潔な解説", "genres": ["EnglishGenre1", "EnglishGenre2"]}',
+          '',
+          '厳守ルール:',
+          '1. 必ず「指定されたアーティスト」による「指定されたアルバム」本人だけを解説すること。同名の別アーティスト作品、同名の映画サントラ、同じアーティストの別アルバム（代表作など）と絶対に混同・すり替えをしないこと。',
+          '2. このアルバム自体の確実な知識がない場合、またはアーティスト名・アルバム名の組み合わせに確信が持てない場合は、推測や別作品の流用をせず必ず {"known": false, "matchedAlbum": "", "matchedArtist": "", "description": "", "genres": []} を返すこと。',
+          '3. known が true の場合、description は自然な日本語2〜3文（110〜190文字）で、このアルバム固有のサウンド特徴・音楽性・位置づけを客観的に要約すること。',
+          '4. genres は英語ジャンル名を1〜3個（例: "Neo-Soul", "Slowcore", "Indie Rock"）。'
         ].join('\n');
 
         const text = await callGeminiGenerateContent(apiKey, {
           systemInstruction: {
-            parts: [{ text: '音楽データベース編集者として、指定されたJSONのみを簡潔・正確に返してください。descriptionは必ず自然な日本語にします。' }]
+            parts: [{ text: '厳格な音楽データベース編集者として回答してください。確実に対象アルバム（アーティスト名・アルバム名・リリース年の一致）を特定できる場合のみ known: true で日本語解説を書き、不確かな場合や別作品と混同しそうな場合は必ず known: false, description: "" を返してください。' }]
           },
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
-            temperature: 0.3,
+            temperature: 0.1,
             responseMimeType: 'application/json'
           }
         });
@@ -6246,8 +7922,14 @@
         if (!jsonMatch) throw new Error('JSON not found in Gemini response');
 
         const parsed = JSON.parse(jsonMatch[0]);
-        let description = typeof parsed.description === 'string' ? parsed.description.trim() : '';
-        const genres = normalizeGenres(parsed.genres);
+        const isKnown = parsed.known !== false;
+        const albumOk = doesGeminiIdentityMatch(album, parsed.matchedAlbum || '');
+        const artistOk = doesGeminiIdentityMatch(artist, parsed.matchedArtist || '');
+
+        let description = (isKnown && albumOk && artistOk && typeof parsed.description === 'string')
+          ? parsed.description.trim()
+          : '';
+        const genres = (isKnown && albumOk && artistOk) ? normalizeGenres(parsed.genres) : [];
 
         // Enforce Japanese description: if Gemini unexpectedly answered in English, translate it
         if (description && !isPrimarilyJapanese(description)) {
@@ -6255,13 +7937,10 @@
           description = translated && isPrimarilyJapanese(translated) ? translated : '';
         }
 
-        if (!description && genres.length === 0) {
-          throw new Error('Invalid Gemini JSON payload');
-        }
-        return { description: description, genres: genres };
+        return { description: description, genres: genres, known: Boolean(isKnown && albumOk && artistOk) };
       }
 
-      async function fetchAlbumMeta(album, artist, year) {
+      async function fetchAlbumMeta(album, artist, year, trackCount) {
         const cleanAlbum = String(album || '').trim();
         const cleanArtist = String(artist || '').trim();
         if (!cleanAlbum || !cleanArtist) {
@@ -6285,7 +7964,7 @@
           // Step A: Gemini API (if API key configured) — fast path: stop immediately once description + genres arrive
           if (state.syncConfig.geminiApiKey) {
             try {
-              const geminiResult = await fetchFromGemini(state.syncConfig.geminiApiKey, cleanAlbum, cleanArtist, year);
+              const geminiResult = await fetchFromGemini(state.syncConfig.geminiApiKey, cleanAlbum, cleanArtist, year, trackCount);
               if (myToken !== state.metaFetchToken) return;
               if (geminiResult.description && isPrimarilyJapanese(geminiResult.description)) {
                 finalDescriptionJa = geminiResult.description;
@@ -6305,8 +7984,8 @@
           const needsFallback = !finalDescriptionJa || collectedGenres.length === 0;
           if (needsFallback) {
             const wikiTasks = [
-              fetchFromWikipedia('ja', cleanAlbum, cleanArtist),
-              fetchFromWikipedia('en', cleanAlbum, cleanArtist)
+              fetchFromWikipedia('ja', cleanAlbum, cleanArtist, year),
+              fetchFromWikipedia('en', cleanAlbum, cleanArtist, year)
             ];
             const wikiPair = await Promise.all(wikiTasks);
             if (myToken !== state.metaFetchToken) return;
@@ -6412,7 +8091,7 @@
             );
           } else {
             setAutoFetchStatus(
-              'アルバム記事が見つかりませんでした。取得済みの英語ジャンルを維持しています（解説は手動入力またはGemini APIキー設定で生成できます）。',
+              '対象アルバムに一致する確実な解説が見つかりませんでした（別アルバムの誤解説を防ぐため空欄にしています。必要に応じて手動で入力できます）。',
               ''
             );
           }
@@ -6618,7 +8297,23 @@
         }
 
         msgEl.innerHTML = bubbles.join('');
+        scrollAiChatToBottom();
+      }
+
+      function scrollAiChatToBottom() {
+        const msgEl = $('ai-chat-messages');
+        if (!msgEl) return;
         msgEl.scrollTop = msgEl.scrollHeight;
+        if (typeof requestAnimationFrame === 'function') {
+          requestAnimationFrame(function () {
+            if (!state.activeChatEntryId) return;
+            msgEl.scrollTop = msgEl.scrollHeight;
+            requestAnimationFrame(function () {
+              if (!state.activeChatEntryId) return;
+              msgEl.scrollTop = msgEl.scrollHeight;
+            });
+          });
+        }
       }
 
       function updateStreamingChatBubble(partialText) {
@@ -6658,9 +8353,15 @@
           input.value = '';
           input.style.height = 'auto';
         }
-        renderAiChatModal();
         const backdrop = $('ai-chat-modal-backdrop');
         if (backdrop) backdrop.classList.remove('hidden');
+        renderAiChatModal();
+        scrollAiChatToBottom();
+        setTimeout(function () {
+          if (state.activeChatEntryId === entry.id) {
+            scrollAiChatToBottom();
+          }
+        }, 180);
       }
 
       function closeAiChatModal() {
@@ -6685,8 +8386,9 @@
           `アルバム名: ${entry.album}`,
           `アーティスト名: ${entry.artist}`,
           entry.year ? `リリース年: ${entry.year}` : '',
+          entry.trackCount ? `収録曲数: ${entry.trackCount}曲` : '',
           entry.genres && entry.genres.length ? `ジャンル: ${entry.genres.join(', ')}` : '',
-          entry.description ? `参考（既存の簡単な解説）: ${entry.description}` : '',
+          entry.description ? `参考（既存の簡単な解説・万一対象アルバムと内容が食い違う場合は無視し、上記のアルバム名／アーティスト名／リリース年を優先すること）: ${entry.description}` : '',
           `ユーザーの評価: ${formatScore(entry.score)} / 5.0`,
           entry.notes ? `ユーザーの感想・メモ: ${entry.notes}` : '',
           '',
@@ -6695,7 +8397,7 @@
           '2. 客観的・多角的・批判的な目線を持つこと。作品の魅力や功績だけでなく、構成上の弱点・マンネリ・過剰さ・当時の賛否両論・別ジャンルや現在の耳から見た限界なども必要に応じて率直に指摘してください。',
           '3. ユーザーの感想や評価に無条件で同調せず、対等な議論相手として別の解釈・反論的な視点・見落とされがちな論点も提示してください。',
           '4. 質を落とさず、音楽構造・音色・アレンジ・録音／ミックス・時代背景など具体的な根拠に踏み込んで解説してください。',
-          '5. 収録曲名・参加メンバー・制作年・機材など確証が持てない事実は創作・推測せず、「正確な確認が必要ですが」と明記してください。',
+          '5. 対象アルバムの特定を厳守すること。同名の別アーティスト作品や、同じアーティストの別アルバムと混同・すり替えをして解説してはならない。対象アルバム固有の詳細（収録曲名・参加メンバー・制作年・機材等）に確証が持てない場合は、別作品の内容で補わず「この作品固有の詳細は確認できていません」と率直に伝えてください。',
           '6. 簡潔で密度の高い日本語で、見出しや箇条書きを活用して読みやすくまとめてください。'
         ];
         return lines.filter(Boolean).join('\n');
@@ -6850,7 +8552,7 @@
 
         try {
           let detailedJa = '';
-          const jaWiki = await fetchFromWikipedia('ja', entry.album, entry.artist);
+          const jaWiki = await fetchFromWikipedia('ja', entry.album, entry.artist, entry.year);
           if (myToken !== state.aiChatRequestToken) return;
 
           async function fetchLongerExtract(lang, pageTitle) {
@@ -6877,7 +8579,7 @@
           }
 
           if (!detailedJa) {
-            const enWiki = await fetchFromWikipedia('en', entry.album, entry.artist);
+            const enWiki = await fetchFromWikipedia('en', entry.album, entry.artist, entry.year);
             if (myToken !== state.aiChatRequestToken) return;
             if (enWiki && enWiki.jaLangTitle) {
               const fullJa = await fetchLongerExtract('ja', enWiki.jaLangTitle);
@@ -7036,7 +8738,50 @@
         return { entries: finalEntries, deletedIds: mergedDeleted };
       }
 
-      function canonicalPayloadString(entries, deletedIds) {
+      function mergeWishlistCloudAndLocal(localItems, localDeleted, remoteItems, remoteDeleted) {
+        const mergedDeleted = {};
+        const allDelMaps = [localDeleted || {}, remoteDeleted || {}];
+        for (let m = 0; m < allDelMaps.length; m++) {
+          const map = allDelMaps[m];
+          for (const id in map) {
+            if (Object.prototype.hasOwnProperty.call(map, id)) {
+              const ts = Number(map[id]) || 0;
+              if (!mergedDeleted[id] || ts > mergedDeleted[id]) {
+                mergedDeleted[id] = ts;
+              }
+            }
+          }
+        }
+
+        const byId = new Map();
+        const combined = (Array.isArray(localItems) ? localItems : [])
+          .concat(Array.isArray(remoteItems) ? remoteItems : []);
+
+        for (let i = 0; i < combined.length; i++) {
+          const item = normalizeWishlistItem(combined[i]);
+          const prev = byId.get(item.id);
+          if (!prev || item.updatedAt >= prev.updatedAt) {
+            byId.set(item.id, item);
+          }
+        }
+
+        const finalItems = [];
+        byId.forEach(function (item, id) {
+          const delTs = mergedDeleted[id] || 0;
+          if (delTs > 0 && delTs >= item.updatedAt) {
+            return;
+          }
+          finalItems.push(item);
+        });
+
+        finalItems.sort(function (a, b) {
+          return b.addedDate.localeCompare(a.addedDate) || (b.updatedAt - a.updatedAt);
+        });
+
+        return { items: finalItems, deletedIds: mergedDeleted };
+      }
+
+      function canonicalPayloadString(entries, deletedIds, wishlist, wishlistDeletedIds) {
         const sortedEntries = entries.slice().sort(function (a, b) {
           return a.id.localeCompare(b.id);
         });
@@ -7045,7 +8790,20 @@
         for (let i = 0; i < sortedDelKeys.length; i++) {
           sortedDel[sortedDelKeys[i]] = deletedIds[sortedDelKeys[i]];
         }
-        return JSON.stringify({ entries: sortedEntries, deletedIds: sortedDel });
+        const sortedWish = (Array.isArray(wishlist) ? wishlist : []).slice().sort(function (a, b) {
+          return a.id.localeCompare(b.id);
+        });
+        const sortedWishDelKeys = Object.keys(wishlistDeletedIds || {}).sort();
+        const sortedWishDel = {};
+        for (let i = 0; i < sortedWishDelKeys.length; i++) {
+          sortedWishDel[sortedWishDelKeys[i]] = wishlistDeletedIds[sortedWishDelKeys[i]];
+        }
+        return JSON.stringify({
+          entries: sortedEntries,
+          deletedIds: sortedDel,
+          wishlist: sortedWish,
+          wishlistDeletedIds: sortedWishDel
+        });
       }
 
       async function githubGistRequest(method, url, token, bodyObj) {
@@ -7098,10 +8856,12 @@
 
           if (!gistId) {
             const payload = {
-              version: 2,
+              version: 3,
               updatedAt: new Date().toISOString(),
               entries: state.entries,
-              deletedIds: state.deletedIds
+              deletedIds: state.deletedIds,
+              wishlist: state.wishlist,
+              wishlistDeletedIds: state.wishlistDeletedIds
             };
 
             const created = await githubGistRequest('POST', 'https://api.github.com/gists', token, {
@@ -7132,6 +8892,8 @@
 
             let remoteEntries = [];
             let remoteDeleted = {};
+            let remoteWishlist = [];
+            let remoteWishlistDeleted = {};
             let remoteHasFile = false;
 
             if (fileObj) {
@@ -7148,12 +8910,15 @@
                 } else if (parsed && typeof parsed === 'object') {
                   remoteEntries = Array.isArray(parsed.entries) ? parsed.entries : [];
                   remoteDeleted = parsed.deletedIds && typeof parsed.deletedIds === 'object' ? parsed.deletedIds : {};
+                  remoteWishlist = Array.isArray(parsed.wishlist) ? parsed.wishlist : [];
+                  remoteWishlistDeleted = parsed.wishlistDeletedIds && typeof parsed.wishlistDeletedIds === 'object' ? parsed.wishlistDeletedIds : {};
                 }
               }
             }
 
             const remoteNormalized = remoteEntries.map(normalizeEntry);
-            const remoteSnap = canonicalPayloadString(remoteNormalized, remoteDeleted);
+            const remoteWishNormalized = remoteWishlist.map(normalizeWishlistItem);
+            const remoteSnap = canonicalPayloadString(remoteNormalized, remoteDeleted, remoteWishNormalized, remoteWishlistDeleted);
 
             const merged = mergeCloudAndLocal(
               state.entries,
@@ -7161,19 +8926,29 @@
               remoteNormalized,
               remoteDeleted
             );
+            const mergedWish = mergeWishlistCloudAndLocal(
+              state.wishlist,
+              state.wishlistDeletedIds,
+              remoteWishNormalized,
+              remoteWishlistDeleted
+            );
 
             state.entries = merged.entries;
             state.deletedIds = merged.deletedIds;
+            state.wishlist = mergedWish.items;
+            state.wishlistDeletedIds = mergedWish.deletedIds;
             saveLocalData();
 
-            const mergedSnap = canonicalPayloadString(merged.entries, merged.deletedIds);
+            const mergedSnap = canonicalPayloadString(merged.entries, merged.deletedIds, mergedWish.items, mergedWish.deletedIds);
 
             if (!remoteHasFile || mergedSnap !== remoteSnap) {
               const nextPayload = {
-                version: 2,
+                version: 3,
                 updatedAt: new Date().toISOString(),
                 entries: state.entries,
-                deletedIds: state.deletedIds
+                deletedIds: state.deletedIds,
+                wishlist: state.wishlist,
+                wishlistDeletedIds: state.wishlistDeletedIds
               };
               await githubGistRequest('PATCH', url, token, {
                 files: {
@@ -7235,9 +9010,10 @@
       function exportJsonBackup() {
         try {
           const payload = {
-            version: 2,
+            version: 3,
             exportedAt: new Date().toISOString(),
-            entries: state.entries
+            entries: state.entries,
+            wishlist: state.wishlist
           };
           const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
           const url = URL.createObjectURL(blob);
@@ -7255,24 +9031,37 @@
         }
       }
 
-      function applyImportedEntries(incomingNormalized, mode) {
+      function applyImportedEntries(incomingNormalized, incomingWishlist, mode) {
+        const wishListNorm = Array.isArray(incomingWishlist) ? incomingWishlist : [];
         if (mode === 'replace') {
           state.entries = incomingNormalized.slice();
           state.deletedIds = {};
+          if (wishListNorm.length > 0 || incomingWishlist !== null) {
+            state.wishlist = wishListNorm.slice();
+            state.wishlistDeletedIds = {};
+          }
         } else {
           const merged = mergeCloudAndLocal(state.entries, {}, incomingNormalized, {});
           state.entries = merged.entries;
           for (let i = 0; i < incomingNormalized.length; i++) {
             delete state.deletedIds[incomingNormalized[i].id];
           }
+          if (wishListNorm.length > 0) {
+            const mergedW = mergeWishlistCloudAndLocal(state.wishlist, {}, wishListNorm, {});
+            state.wishlist = mergedW.items;
+            for (let i = 0; i < wishListNorm.length; i++) {
+              delete state.wishlistDeletedIds[wishListNorm[i].id];
+            }
+          }
         }
 
         saveLocalData();
         renderAll();
+        const wishNote = wishListNorm.length > 0 ? `・聴きたい${wishListNorm.length}件` : '';
         showToast(
           mode === 'replace'
-            ? `${incomingNormalized.length}件のデータで置き換えました`
-            : `${incomingNormalized.length}件のデータを既存データと統合しました`
+            ? `記録${incomingNormalized.length}件${wishNote}で置き換えました`
+            : `記録${incomingNormalized.length}件${wishNote}を既存データと統合しました`
         );
 
         if (state.syncConfig.githubToken && state.syncConfig.gistId) {
@@ -7295,22 +9084,30 @@
             }
 
             const incomingNormalized = incomingRaw.map(normalizeEntry);
-            if (state.entries.length === 0) {
-              applyImportedEntries(incomingNormalized, 'merge');
+            const incomingWishlist = (parsed && !Array.isArray(parsed) && Array.isArray(parsed.wishlist))
+              ? parsed.wishlist.map(normalizeWishlistItem)
+              : null;
+
+            if (state.entries.length === 0 && state.wishlist.length === 0) {
+              applyImportedEntries(incomingNormalized, incomingWishlist, 'merge');
               return;
             }
 
+            const wishSummary = incomingWishlist && incomingWishlist.length > 0
+              ? `・聴きたいリスト${incomingWishlist.length}件`
+              : '';
+
             openConfirmModal(
               'JSONバックアップの読み込み',
-              `${incomingNormalized.length}件の記録を読み込みます。現在の記録（${state.entries.length}件）と統合するか、すべて置き換えるかを選択してください。`,
+              `記録${incomingNormalized.length}件${wishSummary}を読み込みます。現在のデータと統合するか、すべて置き換えるかを選択してください。`,
               'すべて置換',
               function () {
-                applyImportedEntries(incomingNormalized, 'replace');
+                applyImportedEntries(incomingNormalized, incomingWishlist, 'replace');
               },
               {
                 label: '既存データと統合',
                 onClick: function () {
-                  applyImportedEntries(incomingNormalized, 'merge');
+                  applyImportedEntries(incomingNormalized, incomingWishlist, 'merge');
                 }
               }
             );
@@ -7337,8 +9134,15 @@
 
         // Open Add Modal triggers
         on($('btn-open-add-header'), 'click', function () { openEntryModal({ date: state.selectedDate }); });
-        on($('btn-open-add-mobile'), 'click', function () { openEntryModal({ date: state.selectedDate }); });
+        on($('btn-open-add-mobile'), 'click', function () {
+          if (state.currentView === 'wishlist') {
+            openEntryModal({ mode: 'wishlist' });
+          } else {
+            openEntryModal({ date: state.selectedDate });
+          }
+        });
         on($('btn-add-selected-date'), 'click', function () { openEntryModal({ date: state.selectedDate }); });
+        on($('btn-open-add-wishlist'), 'click', function () { openEntryModal({ mode: 'wishlist' }); });
 
         // Month navigation
         on($('btn-prev-month'), 'click', function () {
@@ -7417,6 +9221,81 @@
           renderList();
         });
 
+        // Wishlist filters, chips & card actions
+        on($('wishlist-search-input'), 'input', function (evt) {
+          state.wishlistSearch = evt.target.value;
+          renderWishlist();
+        });
+        on($('wishlist-sort-select'), 'change', function (evt) {
+          state.wishlistSort = evt.target.value;
+          renderWishlist();
+        });
+        on($('wishlist-genre-chips'), 'click', function (evt) {
+          const chip = evt.target.closest('button[data-wishlist-genre]');
+          if (!chip) return;
+          state.wishlistGenre = chip.getAttribute('data-wishlist-genre') || '';
+          renderWishlist();
+        });
+        on($('wishlist-entries-container'), 'click', function (evt) {
+          const btn = evt.target.closest('button[data-wishlist-action]');
+          if (!btn) return;
+          const action = btn.getAttribute('data-wishlist-action');
+          const id = btn.getAttribute('data-id');
+          if (action === 'add-new') {
+            openEntryModal({ mode: 'wishlist' });
+          } else if (action === 'edit' && id) {
+            openEntryModal({ mode: 'wishlist', wishlistId: id });
+          } else if (action === 'delete' && id) {
+            deleteWishlistById(id);
+          } else if (action === 'translate-desc' && id) {
+            translateWishlistDescriptionById(id, btn);
+          } else if (action === 'complete' && id) {
+            const w = state.wishlist.find(function (item) { return item.id === id; });
+            if (w) {
+              openEntryModal({
+                date: formatDateKey(new Date()),
+                fromWishlistId: w.id,
+                prefill: w
+              });
+            }
+          }
+        });
+
+        // Daily Recommendations actions
+        on($('btn-refresh-daily-recs'), 'click', function () {
+          ensureDailyRecommendations(true);
+        });
+        on($('btn-rec-open-settings'), 'click', function () {
+          openSyncModal();
+          setTimeout(function () {
+            const keyInput = $('field-gemini-key');
+            if (keyInput) keyInput.focus();
+          }, 80);
+        });
+        function handleRecsContainerClick(evt) {
+          if (evt.target.closest('#btn-generate-recs-empty')) {
+            ensureDailyRecommendations(true);
+            return;
+          }
+          const btn = evt.target.closest('button[data-rec-action]');
+          if (!btn || btn.disabled) return;
+          const action = btn.getAttribute('data-rec-action');
+          const recId = btn.getAttribute('data-rec-id');
+          const recItem = recId ? findRecItemById(recId) : null;
+          if (!recItem) return;
+
+          if (action === 'add-wishlist') {
+            addAlbumToWishlist(recItem, 'daily-rec');
+          } else if (action === 'log-entry') {
+            openEntryModal({
+              date: formatDateKey(new Date()),
+              prefill: recItem
+            });
+          }
+        }
+        on($('daily-recs-container'), 'click', handleRecsContainerClick);
+        on($('rec-history-list'), 'click', handleRecsContainerClick);
+
         // Entry Modal controls
         on($('btn-close-entry-modal'), 'click', closeEntryModal);
         on($('btn-cancel-entry'), 'click', closeEntryModal);
@@ -7465,7 +9344,8 @@
           fetchAlbumMeta(
             $('field-album').value.trim(),
             $('field-artist').value.trim(),
-            $('field-year').value.trim()
+            $('field-year').value.trim(),
+            $('field-track-count').value.trim()
           );
         });
         on($('btn-translate-form-desc'), 'click', translateFormDescription);
@@ -7643,6 +9523,7 @@
           cacheDetectedGeminiModel('');
           saveSyncConfig();
           if (state.activeChatEntryId) renderAiChatModal();
+          renderDailyRecommendations();
 
           if (state.syncConfig.githubToken) {
             syncWithGist({ silent: false });
