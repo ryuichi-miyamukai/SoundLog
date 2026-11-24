@@ -5510,14 +5510,38 @@
 
         async function tryModel(model) {
           const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
-          const res = await fetch(url, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-goog-api-key': apiKey
-            },
-            body: JSON.stringify(payloadObj)
-          });
+          const reqBody = Object.assign({}, payloadObj);
+          const prevGenCfg = (payloadObj && typeof payloadObj.generationConfig === 'object')
+            ? payloadObj.generationConfig
+            : {};
+          if (!Object.prototype.hasOwnProperty.call(prevGenCfg, 'thinkingConfig')) {
+            reqBody.generationConfig = Object.assign({}, prevGenCfg, {
+              thinkingConfig: { thinkingBudget: 0 }
+            });
+          }
+          const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+          const timer = controller ? setTimeout(function () { controller.abort(); }, 18000) : null;
+          let res = null;
+          try {
+            res = await fetch(url, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-goog-api-key': apiKey
+              },
+              signal: controller ? controller.signal : undefined,
+              body: JSON.stringify(reqBody)
+            });
+          } catch (netErr) {
+            if (netErr && netErr.name === 'AbortError') {
+              const tErr = new Error('応答がタイムアウトしました（18秒）');
+              tErr.status = 408;
+              throw tErr;
+            }
+            throw netErr;
+          } finally {
+            if (timer) clearTimeout(timer);
+          }
           if (!res.ok) {
             let detail = `HTTP ${res.status}`;
             try {
@@ -5570,7 +5594,7 @@
               throw err;
             }
             // If all static fallback models failed with 404, auto-discover currently active models via ListModels
-            if (queue.length === 0 && !discovered) {
+            if (status === 404 && queue.length === 0 && !discovered) {
               discovered = true;
               const liveModels = await discoverAvailableGeminiModels(apiKey);
               let added = 0;
@@ -6455,9 +6479,15 @@
         state.aiChatSending = true;
         renderAiChatModal();
 
+        const slowTimer = setTimeout(function () {
+          if (myToken !== state.aiChatRequestToken || !state.aiChatSending) return;
+          const typingEl = document.querySelector('#ai-chat-messages .chat-typing span:first-child');
+          if (typingEl) typingEl.textContent = 'AIが詳しく回答を作成中（少し時間がかかっています）';
+        }, 5000);
+
         try {
-          // Send recent 16 turns to keep context rich and within limits
-          const recentMsgs = nextHistory.slice(-16).map(function (m) {
+          // Send recent 8 turns so prompt processing stays fast
+          const recentMsgs = nextHistory.slice(-8).map(function (m) {
             return {
               role: m.role === 'user' ? 'user' : 'model',
               parts: [{ text: m.text }]
@@ -6486,6 +6516,7 @@
             updatedAt: Date.now()
           }));
 
+          clearTimeout(slowTimer);
           saveLocalData();
           state.aiChatSending = false;
           renderAiChatModal();
@@ -6495,6 +6526,7 @@
             syncWithGist({ silent: true });
           }
         } catch (err) {
+          clearTimeout(slowTimer);
           console.error('AI chat error:', err);
           if (myToken !== state.aiChatRequestToken) return;
           state.aiChatSending = false;
