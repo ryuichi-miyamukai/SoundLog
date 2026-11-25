@@ -3205,7 +3205,7 @@
       </div>
 
       <form id="entry-form" novalidate style="display:flex;flex-direction:column;min-height:0;min-width:0;max-width:100%;overflow-x:hidden;flex:1;">
-        <div class="modal-body">
+        <div id="entry-modal-body" class="modal-body">
           <input type="hidden" id="field-entry-id" />
           <input type="hidden" id="field-apple-music-url" />
           <input type="hidden" id="field-form-mode" value="entry" />
@@ -3904,6 +3904,9 @@
         artistAlbums: [],
         artistAlbumsVisibleCount: 15,
         searchRequestToken: 0,
+        searchDebounceTimer: null,
+        searchComposing: false,
+        lastExecutedSearchKey: '',
         metaFetchToken: 0,
         coverCheckToken: 0,
         activeChatEntryId: null,
@@ -5944,8 +5947,17 @@
       // =======================================================================
       // Entry Modal: Open / Close / Submit / Delete
       // =======================================================================
+      function cancelPendingLiveSearch() {
+        if (state.searchDebounceTimer) {
+          clearTimeout(state.searchDebounceTimer);
+          state.searchDebounceTimer = null;
+        }
+      }
+
       function clearSearchUI() {
+        cancelPendingLiveSearch();
         state.searchRequestToken++;
+        state.lastExecutedSearchKey = '';
         state.searchResults = [];
         state.searchVisibleCount = 15;
         state.artistStep = 'artists';
@@ -5964,6 +5976,7 @@
         }
         if (resultsEl) {
           resultsEl.innerHTML = '';
+          resultsEl.scrollTop = 0;
           resultsEl.classList.add('hidden');
         }
         if (drillBar) {
@@ -6165,14 +6178,44 @@
         renderSelectedGenres();
 
         if (backdrop) backdrop.classList.remove('hidden');
+        scrollEntryModalToTop();
+      }
+
+      function scrollEntryModalToTop() {
+        const backdrop = $('entry-modal-backdrop');
+        const bodyEl = $('entry-modal-body');
+        const resultsEl = $('album-search-results');
+        function applyTop() {
+          if (backdrop) backdrop.scrollTop = 0;
+          if (bodyEl) bodyEl.scrollTop = 0;
+          if (resultsEl) resultsEl.scrollTop = 0;
+        }
+        applyTop();
+        if (typeof requestAnimationFrame === 'function') {
+          requestAnimationFrame(function () {
+            applyTop();
+            requestAnimationFrame(applyTop);
+          });
+        }
+        setTimeout(function () {
+          if (backdrop && !backdrop.classList.contains('hidden')) {
+            applyTop();
+          }
+        }, 170);
       }
 
       function closeEntryModal() {
+        cancelPendingLiveSearch();
         state.searchRequestToken++;
         state.metaFetchToken++;
         state.coverCheckToken++;
         const backdrop = $('entry-modal-backdrop');
-        if (backdrop) backdrop.classList.add('hidden');
+        const bodyEl = $('entry-modal-body');
+        if (bodyEl) bodyEl.scrollTop = 0;
+        if (backdrop) {
+          backdrop.scrollTop = 0;
+          backdrop.classList.add('hidden');
+        }
       }
 
       function handleEntryFormSubmit(evt) {
@@ -6501,7 +6544,51 @@
         }
       }
 
-      async function executeAlbumSearch() {
+      function shouldTriggerLiveSearch(term) {
+        const clean = String(term || '').trim();
+        if (!clean) return false;
+        if (clean.length >= 2) return true;
+        // Allow 1-character Kanji artist/album names (e.g. "嵐"), skip noisy 1-char Latin/kana
+        return /[一-鿿]/.test(clean);
+      }
+
+      function scheduleLiveAlbumSearch() {
+        cancelPendingLiveSearch();
+        const input = $('album-search-input');
+        if (!input) return;
+
+        const term = input.value.trim();
+        if (!term) {
+          clearSearchUI();
+          return;
+        }
+
+        if (!shouldTriggerLiveSearch(term)) {
+          state.searchRequestToken++;
+          state.lastExecutedSearchKey = '';
+          const resultsEl = $('album-search-results');
+          const drillBar = $('artist-drill-bar');
+          if (resultsEl) {
+            resultsEl.innerHTML = '';
+            resultsEl.classList.add('hidden');
+          }
+          if (drillBar) drillBar.classList.add('hidden');
+          setSearchStatus('2文字以上入力すると候補を自動表示します（Enterでも検索できます）', false);
+          return;
+        }
+
+        const delayMs = state.searchMode === 'musicbrainz' ? 550 : 300;
+        state.searchDebounceTimer = setTimeout(function () {
+          state.searchDebounceTimer = null;
+          executeAlbumSearch({ isLive: true });
+        }, delayMs);
+      }
+
+      async function executeAlbumSearch(options) {
+        const opts = options && typeof options === 'object' ? options : {};
+        const isLive = Boolean(opts.isLive);
+        cancelPendingLiveSearch();
+
         const input = $('album-search-input');
         const resultsEl = $('album-search-results');
         const drillBar = $('artist-drill-bar');
@@ -6510,17 +6597,32 @@
 
         const term = input.value.trim();
         if (!term) {
-          setSearchStatus('検索キーワードを入力してください。', true);
-          resultsEl.classList.add('hidden');
-          if (drillBar) drillBar.classList.add('hidden');
+          if (isLive) {
+            clearSearchUI();
+          } else {
+            setSearchStatus('検索キーワードを入力してください。', true);
+            resultsEl.classList.add('hidden');
+            if (drillBar) drillBar.classList.add('hidden');
+          }
           return;
         }
 
+        const countrySelect = $('itunes-country-select');
+        const country = countrySelect && countrySelect.value === 'US' ? 'US' : 'JP';
+        const searchKey = `${state.searchMode}::${country}::${term.toLowerCase()}`;
+        if (isLive && searchKey === state.lastExecutedSearchKey) {
+          return;
+        }
+        state.lastExecutedSearchKey = searchKey;
+
         const myToken = ++state.searchRequestToken;
-        if (btn) btn.disabled = true;
+        if (!isLive && btn) btn.disabled = true;
         if (drillBar) drillBar.classList.add('hidden');
-        resultsEl.innerHTML = '';
-        resultsEl.classList.add('hidden');
+        if (!isLive) {
+          resultsEl.innerHTML = '';
+          resultsEl.scrollTop = 0;
+          resultsEl.classList.add('hidden');
+        }
 
         try {
           if (state.searchMode === 'itunes-album') {
@@ -6572,6 +6674,12 @@
         }
 
         if (unique.length === 0) {
+          state.searchResults = [];
+          const resultsEl = $('album-search-results');
+          if (resultsEl) {
+            resultsEl.innerHTML = '';
+            resultsEl.classList.add('hidden');
+          }
           setSearchStatus('該当するアルバムが見つかりませんでした。ストア切替や「MusicBrainz」タブもお試しください。', false);
           return;
         }
@@ -6690,6 +6798,12 @@
         }
 
         if (uniqueArtists.length === 0) {
+          state.artistCandidates = [];
+          const resultsEl = $('album-search-results');
+          if (resultsEl) {
+            resultsEl.innerHTML = '';
+            resultsEl.classList.add('hidden');
+          }
           setSearchStatus('該当するアーティストが見つかりませんでした。ストア切替や「MusicBrainz」タブもお試しください。', false);
           return;
         }
@@ -6964,6 +7078,12 @@
         }
 
         if (uniqueGroups.length === 0) {
+          state.searchResults = [];
+          const resultsEl = $('album-search-results');
+          if (resultsEl) {
+            resultsEl.innerHTML = '';
+            resultsEl.classList.add('hidden');
+          }
           setSearchStatus('MusicBrainz で該当する作品が見つかりませんでした。表記（英語/日本語）や「アーティスト - アルバム」形式でお試しください。', false);
           return;
         }
@@ -9601,11 +9721,25 @@
           });
         }
 
-        on($('btn-album-search'), 'click', executeAlbumSearch);
+        on($('btn-album-search'), 'click', function () {
+          executeAlbumSearch({ isLive: false });
+        });
+        on($('album-search-input'), 'compositionstart', function () {
+          state.searchComposing = true;
+          cancelPendingLiveSearch();
+        });
+        on($('album-search-input'), 'compositionend', function () {
+          state.searchComposing = false;
+          scheduleLiveAlbumSearch();
+        });
+        on($('album-search-input'), 'input', function (evt) {
+          if (state.searchComposing || (evt && evt.isComposing)) return;
+          scheduleLiveAlbumSearch();
+        });
         on($('album-search-input'), 'keydown', function (evt) {
-          if (evt.key === 'Enter') {
+          if (evt.key === 'Enter' && !evt.isComposing && !state.searchComposing) {
             evt.preventDefault();
-            executeAlbumSearch();
+            executeAlbumSearch({ isLive: false });
           }
         });
         on($('itunes-country-select'), 'change', function () {
