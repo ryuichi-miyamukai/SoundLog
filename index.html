@@ -225,6 +225,31 @@
       color: var(--accent-fg);
     }
 
+    .nav-dot {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #16a34a;
+      margin-left: 5px;
+      vertical-align: middle;
+    }
+
+    .mobile-nav-btn {
+      position: relative;
+    }
+
+    .mobile-nav-dot {
+      position: absolute;
+      top: 5px;
+      right: calc(50% - 14px);
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #16a34a;
+      border: 1.5px solid #ffffff;
+    }
+
     .header-actions {
       display: flex;
       align-items: center;
@@ -2886,7 +2911,7 @@
         <button type="button" class="seg-btn active" data-view-target="calendar">カレンダー</button>
         <button type="button" class="seg-btn" data-view-target="list">一覧</button>
         <button type="button" class="seg-btn" data-view-target="wishlist">聴きたい<span id="nav-wishlist-count" class="nav-badge tabular-nums hidden">0</span></button>
-        <button type="button" class="seg-btn" data-view-target="recommend">おすすめ</button>
+        <button type="button" class="seg-btn" data-view-target="recommend">おすすめ<span id="nav-rec-dot" class="nav-dot hidden" aria-hidden="true"></span></button>
       </nav>
 
       <div class="header-actions">
@@ -3052,34 +3077,65 @@
       <div id="wishlist-entries-container" class="list-grid"></div>
     </section>
 
-    <!-- Daily Recommendations View -->
-    <section id="view-recommend" class="card list-card hidden" aria-label="毎日のおすすめアルバム">
-      <div class="view-section-header">
-        <div>
-          <div class="view-section-kicker">Daily Album Picks</div>
-          <h2 id="rec-date-title" class="view-section-title">今日のおすすめアルバム</h2>
-          <p class="view-section-sub">オールタイム名盤 1枚 ＋ 近年の注目作 1枚を毎日提案（記録済み・紹介済みを除外）</p>
+    <!-- Daily Recommendations View (Calendar + Selected Date Picks) -->
+    <section id="view-recommend" class="calendar-layout hidden" aria-label="毎日のおすすめアルバム">
+      <div class="card calendar-card">
+        <div class="calendar-toolbar">
+          <div class="month-nav">
+            <button type="button" id="btn-rec-prev-month" class="month-nav-btn" aria-label="前の月">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </button>
+            <h2 id="rec-calendar-month-label" class="month-label tabular-nums"></h2>
+            <button type="button" id="btn-rec-next-month" class="month-nav-btn" aria-label="次の月">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+            <button type="button" id="btn-rec-today" class="btn-today">今日</button>
+          </div>
+
+          <div class="calendar-stats">
+            <span class="stat-pill tabular-nums">
+              今月のおすすめ: <strong id="stat-rec-month-days">0</strong> 日
+            </span>
+            <span class="stat-pill tabular-nums">
+              累計おすすめ: <strong id="stat-rec-total-albums">0</strong> 枚
+            </span>
+          </div>
         </div>
-        <button type="button" id="btn-refresh-daily-recs" class="btn-secondary">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="23 4 23 10 17 10"></polyline>
-            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-          </svg>
-          <span>別のおすすめを取得</span>
-        </button>
+
+        <div class="weekdays-row" aria-hidden="true">
+          <div class="weekday-label sun">日</div>
+          <div class="weekday-label">月</div>
+          <div class="weekday-label">火</div>
+          <div class="weekday-label">水</div>
+          <div class="weekday-label">木</div>
+          <div class="weekday-label">金</div>
+          <div class="weekday-label sat">土</div>
+        </div>
+
+        <div id="rec-calendar-grid" class="calendar-grid" role="grid"></div>
       </div>
 
-      <div id="rec-api-banner" class="rec-info-banner hidden">
-        <span>現在は厳選リストから毎日2枚を提案しています。「同期・AI設定」で Gemini API キーを設定すると、聴いた履歴を踏まえてAIが毎日新しい組み合わせを提案します。</span>
-        <button type="button" id="btn-rec-open-settings" class="btn-secondary" style="height:30px;padding:0 12px;font-size:0.75rem;">APIキーを設定</button>
-      </div>
+      <!-- Selected Date Recommendation Panel -->
+      <aside class="card detail-panel" aria-label="選択した日のおすすめアルバム">
+        <div class="detail-header">
+          <div>
+            <div id="rec-detail-kicker" class="detail-kicker">Daily Album Picks</div>
+            <h3 id="rec-date-title" class="detail-date"></h3>
+            <p id="rec-date-meta" class="detail-meta tabular-nums"></p>
+          </div>
+        </div>
 
-      <div id="daily-recs-container" class="rec-grid"></div>
+        <div id="rec-api-banner" class="rec-info-banner hidden">
+          <span>現在は厳選リストから毎日2枚を提案しています。Gemini API キーを設定すると、聴いた履歴を踏まえてAIが毎日新しい組み合わせを提案します。</span>
+          <button type="button" id="btn-rec-open-settings" class="btn-secondary" style="height:30px;padding:0 12px;font-size:0.75rem;">APIキーを設定</button>
+        </div>
 
-      <div id="rec-history-section" class="rec-history-section hidden">
-        <h3 class="rec-history-title">過去のおすすめ履歴</h3>
-        <div id="rec-history-list" class="rec-history-list"></div>
-      </div>
+        <div id="daily-recs-container" class="entries-stack"></div>
+      </aside>
     </section>
   </main>
 
@@ -3124,6 +3180,7 @@
     </button>
 
     <button type="button" class="mobile-nav-btn" data-view-target="recommend">
+      <span id="mobile-rec-dot" class="mobile-nav-dot hidden" aria-hidden="true"></span>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z"></path>
         <path d="M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8L19 16z"></path>
@@ -3536,6 +3593,7 @@
         wishlist: 'soundlog_wishlist_v1',
         wishlistDeletedIds: 'soundlog_wishlist_deleted_v1',
         dailyRecs: 'soundlog_daily_recs_v1',
+        dailyRecsViewedDate: 'soundlog_daily_recs_viewed_v1',
         syncConfig: 'soundlog_sync_config_v2',
         geminiModel: 'soundlog_gemini_model_v1',
         legacyEntries: ['soundlog_entries_v1', 'soundlog_entries', 'soundlog_logs']
@@ -3814,6 +3872,10 @@
         dailyRecsLoading: false,
         dailyRecsRequestToken: 0,
         dailyRecsError: '',
+        dailyRecsViewedDate: '',
+        recCalYear: today.getFullYear(),
+        recCalMonth: today.getMonth(),
+        recSelectedDate: formatDateKey(today),
         syncConfig: {
           githubToken: '',
           gistId: '',
@@ -4426,6 +4488,12 @@
           state.dailyRecs = { byDate: {}, seenKeys: [] };
         }
 
+        try {
+          state.dailyRecsViewedDate = String(localStorage.getItem(STORAGE_KEYS.dailyRecsViewedDate) || '').trim();
+        } catch (_) {
+          state.dailyRecsViewedDate = '';
+        }
+
         loadSyncConfig();
       }
 
@@ -4443,22 +4511,44 @@
 
       function saveDailyRecsData() {
         try {
-          // Prune very old dates beyond 30 days to keep localStorage lightweight
+          // Retain up to 365 days of recommendation history for the recommendation calendar
           const dates = Object.keys(state.dailyRecs.byDate || {}).sort().reverse();
-          if (dates.length > 30) {
+          if (dates.length > 365) {
             const keep = {};
-            for (let i = 0; i < 30; i++) {
+            for (let i = 0; i < 365; i++) {
               keep[dates[i]] = state.dailyRecs.byDate[dates[i]];
             }
             state.dailyRecs.byDate = keep;
           }
-          if (Array.isArray(state.dailyRecs.seenKeys) && state.dailyRecs.seenKeys.length > 300) {
-            state.dailyRecs.seenKeys = state.dailyRecs.seenKeys.slice(-300);
+          if (Array.isArray(state.dailyRecs.seenKeys) && state.dailyRecs.seenKeys.length > 800) {
+            state.dailyRecs.seenKeys = state.dailyRecs.seenKeys.slice(-800);
           }
           localStorage.setItem(STORAGE_KEYS.dailyRecs, JSON.stringify(state.dailyRecs));
         } catch (err) {
           console.error('Failed to save daily recs:', err);
         }
+      }
+
+      function markTodayRecViewed() {
+        const todayKey = formatDateKey(new Date());
+        state.dailyRecsViewedDate = todayKey;
+        try {
+          localStorage.setItem(STORAGE_KEYS.dailyRecsViewedDate, todayKey);
+        } catch (_) {
+          // ignore
+        }
+        renderRecUnreadBadge();
+      }
+
+      function renderRecUnreadBadge() {
+        const todayKey = formatDateKey(new Date());
+        const todayRec = state.dailyRecs.byDate && state.dailyRecs.byDate[todayKey];
+        const hasToday = Boolean(todayRec && Array.isArray(todayRec.items) && todayRec.items.length > 0);
+        const isUnread = hasToday && state.dailyRecsViewedDate !== todayKey && state.currentView !== 'recommend';
+        const desktopDot = $('nav-rec-dot');
+        const mobileDot = $('mobile-rec-dot');
+        if (desktopDot) desktopDot.classList.toggle('hidden', !isUnread);
+        if (mobileDot) mobileDot.classList.toggle('hidden', !isUnread);
       }
 
       function loadSyncConfig() {
@@ -5366,12 +5456,13 @@
         }).filter(function (item) { return item.album && item.artist; });
       }
 
-      async function ensureDailyRecommendations(forceRefresh) {
+      async function ensureDailyRecommendations() {
         const todayKey = formatDateKey(new Date());
         const existing = state.dailyRecs.byDate && state.dailyRecs.byDate[todayKey];
 
-        if (!forceRefresh && existing && Array.isArray(existing.items) && existing.items.length > 0) {
+        if (existing && Array.isArray(existing.items) && existing.items.length > 0) {
           renderDailyRecommendations();
+          renderRecUnreadBadge();
           // Enrich missing covers lazily if any
           const needsArtwork = existing.items.some(function (it) { return !it.coverUrl; });
           if (needsArtwork) {
@@ -5380,6 +5471,9 @@
               state.dailyRecs.byDate[todayKey] = Object.assign({}, existing, { items: enriched });
               saveDailyRecsData();
               renderDailyRecommendations();
+              if (state.syncConfig.githubToken && state.syncConfig.gistId) {
+                syncWithGist({ silent: true });
+              }
             }
           }
           return;
@@ -5393,11 +5487,6 @@
         renderDailyRecommendations();
 
         try {
-          // If refreshing, add current today's picks to seenKeys first so we get different albums
-          if (forceRefresh && existing && Array.isArray(existing.items)) {
-            recordSeenRecommendationKeys(existing.items);
-          }
-
           let rawItems = [];
           let source = 'builtin';
 
@@ -5415,7 +5504,7 @@
           }
 
           if (rawItems.length < 2) {
-            rawItems = pickBuiltInDailyRecs(todayKey, forceRefresh ? Date.now() : 0);
+            rawItems = pickBuiltInDailyRecs(todayKey, 0);
             source = 'builtin';
           }
 
@@ -5431,6 +5520,11 @@
             items: enrichedItems
           };
           saveDailyRecsData();
+
+          // Sync newly generated daily picks to GitHub Gist so history persists across devices
+          if (state.syncConfig.githubToken && state.syncConfig.gistId) {
+            syncWithGist({ silent: true });
+          }
         } catch (err) {
           console.error('Daily recs error:', err);
           if (myToken === state.dailyRecsRequestToken) {
@@ -5440,6 +5534,7 @@
           if (myToken === state.dailyRecsRequestToken) {
             state.dailyRecsLoading = false;
             renderDailyRecommendations();
+            renderRecUnreadBadge();
           }
         }
       }
@@ -5520,27 +5615,118 @@
         `;
       }
 
+      function renderRecCalendar() {
+        const monthLabel = $('rec-calendar-month-label');
+        const monthDaysEl = $('stat-rec-month-days');
+        const totalAlbumsEl = $('stat-rec-total-albums');
+        const gridEl = $('rec-calendar-grid');
+        if (!gridEl) return;
+
+        const year = state.recCalYear;
+        const month = state.recCalMonth;
+        const monthPrefix = `${year}-${String(month + 1).padStart(2, '0')}-`;
+        const byDate = (state.dailyRecs && state.dailyRecs.byDate) ? state.dailyRecs.byDate : {};
+
+        if (monthLabel) {
+          monthLabel.textContent = `${year}年 ${month + 1}月`;
+        }
+
+        let monthDayCount = 0;
+        let totalAlbumCount = 0;
+        const allDates = Object.keys(byDate);
+        for (let i = 0; i < allDates.length; i++) {
+          const dKey = allDates[i];
+          const dayObj = byDate[dKey];
+          const items = dayObj && Array.isArray(dayObj.items) ? dayObj.items : [];
+          if (items.length === 0) continue;
+          totalAlbumCount += items.length;
+          if (dKey.startsWith(monthPrefix)) {
+            monthDayCount++;
+          }
+        }
+
+        if (monthDaysEl) monthDaysEl.textContent = String(monthDayCount);
+        if (totalAlbumsEl) totalAlbumsEl.textContent = String(totalAlbumCount);
+
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const todayKey = formatDateKey(new Date());
+
+        const cells = [];
+        for (let blank = 0; blank < firstDay; blank++) {
+          cells.push('<div class="day-cell empty" aria-hidden="true"></div>');
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+          const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+          const dow = (firstDay + day - 1) % 7;
+          const dayObj = byDate[dateKey];
+          const dayItems = dayObj && Array.isArray(dayObj.items) ? dayObj.items : [];
+          const isToday = dateKey === todayKey;
+          const isSelected = dateKey === state.recSelectedDate;
+
+          let cellClasses = 'day-cell';
+          if (isToday) cellClasses += ' today';
+          if (isSelected) cellClasses += ' selected';
+
+          let numClasses = 'day-num tabular-nums';
+          if (!isToday && dow === 0) numClasses += ' sun';
+          if (!isToday && dow === 6) numClasses += ' sat';
+
+          let artHtml = '';
+          if (dayItems.length > 0) {
+            const rep = dayItems.find(function (it) { return Boolean(it.coverUrl); }) || dayItems[0];
+            const moreBadge = dayItems.length > 1
+              ? `<span class="day-more-badge tabular-nums">+${dayItems.length - 1}</span>`
+              : '';
+            const imgInner = rep.coverUrl
+              ? `<img src="${escapeHtml(rep.coverUrl)}" alt="${escapeHtml(rep.album)}" loading="lazy" onerror="this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='flex';" /><span class="day-art-fallback" style="display:none;">${getVinylPlaceholderSvg(18)}</span>`
+              : `<span class="day-art-fallback">${getVinylPlaceholderSvg(18)}</span>`;
+            artHtml = `<div class="day-art-wrap">${imgInner}${moreBadge}</div>`;
+          }
+
+          cells.push(`
+            <button type="button" class="${cellClasses}" data-rec-date="${dateKey}" aria-label="${formatDisplayDate(dateKey)}のおすすめ">
+              <div class="day-cell-top">
+                <span class="${numClasses}">${day}</span>
+              </div>
+              ${artHtml}
+            </button>
+          `);
+        }
+
+        gridEl.innerHTML = cells.join('');
+      }
+
       function renderDailyRecommendations() {
+        renderRecCalendar();
+        renderRecUnreadBadge();
+
+        const kickerEl = $('rec-detail-kicker');
         const titleEl = $('rec-date-title');
+        const metaEl = $('rec-date-meta');
         const bannerEl = $('rec-api-banner');
         const containerEl = $('daily-recs-container');
-        const refreshBtn = $('btn-refresh-daily-recs');
-        const histSec = $('rec-history-section');
-        const histList = $('rec-history-list');
         if (!containerEl) return;
 
         const todayKey = formatDateKey(new Date());
+        const selKey = state.recSelectedDate || todayKey;
+        const isToday = selKey === todayKey;
+        const dayObj = state.dailyRecs.byDate && state.dailyRecs.byDate[selKey];
+        const items = dayObj && Array.isArray(dayObj.items) ? dayObj.items : [];
+
+        if (kickerEl) {
+          kickerEl.textContent = isToday ? "Today's Album Picks" : 'Past Album Picks';
+        }
         if (titleEl) {
-          titleEl.textContent = `${formatDisplayDate(todayKey)}のおすすめ`;
+          titleEl.textContent = formatDisplayDate(selKey);
         }
         if (bannerEl) {
           bannerEl.classList.toggle('hidden', Boolean(state.syncConfig.geminiApiKey));
         }
-        if (refreshBtn) {
-          refreshBtn.disabled = state.dailyRecsLoading;
-        }
 
-        if (state.dailyRecsLoading) {
+        if (isToday && state.dailyRecsLoading) {
+          if (metaEl) metaEl.textContent = '今日のおすすめを選定中...';
           containerEl.innerHTML = `
             <div class="rec-loading-card">
               <div class="chat-typing" style="margin:0 auto 8px;display:inline-flex;">
@@ -5550,79 +5736,43 @@
               <p class="field-help">ジャケット画像と配信リンクもあわせて取得しています...</p>
             </div>
           `;
-        } else {
-          const todayRec = state.dailyRecs.byDate && state.dailyRecs.byDate[todayKey];
-          const items = todayRec && Array.isArray(todayRec.items) ? todayRec.items : [];
-          if (items.length === 0) {
+          return;
+        }
+
+        if (items.length === 0) {
+          if (metaEl) {
+            metaEl.textContent = isToday ? '今日のおすすめをまだ取得できていません' : 'この日のおすすめ履歴はありません';
+          }
+          if (isToday) {
             containerEl.innerHTML = `
-              <div class="empty-state" style="grid-column:1/-1;">
+              <div class="empty-state">
                 <div class="empty-state-icon">${getVinylPlaceholderSvg(22)}</div>
-                <p class="empty-state-title">今日のおすすめアルバムを取得できます</p>
-                <p class="empty-state-desc">${escapeHtml(state.dailyRecsError || 'ボタンを押してオールタイム名盤1枚と近年の注目作1枚を生成しましょう')}</p>
-                <button type="button" class="btn-primary" id="btn-generate-recs-empty">今日のおすすめを取得</button>
+                <p class="empty-state-title">今日のおすすめアルバムを取得中・未取得です</p>
+                <p class="empty-state-desc">${escapeHtml(state.dailyRecsError || '通信エラー等で取得できなかった場合は下のボタンから再試行できます')}</p>
+                <button type="button" class="btn-primary" id="btn-retry-daily-recs">今日のおすすめを取得</button>
               </div>
             `;
           } else {
-            const errNote = state.dailyRecsError
-              ? `<div class="rec-info-banner" style="grid-column:1/-1;margin-bottom:0;background:#fffbeb;border-color:#fde68a;color:#92400e;"><span>${escapeHtml(state.dailyRecsError)}</span></div>`
-              : '';
-            containerEl.innerHTML = errNote + items.map(renderDailyRecommendationCard).join('');
+            containerEl.innerHTML = `
+              <div class="empty-state">
+                <div class="empty-state-icon">${getVinylPlaceholderSvg(22)}</div>
+                <p class="empty-state-title">この日のおすすめ履歴はありません</p>
+                <p class="empty-state-desc">ジャケットが表示されている日付を選ぶと、その日のおすすめアルバムを振り返れます</p>
+              </div>
+            `;
           }
+          return;
         }
 
-        // Render past days' recommendations history (excluding today)
-        if (histSec && histList) {
-          const pastDates = Object.keys(state.dailyRecs.byDate || {})
-            .filter(function (d) { return d !== todayKey; })
-            .sort()
-            .reverse()
-            .slice(0, 7);
-
-          const histRows = [];
-          for (let i = 0; i < pastDates.length; i++) {
-            const dKey = pastDates[i];
-            const dayRec = state.dailyRecs.byDate[dKey];
-            if (!dayRec || !Array.isArray(dayRec.items)) continue;
-            for (let j = 0; j < dayRec.items.length; j++) {
-              const it = dayRec.items[j];
-              const thumbHtml = it.coverUrl
-                ? `<img src="${escapeHtml(it.coverUrl)}" alt="" loading="lazy" onerror="this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='flex';" /><span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;">${getVinylPlaceholderSvg(18)}</span>`
-                : getVinylPlaceholderSvg(18);
-              const appleUrl = buildAppleMusicUrl(it);
-              const spotifyUrl = buildSpotifyUrl(it);
-              const inWish = isAlbumInWishlist(it.album, it.artist);
-              const inLog = isAlbumInEntries(it.album, it.artist);
-              const btnHtml = inLog
-                ? '<button type="button" class="btn-card-wishlist-add logged" disabled style="padding:4px 9px;">記録済み</button>'
-                : (inWish
-                    ? '<button type="button" class="btn-card-wishlist-add added" disabled style="padding:4px 9px;">追加済み ✓</button>'
-                    : `<button type="button" class="btn-card-wishlist-add" style="padding:4px 9px;" data-rec-action="add-wishlist" data-rec-id="${escapeHtml(it.id)}">＋ 聴きたい</button>`);
-
-              histRows.push(`
-                <div class="rec-history-item">
-                  <div class="rec-history-thumb">${thumbHtml}</div>
-                  <div class="rec-history-info">
-                    <div class="rec-history-album">${escapeHtml(it.album)} — ${escapeHtml(it.artist)}</div>
-                    <div class="rec-history-meta tabular-nums">${escapeHtml([dKey, it.slotLabel, it.year, (it.genres || []).join(' / ')].filter(Boolean).join(' ・ '))}</div>
-                  </div>
-                  <div class="rec-history-actions">
-                    <a href="${escapeHtml(appleUrl)}" target="_blank" rel="noopener noreferrer" class="btn-stream-link apple-music" title="Apple Musicで開く" aria-label="Apple Musicで開く">${getAppleMusicIconSvg()}</a>
-                    <a href="${escapeHtml(spotifyUrl)}" target="_blank" rel="noopener noreferrer" class="btn-stream-link spotify" title="Spotifyで開く" aria-label="Spotifyで開く">${getSpotifyIconSvg()}</a>
-                    ${btnHtml}
-                  </div>
-                </div>
-              `);
-            }
-          }
-
-          if (histRows.length > 0) {
-            histList.innerHTML = histRows.join('');
-            histSec.classList.remove('hidden');
-          } else {
-            histList.innerHTML = '';
-            histSec.classList.add('hidden');
-          }
+        if (metaEl) {
+          const srcLabel = dayObj && dayObj.source === 'gemini' ? 'AI選曲' : '厳選リスト';
+          metaEl.textContent = `${items.length}枚のおすすめ（${srcLabel}）`;
         }
+
+        const errNote = (isToday && state.dailyRecsError)
+          ? `<div class="rec-info-banner" style="margin-bottom:0;background:#fffbeb;border-color:#fde68a;color:#92400e;"><span>${escapeHtml(state.dailyRecsError)}</span></div>`
+          : '';
+        containerEl.innerHTML = errNote + items.map(renderDailyRecommendationCard).join('');
       }
 
       function renderAll() {
@@ -5653,7 +5803,15 @@
         }
 
         if (state.currentView === 'recommend') {
-          ensureDailyRecommendations(false);
+          const todayKey = formatDateKey(new Date());
+          if (!state.recSelectedDate) {
+            state.recSelectedDate = todayKey;
+            const d = parseDateKey(todayKey);
+            state.recCalYear = d.getFullYear();
+            state.recCalMonth = d.getMonth();
+          }
+          markTodayRecViewed();
+          ensureDailyRecommendations();
         }
       }
 
@@ -8781,7 +8939,57 @@
         return { items: finalItems, deletedIds: mergedDeleted };
       }
 
-      function canonicalPayloadString(entries, deletedIds, wishlist, wishlistDeletedIds) {
+      function mergeDailyRecsCloudAndLocal(localRecs, remoteRecs) {
+        const loc = localRecs && typeof localRecs === 'object' ? localRecs : { byDate: {}, seenKeys: [] };
+        const rem = remoteRecs && typeof remoteRecs === 'object' ? remoteRecs : { byDate: {}, seenKeys: [] };
+        const mergedByDate = {};
+        const allDates = new Set(
+          Object.keys(loc.byDate || {}).concat(Object.keys(rem.byDate || {}))
+        );
+
+        allDates.forEach(function (dKey) {
+          const a = loc.byDate ? loc.byDate[dKey] : null;
+          const b = rem.byDate ? rem.byDate[dKey] : null;
+          const aItems = a && Array.isArray(a.items) ? a.items : [];
+          const bItems = b && Array.isArray(b.items) ? b.items : [];
+          if (aItems.length === 0 && bItems.length === 0) return;
+          if (aItems.length === 0) {
+            mergedByDate[dKey] = b;
+            return;
+          }
+          if (bItems.length === 0) {
+            mergedByDate[dKey] = a;
+            return;
+          }
+          // Prefer Gemini over builtin, then more artwork, then earlier generatedAt (stable daily pick)
+          const aScore = (a.source === 'gemini' ? 10 : 0) + aItems.filter(function (x) { return Boolean(x.coverUrl); }).length;
+          const bScore = (b.source === 'gemini' ? 10 : 0) + bItems.filter(function (x) { return Boolean(x.coverUrl); }).length;
+          if (bScore > aScore) {
+            mergedByDate[dKey] = b;
+          } else if (aScore > bScore) {
+            mergedByDate[dKey] = a;
+          } else {
+            const aTime = Date.parse(a.generatedAt || '') || 0;
+            const bTime = Date.parse(b.generatedAt || '') || 0;
+            mergedByDate[dKey] = (bTime > 0 && (aTime === 0 || bTime < aTime)) ? b : a;
+          }
+        });
+
+        const seenSet = new Set();
+        const combinedSeen = (Array.isArray(loc.seenKeys) ? loc.seenKeys : [])
+          .concat(Array.isArray(rem.seenKeys) ? rem.seenKeys : []);
+        const mergedSeen = [];
+        for (let i = 0; i < combinedSeen.length; i++) {
+          const k = String(combinedSeen[i] || '').toLowerCase().trim();
+          if (k && !seenSet.has(k)) {
+            seenSet.add(k);
+            mergedSeen.push(k);
+          }
+        }
+        return { byDate: mergedByDate, seenKeys: mergedSeen };
+      }
+
+      function canonicalPayloadString(entries, deletedIds, wishlist, wishlistDeletedIds, dailyRecs) {
         const sortedEntries = entries.slice().sort(function (a, b) {
           return a.id.localeCompare(b.id);
         });
@@ -8798,11 +9006,18 @@
         for (let i = 0; i < sortedWishDelKeys.length; i++) {
           sortedWishDel[sortedWishDelKeys[i]] = wishlistDeletedIds[sortedWishDelKeys[i]];
         }
+        const recByDate = dailyRecs && dailyRecs.byDate ? dailyRecs.byDate : {};
+        const sortedRecDates = Object.keys(recByDate).sort();
+        const sortedRecs = {};
+        for (let i = 0; i < sortedRecDates.length; i++) {
+          sortedRecs[sortedRecDates[i]] = recByDate[sortedRecDates[i]];
+        }
         return JSON.stringify({
           entries: sortedEntries,
           deletedIds: sortedDel,
           wishlist: sortedWish,
-          wishlistDeletedIds: sortedWishDel
+          wishlistDeletedIds: sortedWishDel,
+          dailyRecsByDate: sortedRecs
         });
       }
 
@@ -8856,12 +9071,13 @@
 
           if (!gistId) {
             const payload = {
-              version: 3,
+              version: 4,
               updatedAt: new Date().toISOString(),
               entries: state.entries,
               deletedIds: state.deletedIds,
               wishlist: state.wishlist,
-              wishlistDeletedIds: state.wishlistDeletedIds
+              wishlistDeletedIds: state.wishlistDeletedIds,
+              dailyRecs: state.dailyRecs
             };
 
             const created = await githubGistRequest('POST', 'https://api.github.com/gists', token, {
@@ -8894,6 +9110,7 @@
             let remoteDeleted = {};
             let remoteWishlist = [];
             let remoteWishlistDeleted = {};
+            let remoteDailyRecs = { byDate: {}, seenKeys: [] };
             let remoteHasFile = false;
 
             if (fileObj) {
@@ -8912,13 +9129,19 @@
                   remoteDeleted = parsed.deletedIds && typeof parsed.deletedIds === 'object' ? parsed.deletedIds : {};
                   remoteWishlist = Array.isArray(parsed.wishlist) ? parsed.wishlist : [];
                   remoteWishlistDeleted = parsed.wishlistDeletedIds && typeof parsed.wishlistDeletedIds === 'object' ? parsed.wishlistDeletedIds : {};
+                  if (parsed.dailyRecs && typeof parsed.dailyRecs === 'object') {
+                    remoteDailyRecs = {
+                      byDate: parsed.dailyRecs.byDate && typeof parsed.dailyRecs.byDate === 'object' ? parsed.dailyRecs.byDate : {},
+                      seenKeys: Array.isArray(parsed.dailyRecs.seenKeys) ? parsed.dailyRecs.seenKeys : []
+                    };
+                  }
                 }
               }
             }
 
             const remoteNormalized = remoteEntries.map(normalizeEntry);
             const remoteWishNormalized = remoteWishlist.map(normalizeWishlistItem);
-            const remoteSnap = canonicalPayloadString(remoteNormalized, remoteDeleted, remoteWishNormalized, remoteWishlistDeleted);
+            const remoteSnap = canonicalPayloadString(remoteNormalized, remoteDeleted, remoteWishNormalized, remoteWishlistDeleted, remoteDailyRecs);
 
             const merged = mergeCloudAndLocal(
               state.entries,
@@ -8932,23 +9155,27 @@
               remoteWishNormalized,
               remoteWishlistDeleted
             );
+            const mergedRecs = mergeDailyRecsCloudAndLocal(state.dailyRecs, remoteDailyRecs);
 
             state.entries = merged.entries;
             state.deletedIds = merged.deletedIds;
             state.wishlist = mergedWish.items;
             state.wishlistDeletedIds = mergedWish.deletedIds;
+            state.dailyRecs = mergedRecs;
             saveLocalData();
+            saveDailyRecsData();
 
-            const mergedSnap = canonicalPayloadString(merged.entries, merged.deletedIds, mergedWish.items, mergedWish.deletedIds);
+            const mergedSnap = canonicalPayloadString(merged.entries, merged.deletedIds, mergedWish.items, mergedWish.deletedIds, mergedRecs);
 
             if (!remoteHasFile || mergedSnap !== remoteSnap) {
               const nextPayload = {
-                version: 3,
+                version: 4,
                 updatedAt: new Date().toISOString(),
                 entries: state.entries,
                 deletedIds: state.deletedIds,
                 wishlist: state.wishlist,
-                wishlistDeletedIds: state.wishlistDeletedIds
+                wishlistDeletedIds: state.wishlistDeletedIds,
+                dailyRecs: state.dailyRecs
               };
               await githubGistRequest('PATCH', url, token, {
                 files: {
@@ -9010,10 +9237,11 @@
       function exportJsonBackup() {
         try {
           const payload = {
-            version: 3,
+            version: 4,
             exportedAt: new Date().toISOString(),
             entries: state.entries,
-            wishlist: state.wishlist
+            wishlist: state.wishlist,
+            dailyRecs: state.dailyRecs
           };
           const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
           const url = URL.createObjectURL(blob);
@@ -9031,7 +9259,7 @@
         }
       }
 
-      function applyImportedEntries(incomingNormalized, incomingWishlist, mode) {
+      function applyImportedEntries(incomingNormalized, incomingWishlist, incomingDailyRecs, mode) {
         const wishListNorm = Array.isArray(incomingWishlist) ? incomingWishlist : [];
         if (mode === 'replace') {
           state.entries = incomingNormalized.slice();
@@ -9039,6 +9267,9 @@
           if (wishListNorm.length > 0 || incomingWishlist !== null) {
             state.wishlist = wishListNorm.slice();
             state.wishlistDeletedIds = {};
+          }
+          if (incomingDailyRecs && typeof incomingDailyRecs === 'object') {
+            state.dailyRecs = incomingDailyRecs;
           }
         } else {
           const merged = mergeCloudAndLocal(state.entries, {}, incomingNormalized, {});
@@ -9053,9 +9284,13 @@
               delete state.wishlistDeletedIds[wishListNorm[i].id];
             }
           }
+          if (incomingDailyRecs && typeof incomingDailyRecs === 'object') {
+            state.dailyRecs = mergeDailyRecsCloudAndLocal(state.dailyRecs, incomingDailyRecs);
+          }
         }
 
         saveLocalData();
+        saveDailyRecsData();
         renderAll();
         const wishNote = wishListNorm.length > 0 ? `・聴きたい${wishListNorm.length}件` : '';
         showToast(
@@ -9087,9 +9322,15 @@
             const incomingWishlist = (parsed && !Array.isArray(parsed) && Array.isArray(parsed.wishlist))
               ? parsed.wishlist.map(normalizeWishlistItem)
               : null;
+            const incomingDailyRecs = (parsed && !Array.isArray(parsed) && parsed.dailyRecs && typeof parsed.dailyRecs === 'object')
+              ? {
+                  byDate: parsed.dailyRecs.byDate && typeof parsed.dailyRecs.byDate === 'object' ? parsed.dailyRecs.byDate : {},
+                  seenKeys: Array.isArray(parsed.dailyRecs.seenKeys) ? parsed.dailyRecs.seenKeys : []
+                }
+              : null;
 
             if (state.entries.length === 0 && state.wishlist.length === 0) {
-              applyImportedEntries(incomingNormalized, incomingWishlist, 'merge');
+              applyImportedEntries(incomingNormalized, incomingWishlist, incomingDailyRecs, 'merge');
               return;
             }
 
@@ -9102,12 +9343,12 @@
               `記録${incomingNormalized.length}件${wishSummary}を読み込みます。現在のデータと統合するか、すべて置き換えるかを選択してください。`,
               'すべて置換',
               function () {
-                applyImportedEntries(incomingNormalized, incomingWishlist, 'replace');
+                applyImportedEntries(incomingNormalized, incomingWishlist, incomingDailyRecs, 'replace');
               },
               {
                 label: '既存データと統合',
                 onClick: function () {
-                  applyImportedEntries(incomingNormalized, incomingWishlist, 'merge');
+                  applyImportedEntries(incomingNormalized, incomingWishlist, incomingDailyRecs, 'merge');
                 }
               }
             );
@@ -9261,9 +9502,39 @@
           }
         });
 
-        // Daily Recommendations actions
-        on($('btn-refresh-daily-recs'), 'click', function () {
-          ensureDailyRecommendations(true);
+        // Daily Recommendations Calendar & Actions (no re-roll button)
+        on($('btn-rec-prev-month'), 'click', function () {
+          state.recCalMonth--;
+          if (state.recCalMonth < 0) {
+            state.recCalMonth = 11;
+            state.recCalYear--;
+          }
+          renderRecCalendar();
+        });
+        on($('btn-rec-next-month'), 'click', function () {
+          state.recCalMonth++;
+          if (state.recCalMonth > 11) {
+            state.recCalMonth = 0;
+            state.recCalYear++;
+          }
+          renderRecCalendar();
+        });
+        on($('btn-rec-today'), 'click', function () {
+          const now = new Date();
+          state.recCalYear = now.getFullYear();
+          state.recCalMonth = now.getMonth();
+          state.recSelectedDate = formatDateKey(now);
+          renderDailyRecommendations();
+          ensureDailyRecommendations();
+        });
+        on($('rec-calendar-grid'), 'click', function (evt) {
+          const cell = evt.target.closest('.day-cell[data-rec-date]');
+          if (!cell) return;
+          const dateKey = cell.getAttribute('data-rec-date');
+          if (dateKey) {
+            state.recSelectedDate = dateKey;
+            renderDailyRecommendations();
+          }
         });
         on($('btn-rec-open-settings'), 'click', function () {
           openSyncModal();
@@ -9272,9 +9543,9 @@
             if (keyInput) keyInput.focus();
           }, 80);
         });
-        function handleRecsContainerClick(evt) {
-          if (evt.target.closest('#btn-generate-recs-empty')) {
-            ensureDailyRecommendations(true);
+        on($('daily-recs-container'), 'click', function (evt) {
+          if (evt.target.closest('#btn-retry-daily-recs')) {
+            ensureDailyRecommendations();
             return;
           }
           const btn = evt.target.closest('button[data-rec-action]');
@@ -9292,9 +9563,24 @@
               prefill: recItem
             });
           }
-        }
-        on($('daily-recs-container'), 'click', handleRecsContainerClick);
-        on($('rec-history-list'), 'click', handleRecsContainerClick);
+        });
+
+        // Auto-check for a new day's recommendations when returning to the app on a new day
+        on(document, 'visibilitychange', function () {
+          if (document.visibilityState !== 'visible') return;
+          const nowKey = formatDateKey(new Date());
+          const hasToday = Boolean(
+            state.dailyRecs.byDate &&
+            state.dailyRecs.byDate[nowKey] &&
+            Array.isArray(state.dailyRecs.byDate[nowKey].items) &&
+            state.dailyRecs.byDate[nowKey].items.length > 0
+          );
+          if (!hasToday) {
+            ensureDailyRecommendations();
+          } else {
+            renderRecUnreadBadge();
+          }
+        });
 
         // Entry Modal controls
         on($('btn-close-entry-modal'), 'click', closeEntryModal);
@@ -9581,16 +9867,19 @@
         });
       }
 
-      function initApp() {
+      async function initApp() {
         loadLocalData();
         bindEvents();
         switchView('calendar');
         renderAll();
 
-        // Auto-sync on startup if GitHub token & Gist ID are already configured
+        // Auto-sync on startup first so we pick up today's recommendations if already synced from another device
         if (state.syncConfig.githubToken && state.syncConfig.gistId) {
-          syncWithGist({ silent: true });
+          await syncWithGist({ silent: true });
         }
+
+        // Automatically prepare today's 2 recommendations in the background without requiring opening the Recommend tab
+        ensureDailyRecommendations();
       }
 
       if (document.readyState === 'loading') {
