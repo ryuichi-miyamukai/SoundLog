@@ -7,6 +7,9 @@
   <meta name="description" content="聴いたアルバムの評価・感想・ジャケットをカレンダーと一覧で美しく記録できる個人向け音楽ログアプリ" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="SoundLog" />
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="manifest" href="./manifest.json" />
   <style>
     /* =========================================================================
        Design Tokens & Base Reset (Zero External Dependencies)
@@ -141,8 +144,56 @@
     .brand {
       display: flex;
       align-items: center;
+      min-width: 0;
+    }
+
+    .brand-switcher {
+      display: inline-flex;
+      align-items: center;
       gap: 10px;
       min-width: 0;
+      padding: 4px 10px 4px 4px;
+      margin: -4px 0 -4px -4px;
+      border-radius: 14px;
+      text-align: left;
+      transition: background 0.15s ease, transform 0.1s ease;
+    }
+
+    .brand-switcher:hover {
+      background: var(--surface-subtle);
+    }
+
+    .brand-switcher:active {
+      transform: scale(0.98);
+    }
+
+    .brand-title-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+    }
+
+    .brand-switch-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-strong);
+      background: var(--surface);
+      color: var(--text-secondary);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      line-height: 1.35;
+      white-space: nowrap;
+      transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .brand-switcher:hover .brand-switch-pill {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--accent-fg);
     }
 
     .brand-icon {
@@ -2894,17 +2945,30 @@
   <header class="app-header">
     <div class="header-inner">
       <div class="brand">
-        <div class="brand-icon" aria-hidden="true">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="9"></circle>
-            <circle cx="12" cy="12" r="2.5"></circle>
-            <path d="M12 3a9 9 0 0 1 6.36 2.64"></path>
-          </svg>
-        </div>
-        <div class="brand-text">
-          <h1 class="brand-title">SoundLog</h1>
-          <span class="brand-subtitle">聴いたアルバムの記録</span>
-        </div>
+        <button type="button" id="btn-switch-app" class="brand-switcher" title="BookLog（読んだ本の記録）へ切替" aria-label="BookLogへ切替">
+          <div class="brand-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9"></circle>
+              <circle cx="12" cy="12" r="2.5"></circle>
+              <path d="M12 3a9 9 0 0 1 6.36 2.64"></path>
+            </svg>
+          </div>
+          <div class="brand-text">
+            <span class="brand-title-wrap">
+              <h1 class="brand-title">SoundLog</h1>
+              <span class="brand-switch-pill" aria-hidden="true">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="17 1 21 5 17 9"></polyline>
+                  <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                  <polyline points="7 23 3 19 7 15"></polyline>
+                  <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+                </svg>
+                <span>Book</span>
+              </span>
+            </span>
+            <span class="brand-subtitle">聴いたアルバムの記録</span>
+          </div>
+        </button>
       </div>
 
       <nav class="segmented-nav desktop-nav" aria-label="表示切替">
@@ -3468,7 +3532,7 @@
             <button type="button" id="btn-copy-gist-id" class="btn-secondary" style="flex-shrink:0;">コピー</button>
           </div>
           <p class="field-help">
-            初回は空欄のまま「保存して同期」を押すと非公開Gist（<code>soundlog_data.json</code>）を自動作成します。2台目の端末では同じトークンとGist IDを入力してください。
+            初回は空欄のまま「保存して同期」を押すと非公開Gist（<code>soundlog_data.json</code>）を自動作成します。トークン・Gist ID・Gemini APIキーは BookLog（<code>booklog_data.json</code>）とも自動共有され、同じGist内で別ファイルとして安全に同居します。
           </p>
         </div>
 
@@ -3595,6 +3659,7 @@
         dailyRecs: 'soundlog_daily_recs_v1',
         dailyRecsViewedDate: 'soundlog_daily_recs_viewed_v1',
         syncConfig: 'soundlog_sync_config_v2',
+        sharedSyncConfig: 'log_shared_sync_config_v1',
         geminiModel: 'soundlog_gemini_model_v1',
         legacyEntries: ['soundlog_entries_v1', 'soundlog_entries', 'soundlog_logs']
       };
@@ -4555,21 +4620,55 @@
       }
 
       function loadSyncConfig() {
+        let localParsed = null;
+        let sharedParsed = null;
+
         try {
           const raw = localStorage.getItem(STORAGE_KEYS.syncConfig);
           if (raw) {
             const parsed = JSON.parse(raw);
-            if (parsed && typeof parsed === 'object') {
-              state.syncConfig = {
-                githubToken: String(parsed.githubToken || parsed.token || '').trim(),
-                gistId: String(parsed.gistId || '').trim(),
-                geminiApiKey: String(parsed.geminiApiKey || '').trim(),
-                lastSyncedAt: String(parsed.lastSyncedAt || '')
-              };
-            }
+            if (parsed && typeof parsed === 'object') localParsed = parsed;
           }
         } catch (_) {
           // ignore
+        }
+
+        try {
+          const sharedRaw = localStorage.getItem(STORAGE_KEYS.sharedSyncConfig);
+          if (sharedRaw) {
+            const parsed = JSON.parse(sharedRaw);
+            if (parsed && typeof parsed === 'object') sharedParsed = parsed;
+          }
+        } catch (_) {
+          // ignore
+        }
+
+        const primary = localParsed || {};
+        const fallback = sharedParsed || {};
+        state.syncConfig = {
+          githubToken: String(primary.githubToken || primary.token || fallback.githubToken || fallback.token || '').trim(),
+          gistId: String(primary.gistId || fallback.gistId || '').trim(),
+          geminiApiKey: String(primary.geminiApiKey || fallback.geminiApiKey || '').trim(),
+          lastSyncedAt: String(primary.lastSyncedAt || '')
+        };
+
+        // Mirror existing local credentials into shared key so BookLog inherits them automatically
+        if (
+          (state.syncConfig.githubToken || state.syncConfig.gistId || state.syncConfig.geminiApiKey) &&
+          (!sharedParsed ||
+            !sharedParsed.githubToken && state.syncConfig.githubToken ||
+            !sharedParsed.gistId && state.syncConfig.gistId ||
+            !sharedParsed.geminiApiKey && state.syncConfig.geminiApiKey)
+        ) {
+          try {
+            localStorage.setItem(STORAGE_KEYS.sharedSyncConfig, JSON.stringify({
+              githubToken: state.syncConfig.githubToken,
+              gistId: state.syncConfig.gistId,
+              geminiApiKey: state.syncConfig.geminiApiKey
+            }));
+          } catch (_) {
+            // ignore
+          }
         }
 
         try {
@@ -4593,6 +4692,11 @@
       function saveSyncConfig() {
         try {
           localStorage.setItem(STORAGE_KEYS.syncConfig, JSON.stringify(state.syncConfig));
+          localStorage.setItem(STORAGE_KEYS.sharedSyncConfig, JSON.stringify({
+            githubToken: state.syncConfig.githubToken,
+            gistId: state.syncConfig.gistId,
+            geminiApiKey: state.syncConfig.geminiApiKey
+          }));
         } catch (err) {
           console.error('Failed to save sync config:', err);
         }
@@ -9329,7 +9433,7 @@
       function clearSyncSettings() {
         openConfirmModal(
           '同期設定を解除',
-          'このブラウザから GitHub トークン・Gist ID・Gemini API キーを削除しますか？（ローカルに保存されたアルバム記録は消えません）',
+          'このブラウザから GitHub トークン・Gist ID・Gemini API キーを削除しますか？（BookLogとの共有設定も解除されますが、ローカルに保存された記録は消えません）',
           '解除する',
           function () {
             state.syncConfig = {
@@ -9484,6 +9588,11 @@
       // Event Binding & Initialization
       // =======================================================================
       function bindEvents() {
+        // Switch to BookLog within the same PWA / browser window
+        on($('btn-switch-app'), 'click', function () {
+          window.location.href = './book.html';
+        });
+
         // View switchers (desktop + mobile)
         const viewBtns = document.querySelectorAll('[data-view-target]');
         for (let i = 0; i < viewBtns.length; i++) {

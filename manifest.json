@@ -1,0 +1,11 @@
+{
+  "name": "SoundLog / BookLog",
+  "short_name": "SoundLog",
+  "description": "聴いたアルバムと読んだ本をカレンダーと一覧で記録する個人ログアプリ",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f7f7",
+  "theme_color": "#ffffff",
+  "lang": "ja"
+}
