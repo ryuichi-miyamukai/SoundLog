@@ -1665,6 +1665,46 @@
       color: #15803d;
     }
 
+    .entry-card.is-priority {
+      border-color: #d97706;
+      box-shadow: inset 3px 0 0 #d97706;
+      background: #fffdf7;
+    }
+
+    .btn-priority-flag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      height: 28px;
+      padding: 0 9px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-muted);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      line-height: 1;
+      flex-shrink: 0;
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+    }
+
+    .btn-priority-flag:hover {
+      border-color: #d97706;
+      color: #b45309;
+      background: #fffbeb;
+    }
+
+    .btn-priority-flag.active {
+      background: #fef3c7;
+      border-color: #f59e0b;
+      color: #92400e;
+    }
+
+    .btn-priority-flag:active {
+      transform: scale(0.96);
+    }
+
     .rec-info-banner {
       margin-bottom: 16px;
       padding: 10px 14px;
@@ -3129,8 +3169,8 @@
           autocomplete="off"
         />
         <select id="wishlist-sort-select" class="select-control" aria-label="並び替え">
+          <option value="added-asc" selected>追加した順（古い順）</option>
           <option value="added-desc">追加した順（新しい順）</option>
-          <option value="added-asc">追加した順（古い順）</option>
           <option value="year-desc">リリース年（新しい順）</option>
           <option value="year-asc">リリース年（古い順）</option>
         </select>
@@ -3384,6 +3424,17 @@
                 <span class="checkbox-text">
                   <span class="checkbox-title">再聴として記録する</span>
                   <span class="checkbox-desc">「再聴」バッジを表示し、累計アルバム枚数の新規カウントから除外します（同じアルバムの2回目以降は自動判定されます）</span>
+                </span>
+              </label>
+            </div>
+
+            <!-- Wishlist Priority Flag Toggle -->
+            <div class="form-field full hidden" id="field-wrap-wishlist-priority">
+              <label class="checkbox-row" for="field-wishlist-priority">
+                <input type="checkbox" id="field-wishlist-priority" />
+                <span class="checkbox-text">
+                  <span class="checkbox-title">優先フラグを付ける</span>
+                  <span class="checkbox-desc">リストの上位に固定表示し、優先して聴く候補として目立たせます</span>
                 </span>
               </label>
             </div>
@@ -3929,7 +3980,7 @@
         wishlistDeletedIds: {},
         wishlistSearch: '',
         wishlistGenre: '',
-        wishlistSort: 'added-desc',
+        wishlistSort: 'added-asc',
         dailyRecs: {
           byDate: {},
           seenKeys: []
@@ -4314,8 +4365,11 @@
         const description = String(obj.description || '').trim();
         const notes = String(obj.notes !== undefined ? obj.notes : (obj.comment || '')).trim();
         const source = String(obj.source || '').trim();
+        const priority = Boolean(obj.priority || obj.pinned);
         const updatedAtNum = Number(obj.updatedAt);
         const updatedAt = isFinite(updatedAtNum) && updatedAtNum > 0 ? updatedAtNum : Date.now();
+        const createdAtNum = Number(obj.createdAt);
+        const createdAt = isFinite(createdAtNum) && createdAtNum > 0 ? createdAtNum : updatedAt;
 
         return {
           id: String(obj.id || generateId()),
@@ -4330,6 +4384,8 @@
           description: description,
           notes: notes,
           source: source,
+          priority: priority,
+          createdAt: createdAt,
           updatedAt: updatedAt
         };
       }
@@ -4427,6 +4483,13 @@
 
       function getSpotifyIconSvg() {
         return `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424a.622.622 0 0 1-.857.207c-2.348-1.435-5.304-1.76-8.785-.964a.623.623 0 0 1-.277-1.215c3.809-.87 7.076-.496 9.712 1.115a.624.624 0 0 1 .207.857zm1.224-2.723a.78.78 0 0 1-1.072.257c-2.687-1.652-6.785-2.131-9.965-1.166a.78.78 0 0 1-.452-1.492c3.632-1.102 8.147-.568 11.232 1.329a.78.78 0 0 1 .257 1.072zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71a.935.935 0 1 1-.543-1.79c3.533-1.072 9.404-.865 13.115 1.338a.936.936 0 0 1-.954 1.608z"></path></svg>`;
+      }
+
+      function getFlagIconSvg(filled) {
+        if (filled) {
+          return '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>';
+        }
+        return '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>';
       }
 
       function getAiSparkleIconSvg() {
@@ -5072,13 +5135,16 @@
         const appleMusicUrl = buildAppleMusicUrl(w);
         const spotifyUrl = buildSpotifyUrl(w);
 
+        const priorityBtnHtml = `<button type="button" class="btn-priority-flag${w.priority ? ' active' : ''}" data-wishlist-action="toggle-priority" data-id="${escapeHtml(w.id)}" title="${w.priority ? '優先フラグを解除' : '優先フラグを付けて上位に表示'}" aria-pressed="${w.priority ? 'true' : 'false'}">${getFlagIconSvg(w.priority)}<span>優先</span></button>`;
+
         return `
-          <article class="entry-card" data-wishlist-id="${escapeHtml(w.id)}">
+          <article class="entry-card${w.priority ? ' is-priority' : ''}" data-wishlist-id="${escapeHtml(w.id)}">
             <div class="entry-top">
               <div class="entry-cover">${coverHtml}</div>
               <div class="entry-info">
                 <div class="entry-title-row">
                   <h4 class="entry-title">${escapeHtml(w.album || 'Untitled Album')}</h4>
+                  ${priorityBtnHtml}
                 </div>
                 <p class="entry-artist">${escapeHtml(w.artist || 'Unknown Artist')}</p>
                 ${tags.length ? `<div class="entry-tags">${tags.join('')}</div>` : ''}
@@ -5169,23 +5235,30 @@
         });
 
         filtered.sort(function (a, b) {
+          const prioDiff = (b.priority ? 1 : 0) - (a.priority ? 1 : 0);
+          if (prioDiff !== 0) return prioDiff;
+          const aTime = a.createdAt || a.updatedAt || 0;
+          const bTime = b.createdAt || b.updatedAt || 0;
           switch (state.wishlistSort) {
-            case 'added-asc':
-              return a.addedDate.localeCompare(b.addedDate) || (a.updatedAt - b.updatedAt);
-            case 'year-desc':
-              return (parseInt(b.year, 10) || 0) - (parseInt(a.year, 10) || 0) || b.addedDate.localeCompare(a.addedDate);
-            case 'year-asc':
-              return (parseInt(a.year, 10) || 9999) - (parseInt(b.year, 10) || 9999) || b.addedDate.localeCompare(a.addedDate);
             case 'added-desc':
+              return b.addedDate.localeCompare(a.addedDate) || (bTime - aTime);
+            case 'year-desc':
+              return (parseInt(b.year, 10) || 0) - (parseInt(a.year, 10) || 0) || a.addedDate.localeCompare(b.addedDate) || (aTime - bTime);
+            case 'year-asc':
+              return (parseInt(a.year, 10) || 9999) - (parseInt(b.year, 10) || 9999) || a.addedDate.localeCompare(b.addedDate) || (aTime - bTime);
+            case 'added-asc':
             default:
-              return b.addedDate.localeCompare(a.addedDate) || (b.updatedAt - a.updatedAt);
+              return a.addedDate.localeCompare(b.addedDate) || (aTime - bTime);
           }
         });
 
+        const priorityCount = filtered.filter(function (w) { return Boolean(w.priority); }).length;
+
         if (summaryEl) {
           const filterLabel = selectedGenre ? `ジャンル: <strong>${escapeHtml(selectedGenre)}</strong>` : 'すべて表示中';
+          const prioLabel = priorityCount > 0 ? ` ・ 優先 <strong>${priorityCount}件</strong>` : '';
           summaryEl.innerHTML = `
-            <span>聴きたいアルバム: <strong>${filtered.length}枚</strong>（全 ${state.wishlist.length}枚）</span>
+            <span>聴きたいアルバム: <strong>${filtered.length}枚</strong>（全 ${state.wishlist.length}枚）${prioLabel}</span>
             <span>${filterLabel}</span>
           `;
         }
@@ -5241,6 +5314,8 @@
           description: itemData.description || itemData.reason || '',
           notes: itemData.notes || '',
           source: sourceTag || '',
+          priority: Boolean(itemData.priority),
+          createdAt: Date.now(),
           updatedAt: Date.now()
         });
 
@@ -5253,6 +5328,25 @@
           syncWithGist({ silent: true });
         }
         return true;
+      }
+
+      function toggleWishlistPriorityById(id) {
+        const idx = state.wishlist.findIndex(function (w) { return w.id === id; });
+        if (idx < 0) return;
+        const cur = state.wishlist[idx];
+        const nextPriority = !cur.priority;
+        state.wishlist[idx] = normalizeWishlistItem(Object.assign({}, cur, {
+          priority: nextPriority,
+          createdAt: cur.createdAt || cur.updatedAt,
+          updatedAt: Date.now()
+        }));
+        saveLocalData();
+        renderAll();
+        showToast(nextPriority ? '優先フラグを付けました（上位に表示）' : '優先フラグを解除しました');
+
+        if (state.syncConfig.githubToken && state.syncConfig.gistId) {
+          syncWithGist({ silent: true });
+        }
       }
 
       function deleteWishlistById(id) {
@@ -6146,6 +6240,8 @@
         if (dateWrap) dateWrap.classList.toggle('hidden', isWishlistMode);
         if (relistenWrap) relistenWrap.classList.toggle('hidden', isWishlistMode);
         if (scoreWrap) scoreWrap.classList.toggle('hidden', isWishlistMode);
+        const wishPrioWrap = $('field-wrap-wishlist-priority');
+        if (wishPrioWrap) wishPrioWrap.classList.toggle('hidden', !isWishlistMode);
 
         if (notesLabel) {
           notesLabel.textContent = isWishlistMode ? '気になった理由・メモ' : '感想・メモ';
@@ -6193,6 +6289,7 @@
           $('field-year').value = existingW.year || '';
           $('field-track-count').value = existingW.trackCount || '';
           $('field-relisten').checked = false;
+          if ($('field-wishlist-priority')) $('field-wishlist-priority').checked = Boolean(existingW.priority);
           $('field-description').value = existingW.description || '';
           $('field-notes').value = existingW.notes || '';
           $('field-cover-url').value = existingW.coverUrl || '';
@@ -6211,6 +6308,7 @@
           $('field-year').value = '';
           $('field-track-count').value = '';
           $('field-relisten').checked = false;
+          if ($('field-wishlist-priority')) $('field-wishlist-priority').checked = false;
           $('field-description').value = '';
           $('field-notes').value = '';
           $('field-cover-url').value = '';
@@ -6358,6 +6456,8 @@
             coverUrl: $('field-cover-url').value.trim(),
             appleMusicUrl: $('field-apple-music-url').value.trim(),
             source: existingW ? existingW.source : 'manual',
+            priority: Boolean($('field-wishlist-priority') && $('field-wishlist-priority').checked),
+            createdAt: existingW ? (existingW.createdAt || existingW.updatedAt) : Date.now(),
             updatedAt: Date.now()
           });
 
@@ -9713,6 +9813,8 @@
           const id = btn.getAttribute('data-id');
           if (action === 'add-new') {
             openEntryModal({ mode: 'wishlist' });
+          } else if (action === 'toggle-priority' && id) {
+            toggleWishlistPriorityById(id);
           } else if (action === 'edit' && id) {
             openEntryModal({ mode: 'wishlist', wishlistId: id });
           } else if (action === 'delete' && id) {
@@ -10113,6 +10215,8 @@
       async function initApp() {
         loadLocalData();
         bindEvents();
+        const wishSortEl = $('wishlist-sort-select');
+        if (wishSortEl) wishSortEl.value = state.wishlistSort;
         switchView('calendar');
         renderAll();
 
