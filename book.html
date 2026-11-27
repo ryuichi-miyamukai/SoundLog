@@ -4121,6 +4121,7 @@
           aiChat.push({
             role: role,
             text: text,
+            isError: Boolean(m.isError),
             createdAt: isFinite(ts) && ts > 0 ? ts : Date.now()
           });
         }
@@ -7207,9 +7208,9 @@
       }
 
       function getInitialGeminiModelQueue() {
-        const defaultModels = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite'];
+        const defaultModels = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'];
         const queue = [];
-        if (state.detectedGeminiModel) {
+        if (state.detectedGeminiModel && !/^gemini-3\.[568]-/i.test(state.detectedGeminiModel)) {
           queue.push(state.detectedGeminiModel);
         }
         for (let i = 0; i < defaultModels.length; i++) {
@@ -7220,17 +7221,74 @@
         return queue;
       }
 
-      async function callGeminiGenerateContent(apiKey, payloadObj) {
+      function buildGeminiChatContents(history, maxMessages) {
+        const limit = maxMessages || 10;
+        const clean = [];
+        const list = Array.isArray(history) ? history : [];
+        for (let i = 0; i < list.length; i++) {
+          const m = list[i];
+          if (!m || !m.text) continue;
+          const role = m.role === 'user' ? 'user' : 'model';
+          const text = String(m.text).trim();
+          if (!text) continue;
+          // Exclude previous error bubbles from API context
+          if (m.isError || (role === 'model' && text.startsWith('回答の取得に失敗しました'))) {
+            continue;
+          }
+          if (clean.length > 0 && clean[clean.length - 1].role === role) {
+            // Deduplicate identical retries; otherwise merge same-role consecutive turns
+            if (clean[clean.length - 1].text !== text) {
+              clean[clean.length - 1] = {
+                role: role,
+                text: clean[clean.length - 1].text + '\n\n' + text
+              };
+            }
+          } else {
+            clean.push({ role: role, text: text });
+          }
+        }
+
+        const sliced = clean.slice(-limit);
+        // Gemini API strictly requires contents[0] to be role: 'user'
+        while (sliced.length > 0 && sliced[0].role !== 'user') {
+          sliced.shift();
+        }
+        return sliced.map(function (m) {
+          return {
+            role: m.role,
+            parts: [{ text: m.text }]
+          };
+        });
+      }
+
+      async function callGeminiGenerateContent(apiKey, payloadObj, externalController) {
         const tried = new Set();
         const queue = getInitialGeminiModelQueue();
         let lastErr = null;
         let discovered = false;
 
         async function tryModel(model, disableThinking) {
+          if (externalController && externalController.signal && externalController.signal.aborted) {
+            const cErr = new Error('処理が中断されました');
+            cErr.status = 499;
+            cErr.userAborted = true;
+            throw cErr;
+          }
           const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
           const reqBody = buildGeminiRequestBody(payloadObj, disableThinking);
-          const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-          const timer = controller ? setTimeout(function () { controller.abort(); }, 18000) : null;
+          const attemptController = typeof AbortController !== 'undefined' ? new AbortController() : null;
+          let timedOut = false;
+          function onExternalAbort() {
+            if (attemptController) attemptController.abort();
+          }
+          if (externalController && externalController.signal) {
+            externalController.signal.addEventListener('abort', onExternalAbort, { once: true });
+          }
+          const timer = attemptController ? setTimeout(function () {
+            timedOut = true;
+            attemptController.abort();
+          }, 35000) : null;
+
           let res = null;
           try {
             res = await fetch(url, {
@@ -7239,22 +7297,28 @@
                 'Content-Type': 'application/json',
                 'x-goog-api-key': apiKey
               },
-              signal: controller ? controller.signal : undefined,
+              signal: attemptController ? attemptController.signal : undefined,
               body: JSON.stringify(reqBody)
             });
           } catch (netErr) {
             if (netErr && netErr.name === 'AbortError') {
-              const tErr = new Error('応答がタイムアウトしました（18秒）');
-              tErr.status = 408;
+              const tErr = new Error(timedOut ? '応答がタイムアウトしました（35秒）' : '処理が中断されました');
+              tErr.status = timedOut ? 408 : 499;
+              tErr.userAborted = !timedOut;
               throw tErr;
             }
             throw netErr;
           } finally {
             if (timer) clearTimeout(timer);
+            if (externalController && externalController.signal) {
+              externalController.signal.removeEventListener('abort', onExternalAbort);
+            }
           }
+
           if (!res.ok) {
             const err = await parseGeminiHttpError(res);
-            if (res.status === 400 && disableThinking && /thinking|responseMimeType/i.test(err.message)) {
+            // Retry once without thinkingConfig on ANY 400 error (some models return generic Invalid Argument)
+            if (res.status === 400 && disableThinking) {
               const fallbackPayload = Object.assign({}, payloadObj);
               if (fallbackPayload.generationConfig && /responseMimeType/i.test(err.message)) {
                 fallbackPayload.generationConfig = Object.assign({}, fallbackPayload.generationConfig);
@@ -7276,14 +7340,43 @@
 
         async function tryModelWithBody(model, reqBody) {
           const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
-          const res = await fetch(url, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-goog-api-key': apiKey
-            },
-            body: JSON.stringify(reqBody)
-          });
+          const attemptController = typeof AbortController !== 'undefined' ? new AbortController() : null;
+          let timedOut = false;
+          function onExternalAbort() {
+            if (attemptController) attemptController.abort();
+          }
+          if (externalController && externalController.signal) {
+            externalController.signal.addEventListener('abort', onExternalAbort, { once: true });
+          }
+          const timer = attemptController ? setTimeout(function () {
+            timedOut = true;
+            attemptController.abort();
+          }, 35000) : null;
+          let res = null;
+          try {
+            res = await fetch(url, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-goog-api-key': apiKey
+              },
+              signal: attemptController ? attemptController.signal : undefined,
+              body: JSON.stringify(reqBody)
+            });
+          } catch (netErr) {
+            if (netErr && netErr.name === 'AbortError') {
+              const tErr = new Error(timedOut ? '応答がタイムアウトしました（35秒）' : '処理が中断されました');
+              tErr.status = timedOut ? 408 : 499;
+              tErr.userAborted = !timedOut;
+              throw tErr;
+            }
+            throw netErr;
+          } finally {
+            if (timer) clearTimeout(timer);
+            if (externalController && externalController.signal) {
+              externalController.signal.removeEventListener('abort', onExternalAbort);
+            }
+          }
           if (!res.ok) throw await parseGeminiHttpError(res);
           const data = await res.json();
           const text = extractTextFromGeminiPayload(data).trim();
@@ -7306,11 +7399,15 @@
             return text;
           } catch (err) {
             lastErr = err;
+            if (err && err.userAborted) throw err;
             const status = err && err.status;
-            if (status && status !== 404 && status !== 503 && status !== 429 && status !== 502) {
+            if (status === 401 || status === 403) {
               throw err;
             }
-            if (status === 404 && queue.length === 0 && !discovered) {
+            if ((status === 404 || status === 400) && state.detectedGeminiModel === model) {
+              cacheDetectedGeminiModel('');
+            }
+            if ((status === 404 || status === 400 || status === 408) && queue.length === 0 && !discovered) {
               discovered = true;
               const liveModels = await discoverAvailableGeminiModels(apiKey);
               let added = 0;
@@ -7326,6 +7423,11 @@
         throw lastErr || new Error('Gemini APIの呼び出しに失敗しました');
       }
 
+      /**
+       * Streams Gemini responses via Server-Sent Events (:streamGenerateContent?alt=sse),
+       * with per-attempt AbortController isolation, 400 thinkingConfig retry, and
+       * automatic non-streaming fallback so mobile Safari never gets stuck on timeouts.
+       */
       async function callGeminiStreamGenerateContent(apiKey, payloadObj, onChunk, externalController) {
         const tried = new Set();
         const queue = getInitialGeminiModelQueue();
@@ -7333,13 +7435,42 @@
         let discovered = false;
 
         async function tryStreamModel(model, disableThinking) {
+          if (externalController && externalController.signal && externalController.signal.aborted) {
+            const cErr = new Error('処理が中断されました');
+            cErr.status = 499;
+            cErr.userAborted = true;
+            throw cErr;
+          }
+
           const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:streamGenerateContent?alt=sse`;
           const reqBody = buildGeminiRequestBody(payloadObj, disableThinking);
-          const controller = externalController || (typeof AbortController !== 'undefined' ? new AbortController() : null);
-          let firstByteReceived = false;
-          let timer = controller ? setTimeout(function () {
-            if (!firstByteReceived) controller.abort();
-          }, 20000) : null;
+          const attemptController = typeof AbortController !== 'undefined' ? new AbortController() : null;
+          let timedOut = false;
+          let aliveReceived = false;
+
+          function onExternalAbort() {
+            if (attemptController) attemptController.abort();
+          }
+          if (externalController && externalController.signal) {
+            externalController.signal.addEventListener('abort', onExternalAbort, { once: true });
+          }
+
+          let timer = attemptController ? setTimeout(function () {
+            if (!aliveReceived) {
+              timedOut = true;
+              attemptController.abort();
+            }
+          }, 45000) : null;
+
+          function cleanupListeners() {
+            if (timer) {
+              clearTimeout(timer);
+              timer = null;
+            }
+            if (externalController && externalController.signal) {
+              externalController.signal.removeEventListener('abort', onExternalAbort);
+            }
+          }
 
           let res = null;
           try {
@@ -7349,32 +7480,33 @@
                 'Content-Type': 'application/json',
                 'x-goog-api-key': apiKey
               },
-              signal: controller ? controller.signal : undefined,
+              signal: attemptController ? attemptController.signal : undefined,
               body: JSON.stringify(reqBody)
             });
           } catch (netErr) {
-            if (timer) clearTimeout(timer);
+            cleanupListeners();
             if (netErr && netErr.name === 'AbortError') {
-              const tErr = new Error('応答がタイムアウトまたは中断されました');
-              tErr.status = 408;
-              tErr.isAbort = true;
+              const tErr = new Error(timedOut ? '応答がタイムアウトしました（45秒）' : '処理が中断されました');
+              tErr.status = timedOut ? 408 : 499;
+              tErr.userAborted = !timedOut;
               throw tErr;
             }
             throw netErr;
           }
 
           if (!res.ok) {
-            if (timer) clearTimeout(timer);
+            cleanupListeners();
             const err = await parseGeminiHttpError(res);
-            if (res.status === 400 && disableThinking && /thinking/i.test(err.message)) {
+            // Retry once without thinkingConfig on ANY 400 error
+            if (res.status === 400 && disableThinking) {
               return tryStreamModel(model, false);
             }
             throw err;
           }
 
           if (!res.body || typeof res.body.getReader !== 'function') {
-            if (timer) clearTimeout(timer);
-            const fallbackText = await callGeminiGenerateContent(apiKey, payloadObj);
+            cleanupListeners();
+            const fallbackText = await callGeminiGenerateContent(apiKey, payloadObj, externalController);
             if (typeof onChunk === 'function') onChunk(fallbackText);
             return fallbackText;
           }
@@ -7397,20 +7529,21 @@
             if (!joined || joined === '[DONE]') return;
             try {
               const parsed = JSON.parse(joined);
+              // Any valid SSE candidate chunk (including thought chunks) proves stream is alive
+              if (parsed && Array.isArray(parsed.candidates) && !aliveReceived) {
+                aliveReceived = true;
+                if (timer) {
+                  clearTimeout(timer);
+                  timer = null;
+                }
+              }
               const delta = extractTextFromGeminiPayload(parsed);
               if (delta) {
-                if (!firstByteReceived) {
-                  firstByteReceived = true;
-                  if (timer) {
-                    clearTimeout(timer);
-                    timer = null;
-                  }
-                }
                 fullText += delta;
                 if (typeof onChunk === 'function') onChunk(fullText);
               }
             } catch (_) {
-              // ignore
+              // ignore partial/non-JSON SSE frames
             }
           }
 
@@ -7433,9 +7566,15 @@
             if (fullText.trim()) {
               return fullText.trim();
             }
+            if (readErr && readErr.name === 'AbortError') {
+              const tErr = new Error(timedOut ? '応答がタイムアウトしました（45秒）' : '処理が中断されました');
+              tErr.status = timedOut ? 408 : 499;
+              tErr.userAborted = !timedOut;
+              throw tErr;
+            }
             throw readErr;
           } finally {
-            if (timer) clearTimeout(timer);
+            cleanupListeners();
           }
 
           const trimmed = fullText.trim();
@@ -7458,12 +7597,15 @@
             return text;
           } catch (err) {
             lastErr = err;
-            if (err && err.isAbort) throw err;
+            if (err && err.userAborted) throw err;
             const status = err && err.status;
-            if (status && status !== 404 && status !== 503 && status !== 429 && status !== 502) {
+            if (status === 401 || status === 403) {
               throw err;
             }
-            if (status === 404 && queue.length === 0 && !discovered) {
+            if ((status === 404 || status === 400) && state.detectedGeminiModel === model) {
+              cacheDetectedGeminiModel('');
+            }
+            if ((status === 404 || status === 400 || status === 408) && queue.length === 0 && !discovered) {
               discovered = true;
               const liveModels = await discoverAvailableGeminiModels(apiKey);
               let added = 0;
@@ -7474,6 +7616,17 @@
                 }
               }
             }
+          }
+        }
+
+        // Final safety net: if SSE streaming failed or timed out, retry once with standard generateContent
+        if (!externalController || !externalController.signal || !externalController.signal.aborted) {
+          try {
+            const nonStreamText = await callGeminiGenerateContent(apiKey, payloadObj, externalController);
+            if (typeof onChunk === 'function') onChunk(nonStreamText);
+            return nonStreamText;
+          } catch (fallbackErr) {
+            lastErr = fallbackErr || lastErr;
           }
         }
         throw lastErr || new Error('Gemini APIの呼び出しに失敗しました');
@@ -8182,7 +8335,9 @@
         return state.entries.find(function (e) { return e.id === state.activeChatEntryId; }) || null;
       }
 
-      function renderAiChatModal() {
+      function renderAiChatModal(options) {
+        const opts = options && typeof options === 'object' ? options : {};
+        const shouldScrollBottom = Boolean(opts.scrollToBottom);
         const entry = getActiveChatEntry();
         if (!entry) return;
 
@@ -8285,8 +8440,13 @@
           }
         }
 
+        const prevScrollTop = msgEl.scrollTop;
         msgEl.innerHTML = bubbles.join('');
-        scrollAiChatToBottom();
+        if (shouldScrollBottom) {
+          scrollAiChatToBottom();
+        } else {
+          msgEl.scrollTop = prevScrollTop;
+        }
       }
 
       function scrollAiChatToBottom() {
@@ -8324,10 +8484,6 @@
         }
         if (bubbleEl) {
           bubbleEl.innerHTML = formatChatMessageHtml(partialText);
-        }
-        const nearBottom = (msgEl.scrollHeight - msgEl.scrollTop - msgEl.clientHeight) < 120;
-        if (nearBottom) {
-          msgEl.scrollTop = msgEl.scrollHeight;
         }
       }
 
@@ -8430,7 +8586,7 @@
         state.aiChatAbortController = typeof AbortController !== 'undefined' ? new AbortController() : null;
         state.aiChatSending = true;
         state.aiChatStreamingText = '';
-        renderAiChatModal();
+        renderAiChatModal({ scrollToBottom: true });
 
         const slowTimer = setTimeout(function () {
           if (myToken !== state.aiChatRequestToken || !state.aiChatSending || state.aiChatStreamingText) return;
@@ -8439,12 +8595,8 @@
         }, 4000);
 
         try {
-          const recentMsgs = nextHistory.slice(-8).map(function (m) {
-            return {
-              role: m.role === 'user' ? 'user' : 'model',
-              parts: [{ text: m.text }]
-            };
-          });
+          // Normalize history: strip error bubbles, merge duplicate roles, ensure first turn is 'user'
+          const recentMsgs = buildGeminiChatContents(nextHistory, 10);
 
           const replyText = await callGeminiStreamGenerateContent(
             state.syncConfig.geminiApiKey,
@@ -8502,6 +8654,7 @@
             const updatedChat = (state.entries[latestIdx].aiChat || []).concat([
               {
                 role: 'model',
+                isError: true,
                 text: `回答の取得に失敗しました（${errMsg}）。\nGemini APIキーの有効性や通信状況をご確認のうえ、もう一度お試しください。`,
                 createdAt: Date.now()
               }
@@ -8536,7 +8689,7 @@
           updatedAt: Date.now()
         }));
         saveLocalData();
-        renderAiChatModal();
+        renderAiChatModal({ scrollToBottom: true });
 
         try {
           let detailedJa = '';
