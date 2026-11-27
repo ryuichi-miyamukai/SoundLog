@@ -3143,10 +3143,9 @@
             <div class="section-box-header">
               <span class="section-box-title">書籍を検索して自動入力</span>
               <div class="search-header-tools">
-                <select id="book-lang-select" class="store-select" aria-label="検索言語切替">
-                  <option value="all" selected>全言語 (JP / EN)</option>
-                  <option value="ja">日本語書籍優先</option>
-                  <option value="en">洋書優先 (EN)</option>
+                <select id="book-store-select" class="store-select" aria-label="検索ストア切替">
+                  <option value="JP" selected>日本ストア (JP)</option>
+                  <option value="US">米国ストア (US)</option>
                 </select>
                 <span class="section-box-hint">手動入力可</span>
               </div>
@@ -3154,11 +3153,11 @@
 
             <!-- 3-Mode Segmented Tabs -->
             <div class="search-mode-tabs" role="tablist" aria-label="検索モード切替">
-              <button type="button" class="search-mode-tab active" data-search-mode="google-books" role="tab" aria-selected="true">
-                Google Books
+              <button type="button" class="search-mode-tab active" data-search-mode="apple-books" role="tab" aria-selected="true">
+                Apple Books
               </button>
-              <button type="button" class="search-mode-tab" data-search-mode="author-search" role="tab" aria-selected="false">
-                著者名・ISBN検索
+              <button type="button" class="search-mode-tab" data-search-mode="author-isbn" role="tab" aria-selected="false">
+                著者名・ISBN
               </button>
               <button type="button" class="search-mode-tab" data-search-mode="openlibrary" role="tab" aria-selected="false">
                 Open Library
@@ -3172,7 +3171,7 @@
                 type="search"
                 id="book-search-input"
                 class="input-control"
-                placeholder="例: 異邦人 カミュ / Norwegian Wood / 夏目漱石"
+                placeholder="例: タイタンの妖女 / 異邦人 カミュ / 夏目漱石"
                 autocomplete="off"
               />
               <button type="button" id="btn-book-search" class="btn-primary" style="flex-shrink:0;">検索</button>
@@ -3776,7 +3775,7 @@
         listSort: 'date-desc',
         formGenres: [],
         // 3-Mode Book Search State
-        searchMode: 'google-books', // 'google-books' | 'author-search' | 'openlibrary'
+        searchMode: 'apple-books', // 'apple-books' | 'author-isbn' | 'openlibrary'
         searchResults: [],
         searchVisibleCount: 15,
         searchRequestToken: 0,
@@ -4594,7 +4593,7 @@
             ${notesHtml}
             <div class="entry-actions">
               <div class="entry-book-links">
-                <a href="${escapeHtml(googleBooksUrl)}" target="_blank" rel="noopener noreferrer" class="btn-book-link google-books" title="Google Booksで開く">Google</a>
+                <a href="${escapeHtml(googleBooksUrl)}" target="_blank" rel="noopener noreferrer" class="btn-book-link google-books" title="書籍詳細を開く">詳細</a>
                 <a href="${escapeHtml(amazonBooksUrl)}" target="_blank" rel="noopener noreferrer" class="btn-book-link amazon-books" title="Amazon書籍で探す">Amazon</a>
               </div>
               <div class="entry-edit-actions">
@@ -4900,7 +4899,7 @@
             ${notesHtml}
             <div class="entry-actions">
               <div class="entry-book-links">
-                <a href="${escapeHtml(googleBooksUrl)}" target="_blank" rel="noopener noreferrer" class="btn-book-link google-books" title="Google Booksで開く">Google</a>
+                <a href="${escapeHtml(googleBooksUrl)}" target="_blank" rel="noopener noreferrer" class="btn-book-link google-books" title="書籍詳細を開く">詳細</a>
                 <a href="${escapeHtml(amazonBooksUrl)}" target="_blank" rel="noopener noreferrer" class="btn-book-link amazon-books" title="Amazon書籍で探す">Amazon</a>
               </div>
               <div class="entry-edit-actions">
@@ -5242,6 +5241,20 @@
           .replace(/zoom=1/gi, 'zoom=2');
       }
 
+      function stripHtmlTags(html) {
+        return String(html || '')
+          .replace(/<br\s*\/?>/gi, ' ')
+          .replace(/<[^>]+>/g, '')
+          .replace(/&nbsp;/gi, ' ')
+          .replace(/&amp;/gi, '&')
+          .replace(/&lt;/gi, '<')
+          .replace(/&gt;/gi, '>')
+          .replace(/&quot;/gi, '"')
+          .replace(/&#39;/gi, "'")
+          .replace(/\s+/g, ' ')
+          .trim();
+      }
+
       function extractGoogleBookIsbn(industryIdentifiers) {
         if (!Array.isArray(industryIdentifiers)) return '';
         let isbn10 = '';
@@ -5255,51 +5268,83 @@
         return isbn10;
       }
 
-      async function enrichRecommendationWithGoogleBooks(item) {
-        const query = `intitle:${item.title} inauthor:${item.author}`;
+      async function enrichRecommendationBook(item) {
+        const term = `${item.title} ${item.author}`.trim();
+        if (!term) return item;
+
         const normTargetTitle = normalizeCompareStr(stripBookEditionNoise(item.title));
         const normTargetAuthor = normalizeCompareStr(item.author);
 
-        try {
-          const url = 'https://www.googleapis.com/books/v1/volumes?maxResults=8&printType=books&q=' + encodeURIComponent(query);
-          const res = await fetch(url);
-          if (!res.ok) return item;
-          const data = await res.json();
-          const volumes = data && Array.isArray(data.items) ? data.items : [];
-          if (volumes.length === 0) return item;
+        async function searchAppleStore(country) {
+          const url = 'https://itunes.apple.com/search?media=ebook&entity=ebook&country=' +
+            encodeURIComponent(country) + '&limit=10&term=' + encodeURIComponent(term);
+          try {
+            const data = await fetchItunesJson(url);
+            const results = data && Array.isArray(data.results) ? data.results : [];
+            if (results.length === 0) return null;
 
-          let best = null;
-          let bestScore = -1;
-          for (let i = 0; i < volumes.length; i++) {
-            const v = volumes[i].volumeInfo || {};
-            const vTitle = normalizeCompareStr(stripBookEditionNoise(v.title || ''));
-            const vAuthor = normalizeCompareStr(Array.isArray(v.authors) ? v.authors.join(' ') : '');
-            const hasCover = Boolean(v.imageLinks && (v.imageLinks.thumbnail || v.imageLinks.smallThumbnail));
-            let score = hasCover ? 2 : 0;
-            if (vTitle === normTargetTitle) score += 5;
-            else if (vTitle.includes(normTargetTitle) || normTargetTitle.includes(vTitle)) score += 3;
-            if (vAuthor && normTargetAuthor && (vAuthor.includes(normTargetAuthor) || normTargetAuthor.includes(vAuthor))) score += 4;
-            if (score > bestScore) {
-              bestScore = score;
-              best = v;
+            let best = null;
+            let bestScore = -1;
+            for (let i = 0; i < results.length; i++) {
+              const r = results[i];
+              const rTitle = normalizeCompareStr(stripBookEditionNoise(r.trackName || ''));
+              const rAuthor = normalizeCompareStr(r.artistName || '');
+              let score = 0;
+              if (rTitle === normTargetTitle) score += 5;
+              else if (rTitle.includes(normTargetTitle) || normTargetTitle.includes(rTitle)) score += 3;
+              if (rAuthor && normTargetAuthor && (rAuthor.includes(normTargetAuthor) || normTargetAuthor.includes(rAuthor))) score += 4;
+              if (r.artworkUrl100 || r.artworkUrl60) score += 1;
+              if (score > bestScore) {
+                bestScore = score;
+                best = r;
+              }
             }
+            return bestScore >= 4 ? best : null;
+          } catch (_) {
+            return null;
           }
+        }
 
-          if (!best || bestScore < 4) return item;
-          const rawThumb = best.imageLinks ? (best.imageLinks.thumbnail || best.imageLinks.smallThumbnail || '') : '';
-          const coverUrl = upgradeGoogleBookCover(rawThumb);
-          const isbn = extractGoogleBookIsbn(best.industryIdentifiers);
-
+        let match = await searchAppleStore('JP');
+        if (!match) {
+          match = await searchAppleStore('US');
+        }
+        if (match) {
+          const thumb = match.artworkUrl100 || match.artworkUrl60 || '';
+          const coverUrl = thumb ? thumb.replace(/\/\d+x\d+bb\./, '/600x600bb.') : item.coverUrl;
           return Object.assign({}, item, {
             coverUrl: coverUrl || item.coverUrl || '',
-            bookInfoUrl: best.infoLink || item.bookInfoUrl || '',
-            isbn: isbn || item.isbn || '',
-            pageCount: best.pageCount || item.pageCount || '',
-            year: item.year || (best.publishedDate ? String(best.publishedDate).slice(0, 4) : '')
+            bookInfoUrl: match.trackViewUrl || item.bookInfoUrl || '',
+            year: item.year || (match.releaseDate ? String(match.releaseDate).slice(0, 4) : '')
           });
-        } catch (_) {
-          return item;
         }
+
+        // Fallback to Open Library cover if not on Apple Books
+        try {
+          const olUrl = 'https://openlibrary.org/search.json?limit=5&fields=key,title,author_name,first_publish_year,cover_i,isbn,number_of_pages_median&q=' + encodeURIComponent(term);
+          const res = await fetch(olUrl);
+          if (res.ok) {
+            const data = await res.json();
+            const docs = data && Array.isArray(data.docs) ? data.docs : [];
+            const hit = docs.find(function (d) { return Boolean(d && d.cover_i); }) || docs[0];
+            if (hit) {
+              const coverUrl = hit.cover_i ? `https://covers.openlibrary.org/b/id/${encodeURIComponent(String(hit.cover_i))}-L.jpg` : '';
+              const isbnList = Array.isArray(hit.isbn) ? hit.isbn : [];
+              const isbn = isbnList.find(function (x) { return /^97[89]\d{10}$/.test(String(x)); }) || isbnList[0] || '';
+              return Object.assign({}, item, {
+                coverUrl: coverUrl || item.coverUrl || '',
+                bookInfoUrl: hit.key ? `https://openlibrary.org${hit.key}` : (item.bookInfoUrl || ''),
+                isbn: isbn ? String(isbn).replace(/[^\dXx]/g, '').toUpperCase() : (item.isbn || ''),
+                pageCount: hit.number_of_pages_median || item.pageCount || '',
+                year: item.year || (hit.first_publish_year ? String(hit.first_publish_year).slice(0, 4) : '')
+              });
+            }
+          }
+        } catch (_) {
+          // ignore
+        }
+
+        return item;
       }
 
       async function generateDailyRecsWithGemini(apiKey, dateKey) {
@@ -5401,7 +5446,7 @@
           renderRecUnreadBadge();
           const needsCover = existing.items.some(function (it) { return !it.coverUrl; });
           if (needsCover) {
-            const enriched = await Promise.all(existing.items.map(enrichRecommendationWithGoogleBooks));
+            const enriched = await Promise.all(existing.items.map(enrichRecommendationBook));
             if (state.dailyRecs.byDate[todayKey] === existing) {
               state.dailyRecs.byDate[todayKey] = Object.assign({}, existing, { items: enriched });
               saveDailyRecsData();
@@ -5443,7 +5488,7 @@
             source = 'builtin';
           }
 
-          const enrichedItems = await Promise.all(rawItems.map(enrichRecommendationWithGoogleBooks));
+          const enrichedItems = await Promise.all(rawItems.map(enrichRecommendationBook));
           if (myToken !== state.dailyRecsRequestToken) return;
 
           recordSeenRecommendationKeys(enrichedItems);
@@ -5536,7 +5581,7 @@
             </div>
             <div class="entry-actions" style="margin-top:0;">
               <div class="entry-book-links">
-                <a href="${escapeHtml(googleBooksUrl)}" target="_blank" rel="noopener noreferrer" class="btn-book-link google-books" title="Google Booksで開く">Google</a>
+                <a href="${escapeHtml(googleBooksUrl)}" target="_blank" rel="noopener noreferrer" class="btn-book-link google-books" title="書籍詳細を開く">詳細</a>
                 <a href="${escapeHtml(amazonBooksUrl)}" target="_blank" rel="noopener noreferrer" class="btn-book-link amazon-books" title="Amazon書籍で探す">Amazon</a>
               </div>
               <div class="entry-edit-actions">
@@ -5905,8 +5950,8 @@
       }
 
       function setSearchMode(mode, shouldAutoSearch) {
-        const validModes = ['google-books', 'author-search', 'openlibrary'];
-        state.searchMode = validModes.includes(mode) ? mode : 'google-books';
+        const validModes = ['apple-books', 'author-isbn', 'openlibrary'];
+        state.searchMode = validModes.includes(mode) ? mode : 'apple-books';
 
         const tabs = document.querySelectorAll('[data-search-mode]');
         for (let i = 0; i < tabs.length; i++) {
@@ -5916,30 +5961,30 @@
           tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
         }
 
-        const langSelect = $('book-lang-select');
-        if (langSelect) {
-          langSelect.classList.toggle('hidden', state.searchMode === 'openlibrary');
+        const storeSelect = $('book-store-select');
+        if (storeSelect) {
+          storeSelect.classList.toggle('hidden', state.searchMode === 'openlibrary');
         }
 
         const input = $('book-search-input');
         const hintEl = $('search-mode-hint');
 
-        if (state.searchMode === 'google-books') {
-          if (input) input.placeholder = '例: 異邦人 カミュ / Norwegian Wood / 夏目漱石';
+        if (state.searchMode === 'apple-books') {
+          if (input) input.placeholder = '例: タイタンの妖女 / 異邦人 カミュ / 夏目漱石';
           if (hintEl) {
             hintEl.textContent = '';
             hintEl.classList.add('hidden');
           }
-        } else if (state.searchMode === 'author-search') {
-          if (input) input.placeholder = '著者名（例: 村上春樹 / Camus）または 13桁ISBN';
+        } else if (state.searchMode === 'author-isbn') {
+          if (input) input.placeholder = '著者名（例: カート・ヴォネガット）または 13桁ISBN';
           if (hintEl) {
-            hintEl.textContent = '著者名での著作一覧検索、または10桁・13桁ISBNコードのピンポイント検索ができます。';
+            hintEl.textContent = '著者名で著作一覧を検索できます。10桁・13桁ISBNを入力すると紙書籍データベース（openBD）からピンポイント取得します。';
             hintEl.classList.remove('hidden');
           }
         } else {
-          if (input) input.placeholder = '例: The Stranger Camus / 洋書タイトル・著者';
+          if (input) input.placeholder = '例: The Sirens of Titan / 洋書タイトル・著者';
           if (hintEl) {
-            hintEl.textContent = 'Open Library（Internet Archive）から洋書・学術書・古い版を検索し、書影を取得できます。';
+            hintEl.textContent = 'Open Library から電子書籍化されていない古い版・洋書・学術書を検索し、書影を取得できます。';
             hintEl.classList.remove('hidden');
           }
         }
@@ -5990,7 +6035,7 @@
         state.metaFetchToken++;
         state.coverCheckToken++;
         if (searchInput) searchInput.value = '';
-        setSearchMode('google-books', false);
+        setSearchMode('apple-books', false);
         setCoverFetchNote('');
 
         $('field-form-mode').value = isWishlistMode ? 'wishlist' : 'entry';
@@ -6305,10 +6350,70 @@
 
       // =======================================================================
       // 3-Mode Book Search Implementation
-      //   Mode 1: Google Books Volume Search (Title / Author / Free Keyword)
-      //   Mode 2: Author / ISBN Pinpoint Search (inauthor: / isbn:)
+      //   Mode 1: Apple Books Search (iTunes Search API JSONP + Open Library fallback)
+      //   Mode 2: Author Search (Apple Books authorTerm) & ISBN Pinpoint (openBD -> Open Library -> Google Books)
       //   Mode 3: Open Library Search + Open Library Covers
       // =======================================================================
+      function jsonpRequest(baseUrl, timeoutMs) {
+        return new Promise(function (resolve, reject) {
+          const cbName = '__booklogJsonp_' + Date.now() + '_' + Math.floor(Math.random() * 1000000);
+          let script = null;
+          let finished = false;
+          let timer = null;
+
+          function cleanup() {
+            if (timer) {
+              clearTimeout(timer);
+              timer = null;
+            }
+            if (script && script.parentNode) {
+              script.parentNode.removeChild(script);
+            }
+            try {
+              delete window[cbName];
+            } catch (_) {
+              window[cbName] = undefined;
+            }
+          }
+
+          window[cbName] = function (data) {
+            if (finished) return;
+            finished = true;
+            cleanup();
+            resolve(data);
+          };
+
+          timer = setTimeout(function () {
+            if (finished) return;
+            finished = true;
+            cleanup();
+            reject(new Error('JSONP timeout'));
+          }, timeoutMs || 8000);
+
+          const sep = baseUrl.includes('?') ? '&' : '?';
+          script = document.createElement('script');
+          script.src = baseUrl + sep + 'callback=' + encodeURIComponent(cbName);
+          script.async = true;
+          script.onerror = function () {
+            if (finished) return;
+            finished = true;
+            cleanup();
+            reject(new Error('JSONP script error'));
+          };
+          document.head.appendChild(script);
+        });
+      }
+
+      async function fetchItunesJson(baseUrl) {
+        try {
+          return await jsonpRequest(baseUrl, 8000);
+        } catch (_) {
+          const res = await fetch(baseUrl);
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        }
+      }
+
       function checkImageExists(url, timeoutMs) {
         return new Promise(function (resolve) {
           let settled = false;
@@ -6380,11 +6485,36 @@
           return;
         }
 
-        const delayMs = state.searchMode === 'openlibrary' ? 500 : 320;
+        const delayMs = state.searchMode === 'openlibrary' ? 500 : 300;
         state.searchDebounceTimer = setTimeout(function () {
           state.searchDebounceTimer = null;
           executeBookSearch({ isLive: true });
         }, delayMs);
+      }
+
+      function normalizeAppleBookResult(item) {
+        const title = item.trackName || item.collectionName || 'Untitled';
+        const author = item.artistName || 'Unknown Author';
+        const year = item.releaseDate ? String(item.releaseDate).slice(0, 4) : '';
+        const thumbUrl = item.artworkUrl100 || item.artworkUrl60 || '';
+        const highResUrl = thumbUrl ? thumbUrl.replace(/\/\d+x\d+bb\./, '/600x600bb.') : '';
+        const mappedGenres = normalizeGenres(Array.isArray(item.genres) ? item.genres : []);
+        const rawSnippet = stripHtmlTags(item.description || '');
+
+        return {
+          source: 'apple-books',
+          title: title,
+          author: author,
+          year: year,
+          pageCount: '',
+          publisher: '',
+          isbn: '',
+          genres: mappedGenres,
+          thumbUrl: thumbUrl,
+          coverUrl: highResUrl,
+          bookInfoUrl: item.trackViewUrl || '',
+          rawSnippet: rawSnippet
+        };
       }
 
       async function executeBookSearch(options) {
@@ -6408,9 +6538,9 @@
           return;
         }
 
-        const langSelect = $('book-lang-select');
-        const lang = langSelect ? langSelect.value : 'all';
-        const searchKey = `${state.searchMode}::${lang}::${term.toLowerCase()}`;
+        const storeSelect = $('book-store-select');
+        const country = storeSelect && storeSelect.value === 'US' ? 'US' : 'JP';
+        const searchKey = `${state.searchMode}::${country}::${term.toLowerCase()}`;
         if (isLive && searchKey === state.lastExecutedSearchKey) {
           return;
         }
@@ -6425,10 +6555,15 @@
         }
 
         try {
-          if (state.searchMode === 'google-books') {
-            await runGoogleBooksSearch(term, myToken, false);
-          } else if (state.searchMode === 'author-search') {
-            await runGoogleBooksSearch(term, myToken, true);
+          if (state.searchMode === 'apple-books') {
+            await runAppleBooksSearch(term, myToken, false);
+          } else if (state.searchMode === 'author-isbn') {
+            const digitsOnly = term.replace(/[-\s]/g, '');
+            if (/^\d{9}[\dXx]$/.test(digitsOnly) || /^97[89]\d{10}$/.test(digitsOnly)) {
+              await runIsbnLookupSearch(digitsOnly.toUpperCase(), myToken);
+            } else {
+              await runAppleBooksSearch(term, myToken, true);
+            }
           } else {
             await runOpenLibrarySearch(term, myToken);
           }
@@ -6439,85 +6574,201 @@
         }
       }
 
-      // Mode 1 & Mode 2: Google Books API
-      async function runGoogleBooksSearch(term, reqToken, isAuthorOrIsbnMode) {
-        const langSelect = $('book-lang-select');
-        const lang = langSelect ? langSelect.value : 'all';
+      // Mode 1 & Mode 2 (Author): Apple Books via iTunes Search API (JSONP, fast & reliable)
+      async function runAppleBooksSearch(term, reqToken, isAuthorMode) {
+        const storeSelect = $('book-store-select');
+        const country = storeSelect && storeSelect.value === 'US' ? 'US' : 'JP';
         setSearchStatus(
-          isAuthorOrIsbnMode
-            ? 'Google Books から著者・ISBN一致の書籍を検索しています...'
-            : 'Google Books から書籍を検索しています...',
+          isAuthorMode
+            ? 'Apple Books から著者の書籍を検索しています...'
+            : 'Apple Books から書籍を検索しています...',
           false
         );
 
-        let qParam = term;
-        if (isAuthorOrIsbnMode) {
-          const digitsOnly = term.replace(/[-\s]/g, '');
-          if (/^\d{9}[\dXx]$/.test(digitsOnly) || /^97[89]\d{10}$/.test(digitsOnly)) {
-            qParam = 'isbn:' + digitsOnly;
-          } else {
-            qParam = 'inauthor:' + term;
-          }
-        }
-
-        let url = 'https://www.googleapis.com/books/v1/volumes?maxResults=40&printType=books&q=' + encodeURIComponent(qParam);
-        if (lang === 'ja' || lang === 'en') {
-          url += '&langRestrict=' + encodeURIComponent(lang);
+        let url = 'https://itunes.apple.com/search?media=ebook&entity=ebook&country=' +
+          encodeURIComponent(country) + '&limit=40&term=' + encodeURIComponent(term);
+        if (isAuthorMode) {
+          url += '&attribute=authorTerm';
         }
 
         let data = null;
         try {
-          const res = await fetch(url);
-          if (!res.ok) throw new Error('HTTP ' + res.status);
-          data = await res.json();
+          data = await fetchItunesJson(url);
         } catch (err) {
           if (reqToken !== state.searchRequestToken) return;
-          console.error('Google Books search failed:', err);
-          setSearchStatus('Google Books の検索で通信エラーが発生しました。「Open Library」タブまたは手動入力をお試しください。', true);
+          console.warn('Apple Books search failed, falling back to Open Library:', err);
+          await runOpenLibrarySearch(term, reqToken, 'Apple Books への接続に失敗したため Open Library で検索しました');
           return;
         }
 
         if (reqToken !== state.searchRequestToken) return;
 
-        const rawItems = data && Array.isArray(data.items) ? data.items : [];
+        let rawItems = data && Array.isArray(data.results) ? data.results : [];
+
+        // If authorTerm returned nothing, retry with general Apple Books query
+        if (rawItems.length === 0 && isAuthorMode) {
+          try {
+            const generalUrl = 'https://itunes.apple.com/search?media=ebook&entity=ebook&country=' +
+              encodeURIComponent(country) + '&limit=40&term=' + encodeURIComponent(term);
+            const generalData = await fetchItunesJson(generalUrl);
+            if (reqToken !== state.searchRequestToken) return;
+            rawItems = generalData && Array.isArray(generalData.results) ? generalData.results : [];
+          } catch (_) {
+            // ignore
+          }
+        }
+
         const seenIds = new Set();
         const normalizedItems = [];
-
         for (let i = 0; i < rawItems.length; i++) {
           const item = rawItems[i];
-          if (!item || !item.volumeInfo) continue;
-          const vid = item.id || '';
-          if (vid) {
-            if (seenIds.has(vid)) continue;
-            seenIds.add(vid);
+          if (!item) continue;
+          const tid = item.trackId != null ? String(item.trackId) : '';
+          if (tid) {
+            if (seenIds.has(tid)) continue;
+            seenIds.add(tid);
           }
-          const v = item.volumeInfo;
-          const fullTitle = v.subtitle ? `${v.title} — ${v.subtitle}` : (v.title || 'Untitled');
-          const authorStr = Array.isArray(v.authors) && v.authors.length > 0 ? v.authors.join(' / ') : 'Unknown Author';
-          const year = v.publishedDate ? String(v.publishedDate).slice(0, 4) : '';
-          const pageCount = v.pageCount || '';
-          const rawThumb = v.imageLinks ? (v.imageLinks.smallThumbnail || v.imageLinks.thumbnail || '') : '';
-          const thumbUrl = rawThumb ? rawThumb.replace(/^http:\/\//i, 'https://') : '';
-          const highResUrl = upgradeGoogleBookCover(v.imageLinks ? (v.imageLinks.thumbnail || rawThumb) : '');
-          const isbn = extractGoogleBookIsbn(v.industryIdentifiers);
-          const mappedGenres = normalizeGenres(v.categories || []);
-          const rawSnippet = (v.description || (item.searchInfo && item.searchInfo.textSnippet) || '').replace(/<[^>]+>/g, '').trim();
-
-          normalizedItems.push({
-            source: 'google-books',
-            title: fullTitle,
-            author: authorStr,
-            year: year,
-            pageCount: pageCount,
-            publisher: v.publisher || '',
-            isbn: isbn,
-            genres: mappedGenres,
-            thumbUrl: thumbUrl,
-            coverUrl: highResUrl,
-            bookInfoUrl: v.infoLink || '',
-            rawSnippet: rawSnippet
-          });
+          normalizedItems.push(normalizeAppleBookResult(item));
         }
+
+        if (normalizedItems.length === 0) {
+          // Automatically fall back to Open Library when Apple Books has no e-book edition
+          await runOpenLibrarySearch(term, reqToken, 'Apple Books に見つからなかったため Open Library から検索しました');
+          return;
+        }
+
+        state.searchResults = normalizedItems;
+        state.searchVisibleCount = 15;
+        const resultsEl = $('book-search-results');
+        if (resultsEl) resultsEl.scrollTop = 0;
+        const storeLabel = country === 'US' ? '米国ストア' : '日本ストア';
+        renderBookSearchResults(`Apple Books（${storeLabel}）`);
+      }
+
+      // Mode 2 (ISBN): openBD (Japanese print books) -> Open Library -> Google Books
+      async function runIsbnLookupSearch(isbn, reqToken) {
+        setSearchStatus(`ISBN (${isbn}) を openBD / 書籍データベースから照会中...`, false);
+        const normalizedItems = [];
+
+        // 1. openBD API (Japanese publishers, CORS-enabled, no API key required)
+        try {
+          const res = await fetch('https://api.openbd.jp/v1/get?isbn=' + encodeURIComponent(isbn));
+          if (res.ok) {
+            const arr = await res.json();
+            if (Array.isArray(arr) && arr[0] && arr[0].summary) {
+              const s = arr[0].summary;
+              const onix = arr[0].onix || {};
+              let desc = '';
+              try {
+                const texts = onix.CollateralDetail && Array.isArray(onix.CollateralDetail.TextContent)
+                  ? onix.CollateralDetail.TextContent
+                  : [];
+                const foundText = texts.find(function (t) { return t && t.Text; });
+                if (foundText) desc = stripHtmlTags(foundText.Text);
+              } catch (_) {}
+
+              let pages = '';
+              try {
+                const extents = onix.DescriptiveDetail && Array.isArray(onix.DescriptiveDetail.Extent)
+                  ? onix.DescriptiveDetail.Extent
+                  : [];
+                const pageObj = extents.find(function (ex) { return ex && ex.ExtentValue; });
+                if (pageObj) pages = parseInt(pageObj.ExtentValue, 10) || '';
+              } catch (_) {}
+
+              const cover = s.cover ? String(s.cover).replace(/^http:\/\//i, 'https://') : '';
+              normalizedItems.push({
+                source: 'openbd',
+                title: s.title || 'Untitled',
+                author: s.author || 'Unknown Author',
+                year: s.pubdate ? String(s.pubdate).replace(/[^\d]/g, '').slice(0, 4) : '',
+                pageCount: pages,
+                publisher: s.publisher || '',
+                isbn: s.isbn || isbn,
+                genres: [],
+                thumbUrl: cover,
+                coverUrl: cover,
+                bookInfoUrl: '',
+                rawSnippet: desc
+              });
+            }
+          }
+        } catch (err) {
+          console.warn('openBD lookup failed:', err);
+        }
+
+        if (reqToken !== state.searchRequestToken) return;
+
+        // 2. Fallback to Open Library ISBN search
+        if (normalizedItems.length === 0) {
+          try {
+            const olUrl = 'https://openlibrary.org/search.json?limit=5&fields=key,title,author_name,first_publish_year,number_of_pages_median,isbn,cover_i,subject,publisher&isbn=' + encodeURIComponent(isbn);
+            const res = await fetch(olUrl);
+            if (res.ok) {
+              const data = await res.json();
+              const docs = data && Array.isArray(data.docs) ? data.docs : [];
+              for (let i = 0; i < docs.length; i++) {
+                const doc = docs[i];
+                if (!doc || !doc.title) continue;
+                const coverId = doc.cover_i;
+                const thumbUrl = coverId ? `https://covers.openlibrary.org/b/id/${encodeURIComponent(String(coverId))}-S.jpg` : '';
+                const highResUrl = coverId ? `https://covers.openlibrary.org/b/id/${encodeURIComponent(String(coverId))}-L.jpg` : '';
+                normalizedItems.push({
+                  source: 'openlibrary',
+                  title: doc.title,
+                  author: Array.isArray(doc.author_name) && doc.author_name.length > 0 ? doc.author_name.slice(0, 3).join(' / ') : 'Unknown Author',
+                  year: doc.first_publish_year ? String(doc.first_publish_year).slice(0, 4) : '',
+                  pageCount: doc.number_of_pages_median || '',
+                  publisher: Array.isArray(doc.publisher) && doc.publisher[0] ? doc.publisher[0] : '',
+                  isbn: isbn,
+                  genres: normalizeGenres(Array.isArray(doc.subject) ? doc.subject.slice(0, 12) : []),
+                  thumbUrl: thumbUrl,
+                  coverUrl: highResUrl,
+                  bookInfoUrl: doc.key ? `https://openlibrary.org${doc.key}` : '',
+                  rawSnippet: ''
+                });
+              }
+            }
+          } catch (_) {
+            // ignore
+          }
+        }
+
+        if (reqToken !== state.searchRequestToken) return;
+
+        // 3. Last resort: Google Books ISBN lookup
+        if (normalizedItems.length === 0) {
+          try {
+            const res = await fetch('https://www.googleapis.com/books/v1/volumes?maxResults=5&q=isbn:' + encodeURIComponent(isbn));
+            if (res.ok) {
+              const data = await res.json();
+              const rawItems = data && Array.isArray(data.items) ? data.items : [];
+              for (let i = 0; i < rawItems.length; i++) {
+                const v = rawItems[i] && rawItems[i].volumeInfo;
+                if (!v) continue;
+                const rawThumb = v.imageLinks ? (v.imageLinks.smallThumbnail || v.imageLinks.thumbnail || '') : '';
+                normalizedItems.push({
+                  source: 'google-books',
+                  title: v.subtitle ? `${v.title} — ${v.subtitle}` : (v.title || 'Untitled'),
+                  author: Array.isArray(v.authors) && v.authors.length > 0 ? v.authors.join(' / ') : 'Unknown Author',
+                  year: v.publishedDate ? String(v.publishedDate).slice(0, 4) : '',
+                  pageCount: v.pageCount || '',
+                  publisher: v.publisher || '',
+                  isbn: isbn,
+                  genres: normalizeGenres(v.categories || []),
+                  thumbUrl: rawThumb ? rawThumb.replace(/^http:\/\//i, 'https://') : '',
+                  coverUrl: upgradeGoogleBookCover(v.imageLinks ? (v.imageLinks.thumbnail || rawThumb) : ''),
+                  bookInfoUrl: v.infoLink || '',
+                  rawSnippet: stripHtmlTags(v.description || '')
+                });
+              }
+            }
+          } catch (_) {
+            // ignore
+          }
+        }
+
+        if (reqToken !== state.searchRequestToken) return;
 
         if (normalizedItems.length === 0) {
           state.searchResults = [];
@@ -6526,7 +6777,7 @@
             resultsEl.innerHTML = '';
             resultsEl.classList.add('hidden');
           }
-          setSearchStatus('該当する書籍が見つかりませんでした。言語切替や「Open Library」タブもお試しください。', false);
+          setSearchStatus(`ISBN (${isbn}) に該当する書籍が見つかりませんでした。書名での検索または手動入力をお試しください。`, false);
           return;
         }
 
@@ -6534,12 +6785,13 @@
         state.searchVisibleCount = 15;
         const resultsEl = $('book-search-results');
         if (resultsEl) resultsEl.scrollTop = 0;
-        renderBookSearchResults();
+        const srcName = normalizedItems[0].source === 'openbd' ? 'openBD' : (normalizedItems[0].source === 'openlibrary' ? 'Open Library' : 'Google Books');
+        renderBookSearchResults(`ISBN照会 (${srcName})`);
       }
 
       // Mode 3: Open Library Search
-      async function runOpenLibrarySearch(term, reqToken) {
-        setSearchStatus('Open Library から書籍を検索しています...', false);
+      async function runOpenLibrarySearch(term, reqToken, customPrefix) {
+        setSearchStatus(customPrefix ? (customPrefix + '...') : 'Open Library から書籍を検索しています...', false);
 
         const url = 'https://openlibrary.org/search.json?limit=40&fields=key,title,author_name,first_publish_year,number_of_pages_median,isbn,cover_i,subject,publisher&q=' + encodeURIComponent(term);
 
@@ -6551,7 +6803,7 @@
         } catch (err) {
           if (reqToken !== state.searchRequestToken) return;
           console.error('Open Library search failed:', err);
-          setSearchStatus('Open Library への接続に失敗しました。通信状況をご確認のうえ再度お試しください。', true);
+          setSearchStatus('書籍検索で通信エラーが発生しました。時間をおいて再度お試しいただくか、下のフォームへ手動入力してください。', true);
           return;
         }
 
@@ -6599,7 +6851,7 @@
             resultsEl.innerHTML = '';
             resultsEl.classList.add('hidden');
           }
-          setSearchStatus('Open Library で該当する書籍が見つかりませんでした。英語表記の書名・著者名でもお試しください。', false);
+          setSearchStatus('該当する書籍が見つかりませんでした。米国ストア (US) への切替、英語表記、または13桁ISBN検索もお試しください。', false);
           return;
         }
 
@@ -6607,10 +6859,10 @@
         state.searchVisibleCount = 15;
         const resultsEl = $('book-search-results');
         if (resultsEl) resultsEl.scrollTop = 0;
-        renderBookSearchResults();
+        renderBookSearchResults(customPrefix ? 'Open Library（自動フォールバック）' : 'Open Library');
       }
 
-      function renderBookSearchResults() {
+      function renderBookSearchResults(sourceLabel) {
         const resultsEl = $('book-search-results');
         if (!resultsEl) return;
 
@@ -6624,9 +6876,9 @@
 
         const prevScrollTop = resultsEl.scrollTop;
         const visibleCount = Math.min(state.searchVisibleCount, total);
-        const sourceLabel = state.searchMode === 'openlibrary' ? 'Open Library' : 'Google Books';
+        const label = sourceLabel || (state.searchMode === 'openlibrary' ? 'Open Library' : 'Apple Books');
 
-        setSearchStatus(`${sourceLabel} 全${total}件中 ${visibleCount}件を表示（クリックで自動反映）`, false);
+        setSearchStatus(`${label} 全${total}件中 ${visibleCount}件を表示（クリックで自動反映）`, false);
 
         resultsEl.innerHTML = '';
         for (let i = 0; i < visibleCount; i++) {
@@ -6667,7 +6919,7 @@
           moreBtn.textContent = `さらに表示（残り${remaining}件）`;
           moreBtn.addEventListener('click', function () {
             state.searchVisibleCount += 15;
-            renderBookSearchResults();
+            renderBookSearchResults(label);
           });
           resultsEl.appendChild(moreBtn);
         }
@@ -7715,7 +7967,7 @@
           } else if (descriptionSource === 'en-wiki-translated') {
             setAutoFetchStatus('英語Wikipediaの書籍記事を日本語に翻訳して取得しました', 'ok');
           } else if (descriptionSource === 'google-books' || descriptionSource === 'google-books-translated') {
-            setAutoFetchStatus('Google Books の書誌紹介文から日本語解説を取得しました', 'ok');
+            setAutoFetchStatus('書籍データベースの紹介文から日本語解説を取得しました', 'ok');
           } else if (enFoundButTranslationFailed) {
             setAutoFetchStatus(
               '英語Wikipediaから英語ジャンルを取得しました（日本語翻訳に失敗したため解説は未反映です。手動入力または設定画面でGemini APIキーを登録してください）。',
@@ -9093,7 +9345,7 @@
             executeBookSearch({ isLive: false });
           }
         });
-        on($('book-lang-select'), 'change', function () {
+        on($('book-store-select'), 'change', function () {
           if (state.searchMode === 'openlibrary') return;
           const input = $('book-search-input');
           if (input && input.value.trim()) {
